@@ -5,20 +5,19 @@ using System.Threading.Tasks;
 using Radiate.NET.Engine;
 using Radiate.NET.Models.Neat.Enums;
 using Radiate.NET.Models.Neat.Structs;
-using Radiate.NET.Models.Neat.Wraps;
 
 namespace Radiate.NET.Models.Neat.Layers
 {
     public class Dense : Genome, ILayer
     {
-        public NeuronId[] Inputs { get; set; }
-        public NeuronId[] Outputs { get; set; }
-        public List<Neuron> Nodes { get; set; }
-        public List<Edge> Edges { get; set; }
-        public Dictionary<Guid, EdgeId> EdgeInnovationLookup { get; set; }
-        public ActivationFunction Activation { get; set; }
-        public LayerType LayerType { get; set; }
-        public bool FastMode { get; set; }
+        private NeuronId[] Inputs { get; set; }
+        private NeuronId[] Outputs { get; set; }
+        private List<Neuron> Nodes { get; set; }
+        private List<Edge> Edges { get; set; }
+        private Dictionary<Guid, EdgeId> EdgeInnovationLookup { get; set; }
+        private ActivationFunction Activation { get; set; }
+        private LayerType LayerType { get; set; }
+        private bool FastMode { get; set; }
 
         public Dense() { }
 
@@ -390,23 +389,6 @@ namespace Radiate.NET.Models.Neat.Layers
                 .ToDictionary(key => key.Id, val => val.edge),
             FastMode = Nodes.Count == Inputs.Length + Outputs.Length,
             LayerType = LayerType
-        };
-
-
-        public LayerWrap Wrap() => new()
-        {
-            LayerType = LayerType,
-            Dense = new DenseWrap
-            {
-                Inputs = Inputs,
-                Outputs = Outputs,
-                Nodes = Nodes,
-                Edges = Edges,
-                EdgeInnovationLookup = EdgeInnovationLookup,
-                Activation = Activation,
-                LayerType = LayerType,
-                FastMode = FastMode
-            }
         };
 
         #endregion

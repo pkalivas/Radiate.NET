@@ -1,18 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Radiate.NET.Engine;
-using Radiate.NET.Enums;
 using Radiate.NET.Models.Neat.Enums;
 using Radiate.NET.Models.Neat.Layers;
-using Radiate.NET.Models.Neat.Wraps;
 
 namespace Radiate.NET.Models.Neat
 {
-    public class Neat : Genome, ITradingModel
+    public class Neat : Genome
     {
-        public List<ILayer> Layers { get; set; }
+        private List<ILayer> Layers { get; set; }
 
         public Neat()
         {
@@ -31,27 +28,8 @@ namespace Radiate.NET.Models.Neat
             Layers.Aggregate(data, (current, layer) => layer.Forward(current));
 
 
-        public TradingModel Wrap() => new()
-        {
-            ModelType = ModelType.Neat,
-            NeatWrap = new NeatWrap
-            {
-                LayerCount = Layers.Count,
-                LayerWraps = Layers.Select(layer => layer.Wrap()).ToList()
-            }
-        };
         
-
-        public (int inSize, int outSize) Shape()
-        {
-            if (!Layers.Any())
-            {
-                return (inSize: 0, outSize: 0);
-            }
-
-            return (Layers.First().Shape().inSize, Layers.Last().Shape().outSize);
-        }
-
+        #region Genome Implementation
 
         public override async Task<T> Crossover<T, TE>(T other, TE environment, double crossoverRate)
         {
@@ -96,7 +74,6 @@ namespace Radiate.NET.Models.Neat
             return sum;
         }
 
-
         public override T CloneGenome<T>() => new Neat()
         {
             Layers = Layers.Select(layer => layer.CloneLayer()).ToList()
@@ -109,5 +86,7 @@ namespace Radiate.NET.Models.Neat
                 layer.Reset();
             }
         }
+        
+        #endregion
     }
 }

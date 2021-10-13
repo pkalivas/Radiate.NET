@@ -8,18 +8,19 @@ namespace Radiate.NET.Models.Neat
 {
     public class Neuron
     {
-        public List<EdgeId> Outgoing { get; set; }
-        public List<NeuronLink> Incoming { get; set; }
-        public ActivationFunction Activation { get; set; }
-        public NeuronDirection Direction { get; set; }
         public NeuronId Id { get; set; }
         public NeuronType NeuronType { get; set; }
         public float ActivatedValue { get; set; }
-        public float DeactivatedValue { get; set; }
         public float CurrentState { get; set; }
-        public float PreviousState { get; set; }
-        public float Error { get; set; }
         public float Bias { get; set; }
+
+        private List<EdgeId> Outgoing { get; set; }
+        private List<NeuronLink> Incoming { get; set; }
+        private ActivationFunction Activation { get; set; }
+        private NeuronDirection Direction { get; set; }
+        private float DeactivatedValue { get; set; }
+        private float PreviousState { get; set; }
+        private float Error { get; set; }
 
         public Neuron() { }
 
