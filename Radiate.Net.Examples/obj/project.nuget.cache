@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "f4N1iz0n7UQv1qXiFQ/Y/UaPHlmjY+Qa2iKUM2mGWgEpzdR4PWKUFN0gMAX8ixN8K3boFT3QjiK94qX0XUh0cQ==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Peter\\Desktop\\Radiate.NET\\Radiate.Net.Examples\\Radiate.Net.Examples.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Peter\\.nuget\\packages\\newtonsoft.json\\13.0.1\\newtonsoft.json.13.0.1.nupkg.sha512"
+  ],
+  "logs": []
+}

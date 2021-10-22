@@ -3,6 +3,7 @@
     public enum ActivationFunction
     {
         Sigmoid = 0,
-        Relu = 1
+        Relu = 1,
+        Tanh = 2
     }
 }

@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net5.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Radiate.Net.Data\Radiate.Net.Data.csproj" />
+      <ProjectReference Include="..\Radiate.NET\Radiate.NET.csproj" />
+    </ItemGroup>
+
+</Project>

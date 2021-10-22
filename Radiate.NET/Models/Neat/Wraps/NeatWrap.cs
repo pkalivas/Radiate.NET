@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Radiate.NET.Models.Neat.Enums;
-using Radiate.NET.Models.Neat.Structs;
 
 namespace Radiate.NET.Models.Neat.Wraps
 {

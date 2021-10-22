@@ -2,39 +2,34 @@
 using System.Collections.Generic;
 using System.Linq;
 using Radiate.NET.Models.Neat.Enums;
-using Radiate.NET.Models.Neat.Structs;
 
 namespace Radiate.NET.Models.Neat
 {
     public class Neuron
     {
-        public List<EdgeId> Outgoing { get; set; }
-        public List<NeuronLink> Incoming { get; set; }
-        public ActivationFunction Activation { get; set; }
-        public NeuronDirection Direction { get; set; }
         public NeuronId Id { get; set; }
         public NeuronType NeuronType { get; set; }
         public float ActivatedValue { get; set; }
         public float DeactivatedValue { get; set; }
         public float CurrentState { get; set; }
-        public float PreviousState { get; set; }
         public float Error { get; set; }
         public float Bias { get; set; }
+        private List<EdgeId> Outgoing { get; set; }
+        private List<NeuronLink> Incoming { get; set; }
+        private ActivationFunction Activation { get; set; }
 
         public Neuron() { }
 
-        public Neuron(NeuronId id, NeuronType neuronType, ActivationFunction activation, NeuronDirection direction)
+        public Neuron(NeuronId id, NeuronType neuronType, ActivationFunction activation)
         {
             Id = id;
             Outgoing = new List<EdgeId>();
             Incoming = new List<NeuronLink>();
             Activation = activation;
-            Direction = direction;
             NeuronType = neuronType;
             ActivatedValue = 0;
             DeactivatedValue = 0;
             CurrentState = 0;
-            PreviousState = 0;
             Error = 0;
             Bias = (float) new Random().NextDouble();
         }
@@ -56,8 +51,8 @@ namespace Radiate.NET.Models.Neat
 
         public void UpdateIncoming(Edge edge, float weight)
         {
-            var neuronLink = Incoming.Find(link => link.Id.Equals(edge.Id));
-            neuronLink.Weight = weight;
+            Incoming.Find(link => link.Id.Equals(edge.Id)).Weight = weight;
+
         }
 
         public void RemoveIncoming(Edge edge)
@@ -81,19 +76,8 @@ namespace Radiate.NET.Models.Neat
 
         public void Activate()
         {
-            if (Direction == NeuronDirection.Forward)
-            {
-                ActivatedValue = Activator.Activate(Activation, CurrentState);
-                DeactivatedValue = Activator.Deactivate(Activation, CurrentState);
-            }
-
-            if (Direction == NeuronDirection.Recurrent)
-            {
-                ActivatedValue = Activator.Activate(Activation, CurrentState + PreviousState);
-                DeactivatedValue = Activator.Deactivate(Activation, CurrentState + PreviousState);
-            }
-
-            PreviousState = CurrentState;
+            ActivatedValue = Activator.Activate(Activation, CurrentState);
+            DeactivatedValue = Activator.Deactivate(Activation, CurrentState);
         }
 
         public void Reset()
@@ -122,12 +106,10 @@ namespace Radiate.NET.Models.Neat
                 })
                 .ToList(),
             Activation = Activation,
-            Direction = Direction,
             NeuronType = NeuronType,
             ActivatedValue = 0,
             DeactivatedValue = 0,
             CurrentState = 0,
-            PreviousState = 0,
             Error = 0,
             Bias = Bias
         };

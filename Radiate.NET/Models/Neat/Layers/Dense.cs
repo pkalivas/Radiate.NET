@@ -4,25 +4,24 @@ using System.Linq;
 using System.Threading.Tasks;
 using Radiate.NET.Engine;
 using Radiate.NET.Models.Neat.Enums;
-using Radiate.NET.Models.Neat.Structs;
-using Radiate.NET.Models.Neat.Wraps;
 
 namespace Radiate.NET.Models.Neat.Layers
 {
     public class Dense : Genome, ILayer
     {
-        public NeuronId[] Inputs { get; set; }
-        public NeuronId[] Outputs { get; set; }
-        public List<Neuron> Nodes { get; set; }
-        public List<Edge> Edges { get; set; }
-        public Dictionary<Guid, EdgeId> EdgeInnovationLookup { get; set; }
-        public ActivationFunction Activation { get; set; }
-        public LayerType LayerType { get; set; }
-        public bool FastMode { get; set; }
+        private NeuronId[] Inputs { get; set; }
+        private NeuronId[] Outputs { get; set; }
+        private List<Neuron> Nodes { get; set; }
+        private List<Edge> Edges { get; set; }
+        private Dictionary<Guid, EdgeId> EdgeInnovationLookup { get; set; }
+        private Tracer Tracer { get; set; }
+        private ActivationFunction Activation { get; set; }
+        private bool FastMode { get; set; }
 
         public Dense() { }
+        
 
-        public Dense(int inputSize, int outputSize, ActivationFunction activation, LayerType layerType)
+        public Dense(int inputSize, int outputSize, ActivationFunction activation)
         {
             Inputs = new NeuronId[inputSize];
             Outputs = new NeuronId[outputSize];
@@ -30,17 +29,16 @@ namespace Radiate.NET.Models.Neat.Layers
             Edges = new List<Edge>();
             EdgeInnovationLookup = new Dictionary<Guid, EdgeId>();
             Activation = activation;
-            LayerType = layerType;
             FastMode = true;
 
             for (var i = 0; i < inputSize; i++)
             {
-                Inputs[i] = MakeNode(NeuronType.Input, activation, NeuronDirection.Forward);
+                Inputs[i] = MakeNode(NeuronType.Input, activation);
             }
 
             for (var i = 0; i < outputSize; i++)
             {
-                Outputs[i] = MakeNode(NeuronType.Output, activation, NeuronDirection.Forward);
+                Outputs[i] = MakeNode(NeuronType.Output, activation);
             }
 
             var random = new Random();
@@ -53,28 +51,7 @@ namespace Radiate.NET.Models.Neat.Layers
                 }
             }
         }
-
-
-        private NeuronId MakeNode(NeuronType neuronType, ActivationFunction activation, NeuronDirection direction)
-        {
-            var nodeId = new NeuronId { Index = Nodes.Count };
-            Nodes.Add(new Neuron(nodeId, neuronType, activation, direction));
-            return nodeId;
-        }
-
-
-        private EdgeId MakeEdge(NeuronId src, NeuronId dst, float weight)
-        {
-            var edgeId = new EdgeId { Index = Edges.Count };
-            var edge = new Edge(edgeId, src, dst, weight, true);
-            
-            edge.LinkNodes(Nodes);
-            EdgeInnovationLookup[edge.Innovation] = edgeId;
-            Edges.Add(edge);
-
-            return edgeId;
-        }
-
+        
 
         public Edge GetEdgeByInnovation(Guid innovation)
         {
@@ -87,13 +64,12 @@ namespace Radiate.NET.Models.Neat.Layers
             Outputs
                 .Select(output => Nodes[output.Index].ActivatedValue)
                 .ToList();
-
-
-        public void AddNode(ActivationFunction activation, NeuronDirection direction)
+        
+        private void AddNode(ActivationFunction activation)
         {
             FastMode = false;
 
-            var newNodeId = MakeNode(NeuronType.Hidden, activation, direction);
+            var newNodeId = MakeNode(NeuronType.Hidden, activation);
             var currentEdge = Edges[new Random().Next(Edges.Count)];
 
             MakeEdge(currentEdge.Src, newNodeId, 1.0f);
@@ -101,9 +77,8 @@ namespace Radiate.NET.Models.Neat.Layers
             
             Edges[currentEdge.Id.Index].Disable(Nodes);
         }
-
-
-        public void AddEdge()
+        
+        private void AddEdge()
         {
             var sending = RandomNodeNotOfType(NeuronType.Output);
             var receiving = RandomNodeNotOfType(NeuronType.Input);
@@ -115,6 +90,25 @@ namespace Radiate.NET.Models.Neat.Layers
             }
         }
 
+        private NeuronId MakeNode(NeuronType neuronType, ActivationFunction activation)
+        {
+            var nodeId = new NeuronId { Index = Nodes.Count };
+            Nodes.Add(new Neuron(nodeId, neuronType, activation));
+            return nodeId;
+        }
+
+        private EdgeId MakeEdge(NeuronId src, NeuronId dst, float weight)
+        {
+            var edgeId = new EdgeId { Index = Edges.Count };
+            var edge = new Edge(edgeId, src, dst, weight, true);
+            
+            edge.LinkNodes(Nodes);
+            EdgeInnovationLookup[edge.Innovation] = edgeId;
+            Edges.Add(edge);
+
+            return edgeId;
+        }
+        
         private bool ValidConnection(NeuronId sending, NeuronId receiving)
         {
             if (sending.Equals(receiving))
@@ -197,8 +191,22 @@ namespace Radiate.NET.Models.Neat.Layers
             }
         }
 
+        private void UpdateTracer()
+        {
+            if (Tracer is not null)
+            {
+                foreach (var node in Nodes)
+                {
+                    Tracer.UpdateNeuronActivation(node);
+                    Tracer.UpdateNeuronDerivative(node);
+                }
 
-        private List<float> FastForward(List<float> data)
+                Tracer.Index++;
+            }
+        }
+
+
+        private List<float> FastForward(IReadOnlyList<float> data)
         {
             var inSize = Inputs.Length;
 
@@ -215,16 +223,18 @@ namespace Radiate.NET.Models.Neat.Layers
                 
                 Nodes[i].CurrentState = Nodes[i].IncomingEdges()
                     .Select((neuron, idx) => (neuron, data[idx]))
-                    .Aggregate(0f, (sum, current) => sum + (current.Item2 * current.neuron.Weight));
+                    .Aggregate(Nodes[i].Bias, (sum, current) => sum + (current.Item2 * current.neuron.Weight));
 
                 Nodes[i].Activate();
 
                 result.Add(Nodes[i].ActivatedValue);
             }
+            
+            UpdateTracer();
 
             return result;
         }
-
+        
 
         #region Layer Implementation
 
@@ -345,23 +355,104 @@ namespace Radiate.NET.Models.Neat.Layers
                     }
                 }
             }
+            
+            UpdateTracer();
 
             return outputs;
         }
 
-        public LayerType GetType() => LayerType;
+        public List<float> Backward(List<float> errors, float learningRate)
+        {
+            var path = new Stack<NeuronId>();
+            for (var i = 0; i < Outputs.Length; i++)
+            {
+                var output = Outputs[i];
+                var node = Nodes[output.Index];
+                node.Error = errors[i];
+                path.Push(output);
+            }
 
+            while (path.Count > 0)
+            {
+                var node = path.Pop();
+                var currentNode = Nodes[node.Index];
+                var currentError = currentNode.Error;
+
+                var correctionStep = learningRate * (currentError * Tracer?.GetNeuronDerivative(node) ??
+                                                     currentError * currentNode.DeactivatedValue);
+
+                // Reset the node's error if it isn't an InputNode
+                if (currentNode.NeuronType is not NeuronType.Input)
+                {
+                    currentNode.Bias += learningRate * currentError;
+                    currentNode.Error = 0f;
+                }
+
+                // Iterate through each incoming edge to this neuron and adjust it's weight then add the
+                foreach (var incomingEdgeId in currentNode.IncomingEdges().Select(edge => edge.Id))
+                {
+                    var currentEdge = Edges[incomingEdgeId.Index];
+
+                    if (!currentEdge.Active)
+                    {
+                        continue;
+                    }
+                    
+                    path.Push(currentEdge.Src);
+                        
+                    // Edit the source neuron's error
+                    var srcNeuron = Nodes[currentEdge.Src.Index];
+                    srcNeuron.Error += currentEdge.Weight * currentError;
+                        
+                    // Add the (correction step * current neuron's activated value) to the weight in order
+                    // to adjust the weight. Then update the connection so it knows if it should update the 
+                    // weight or store the delta for later.
+                    var delta = (correctionStep * Tracer?.GetNeuronActivation(srcNeuron.Id)) ?? (correctionStep * srcNeuron.ActivatedValue);
+                    
+                    currentEdge.Update(delta, Nodes);
+                }
+            }
+
+            var result = Inputs
+                .Select(node =>
+                {
+                    var neuron = Nodes[node.Index];
+                    var error = Tracer is null
+                        ? neuron.Error * neuron.ActivatedValue
+                        : neuron.Error * Tracer.GetNeuronActivation(neuron.Id);
+
+                    neuron.Error = 0f;
+                    return error;
+                })
+                .ToList();
+
+            if (Tracer is not null)
+            {
+                Tracer.Index--;
+            }
+
+            return result;
+        }
+
+        public void AddTracer() => Tracer = new();
+
+        public void RemoveTracer() => Tracer = null;
+        
         public void Reset()
         {
             foreach (var node in Nodes)
             {
                 node.Reset();
             }
+
+            if (Tracer is not null)
+            {
+                Tracer = new();
+            }
         }
 
-        public (int inSize, int outSize) Shape() => (inSize: Inputs.Length, outSize: Outputs.Length);
-
-
+        public LayerType GetLayerType() => LayerType.Dense;
+        
         public ILayer CloneLayer() => new Dense
         {
             Inputs = Inputs
@@ -388,27 +479,9 @@ namespace Radiate.NET.Models.Neat.Layers
             EdgeInnovationLookup = EdgeInnovationLookup
                 .Select(pair => (Id: pair.Key, edge: new EdgeId { Index = pair.Value.Index }))
                 .ToDictionary(key => key.Id, val => val.edge),
-            FastMode = Nodes.Count == Inputs.Length + Outputs.Length,
-            LayerType = LayerType
+            FastMode = Nodes.Count == Inputs.Length + Outputs.Length
         };
-
-
-        public LayerWrap Wrap() => new()
-        {
-            LayerType = LayerType,
-            Dense = new DenseWrap
-            {
-                Inputs = Inputs,
-                Outputs = Outputs,
-                Nodes = Nodes,
-                Edges = Edges,
-                EdgeInnovationLookup = EdgeInnovationLookup,
-                Activation = Activation,
-                LayerType = LayerType,
-                FastMode = FastMode
-            }
-        };
-
+        
         #endregion
 
 
@@ -449,25 +522,15 @@ namespace Radiate.NET.Models.Neat.Layers
                     child.EditWeights(neatEnv.EditWeights, neatEnv.WeightPerturb);
                 }
 
-                if (child.LayerType == LayerType.DensePool)
+                if (random.NextDouble() < neatEnv.NewNodeRate)
                 {
-                    if (random.NextDouble() < neatEnv.NewNodeRate)
-                    {
-                        var actFunction = neatEnv.ActivationFunctions[random.Next(neatEnv.ActivationFunctions.Count)];
-                        if (random.NextDouble() < neatEnv.RecurrentNeuronRate)
-                        {
-                            child.AddNode(actFunction, NeuronDirection.Recurrent);
-                        }
-                        else
-                        {
-                            child.AddNode(actFunction, NeuronDirection.Forward);
-                        }
-                    }
+                    var actFunction = neatEnv.ActivationFunctions[random.Next(neatEnv.ActivationFunctions.Count)];
+                    child.AddNode(actFunction);
+                }
 
-                    if (random.NextDouble() < neatEnv.NewEdgeRate)
-                    {
-                        child.AddEdge();
-                    }
+                if (random.NextDouble() < neatEnv.NewEdgeRate)
+                {
+                    child.AddEdge();
                 }
             }
 
@@ -513,15 +576,11 @@ namespace Radiate.NET.Models.Neat.Layers
                 .Select(pair => (Id: pair.Key, edge: new EdgeId { Index = pair.Value.Index }))
                 .ToDictionary(key => key.Id, val => val.edge),
             FastMode = Nodes.Count == Inputs.Length + Outputs.Length,
-            LayerType = LayerType
         } as T;
 
         public override void ResetGenome()
         {
-            foreach (var node in Nodes)
-            {
-                node.Reset();
-            }
+            Reset();
         }
 
 

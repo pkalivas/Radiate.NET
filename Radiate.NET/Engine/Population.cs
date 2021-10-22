@@ -128,14 +128,7 @@ namespace Radiate.NET.Engine
             var topMember = CurrentGeneration.GetBestMember();
 
             await CurrentGeneration.Speciate(Settings.SpeciesDistance, EvolutionEnvironment);
-
-            foreach (var species in CurrentGeneration.Species)
-            {
-                //Console.WriteLine($"Species: {species.NicheId} Gens: {species.Age} Members: {species.Members.Count} Fit: {species.TotalAdjustedFitness}");
-            }
-
-            //Console.WriteLine();
-
+            
             if (Settings.DynamicDistance)
             {
                 if (CurrentGeneration.Species.Count < Settings.SpeciesTarget)

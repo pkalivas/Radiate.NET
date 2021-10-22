@@ -1,0 +1,12 @@
+C:\Users\Peter\Desktop\Radiate.NET\Radiate.Net.Data\bin\Debug\net5.0\Radiate.Net.Data.deps.json
+C:\Users\Peter\Desktop\Radiate.NET\Radiate.Net.Data\bin\Debug\net5.0\Radiate.Net.Data.dll
+C:\Users\Peter\Desktop\Radiate.NET\Radiate.Net.Data\bin\Debug\net5.0\ref\Radiate.Net.Data.dll
+C:\Users\Peter\Desktop\Radiate.NET\Radiate.Net.Data\bin\Debug\net5.0\Radiate.Net.Data.pdb
+C:\Users\Peter\Desktop\Radiate.NET\Radiate.Net.Data\obj\Debug\net5.0\Radiate.Net.Data.csproj.AssemblyReference.cache
+C:\Users\Peter\Desktop\Radiate.NET\Radiate.Net.Data\obj\Debug\net5.0\Radiate.Net.Data.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Peter\Desktop\Radiate.NET\Radiate.Net.Data\obj\Debug\net5.0\Radiate.Net.Data.AssemblyInfoInputs.cache
+C:\Users\Peter\Desktop\Radiate.NET\Radiate.Net.Data\obj\Debug\net5.0\Radiate.Net.Data.AssemblyInfo.cs
+C:\Users\Peter\Desktop\Radiate.NET\Radiate.Net.Data\obj\Debug\net5.0\Radiate.Net.Data.csproj.CoreCompileInputs.cache
+C:\Users\Peter\Desktop\Radiate.NET\Radiate.Net.Data\obj\Debug\net5.0\Radiate.Net.Data.dll
+C:\Users\Peter\Desktop\Radiate.NET\Radiate.Net.Data\obj\Debug\net5.0\ref\Radiate.Net.Data.dll
+C:\Users\Peter\Desktop\Radiate.NET\Radiate.Net.Data\obj\Debug\net5.0\Radiate.Net.Data.pdb
