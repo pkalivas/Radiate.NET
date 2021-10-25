@@ -12,14 +12,14 @@ using Radiate.NET.Models.Neat.Layers;
 
 namespace Radiate.Net.Examples.Examples
 {
-    public class EvolveLSTM : IExample
+    public class EvolveRNN : IExample
     {
         public async Task Run()
         {
-            var (inputs, answers) = new SimpleMemory().GetDataSet();
-            
+            var (inputs, target) = new SimpleMemory().GetDataSet();
+
             var neat = new Neat()
-                .AddLayer(new RNN(1, 1, 10, ActivationFunction.Sigmoid));
+                .AddLayer(new RNN(1, 1, 3, ActivationFunction.Sigmoid));
             
             var best = await new Population<Neat, NeatEnvironment>()
                 .Configure(settings =>
@@ -42,15 +42,17 @@ namespace Radiate.Net.Examples.Examples
                     NewEdgeRate = .14f,
                     NewNodeRate = .14f,
                     EditWeights = .1f,
-                    WeightPerturb = 1.5f,
+                    WeightPerturb = 1.1f,
                     ActivationFunctions = new()
                     {
-                        ActivationFunction.ReLU
+                        ActivationFunction.ReLU,
+                        ActivationFunction.Tanh,
+                        ActivationFunction.Sigmoid
                     }
                 })
                 .SetSolver(member =>
                 {
-                    var meanSquaredError = inputs.Zip(answers)
+                    var meanSquaredError = inputs.Zip(target)
                         .Select(pair => Math.Pow(member.Forward(pair.First)[0] - pair.Second[0], 2))
                         .Sum() / inputs.Count;
                     
@@ -60,7 +62,7 @@ namespace Radiate.Net.Examples.Examples
                 .Train((member, epoch) =>
                 {
                     Console.WriteLine($"{member.Fitness} - {epoch}");
-                    return epoch == 200;
+                    return epoch == 500;
                 });
             
             var member = best.Model;
@@ -69,7 +71,7 @@ namespace Radiate.Net.Examples.Examples
             foreach (var (point, idx) in inputs.Select((val, idx) => (val, idx)))
             {
                 var output = member.Forward(point);
-                Console.WriteLine($"Input ({point[0]}) Expecting {answers[idx][0]} Guess {output[0]}");
+                Console.WriteLine($"Input ({point[0]}) Expecting {target[idx][0]} Guess {output[0]}");
             }
 
             Console.WriteLine("\nTesting Memory...");

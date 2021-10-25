@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Radiate.NET.Engine;
 using Radiate.NET.Models.Neat.Enums;
-using Radiate.NET.Models.Neat.Wraps;
 
 namespace Radiate.NET.Models.Neat.Layers
 {
@@ -26,20 +25,20 @@ namespace Radiate.NET.Models.Neat.Layers
     
     public class LSTM : Genome, ILayer
     {
-        public int InputSize { get; set; }
-        public int MemorySize { get; set; }
-        public int OutputSize { get; set; }
-        public ActivationFunction ActivationFunction { get; set; }
-        public List<float> Memory { get; set; }
-        public List<float> Hidden { get; set; }
-        public LSTMState States { get; set; }
-        public Dense GGate { get; set; }
-        public Dense IGate { get; set; }
-        public Dense FGate { get; set; }
-        public Dense OGate { get; set; }
-        public Dense VGate { get; set; }
+        private int InputSize { get; set; }
+        private int MemorySize { get; set; }
+        private int OutputSize { get; set; }
+        private ActivationFunction ActivationFunction { get; set; }
+        private List<float> Memory { get; set; }
+        private List<float> Hidden { get; set; }
+        private LSTMState States { get; set; }
+        private Dense GGate { get; set; }
+        private Dense IGate { get; set; }
+        private Dense FGate { get; set; }
+        private Dense OGate { get; set; }
+        private Dense VGate { get; set; }
         
-        public LSTM() { }
+        private LSTM() { }
 
         public LSTM(int inputSize, int outputSize, int memorySize, ActivationFunction activationFunction)
         {
@@ -58,6 +57,14 @@ namespace Radiate.NET.Models.Neat.Layers
             OGate = new Dense(cellInputSize, memorySize, ActivationFunction.Sigmoid);
             VGate = new Dense(memorySize, outputSize, activationFunction);
         }
+
+        private bool HasTracers() =>
+            GGate.HasTracer() &&
+            IGate.HasTracer() &&
+            FGate.HasTracer() &&
+            OGate.HasTracer() &&
+            VGate.HasTracer();
+
 
         #region Layer Implementation
         
@@ -82,12 +89,17 @@ namespace Radiate.NET.Models.Neat.Layers
             var newMemory = VectorOperations.ElementActivate(Memory, ActivationFunction.Tanh);
             currentOutput = VectorOperations.ElementMultiply(currentOutput, newMemory);
 
-            States.FGateOutput.Push(currentFGate);
-            States.IGateOutput.Push(currentIGate);
-            States.SGateOutput.Push(currentState);
-            States.OGateOutput.Push(currentOutput);
-            States.MemoryState.Push(Memory);
-            
+            // If the gates have tracers, the model is being trained so we need to keep
+            // track of the previous states of the gates
+            if (HasTracers())
+            {
+                States.FGateOutput.Push(currentFGate);
+                States.IGateOutput.Push(currentIGate);
+                States.SGateOutput.Push(currentState);
+                States.OGateOutput.Push(currentOutput);
+                States.MemoryState.Push(Memory);   
+            }
+
             Hidden = currentOutput;
 
             return VGate.Forward(currentOutput);
@@ -121,28 +133,28 @@ namespace Radiate.NET.Models.Neat.Layers
             // Gradient for c in h = ho * tanh(c), note we're adding dc_next here     
             // dc = ho * dh * dtanh(c)
             // dc = dc + dc_next
-            var dc = VectorOperations.Product(oCurr, dh);
+            var dc = VectorOperations.ElementMultiply(oCurr, dh);
             dc = VectorOperations.ElementMultiply(dc, VectorOperations.ElementDeactivate(cOld, ActivationFunction.Tanh));
             dc = VectorOperations.ElementAdd(dc, dcNext);
             
             // Gradient for hf in c = hf * c_old + hi * hc    
             // dhf = c_old * dc
             // dhf = dsigmoid(hf) * dhf
-            var dhf = VectorOperations.Product(cOld, dc);
+            var dhf = VectorOperations.ElementMultiply(cOld, dc);
             dhf = VectorOperations.ElementMultiply(dhf, VectorOperations.ElementDeactivate(fCurr, ActivationFunction.Sigmoid));
             var fTask = Task.Run(() => FGate.Backward(dhf, learningRate));
             
             // Gradient for hi in c = hf * c_old + hi * hc     
             // dhi = hc * dc
             // dhi = dsigmoid(hi) * dhi
-            var dhi = VectorOperations.Product(gCurr, dc);
+            var dhi = VectorOperations.ElementMultiply(gCurr, dc);
             dhi = VectorOperations.ElementMultiply(dhi, VectorOperations.ElementDeactivate(iCurr, ActivationFunction.Sigmoid));
             var iTask = Task.Run(() => IGate.Backward(dhi, learningRate));
             
             // Gradient for hc in c = hf * c_old + hi * hc     
             // dhc = hi * dc
             // dhc = dtanh(hc) * dhc
-            var dhc = VectorOperations.Product(iCurr, dc);
+            var dhc = VectorOperations.ElementMultiply(iCurr, dc);
             dhc = VectorOperations.ElementMultiply(dhc, VectorOperations.ElementDeactivate(gCurr, ActivationFunction.Sigmoid));
             var gTask = Task.Run(() => GGate.Backward(dhc, learningRate));
             
@@ -157,7 +169,7 @@ namespace Radiate.NET.Models.Neat.Layers
             // Split the concatenated X, so that we get our gradient of h_old     
             // dh_next = dx[:, :H]
             dhNext = dx.Skip(InputSize).ToList();
-            dcNext = VectorOperations.Product(fCurr, dc);
+            dcNext = VectorOperations.ElementMultiply(fCurr, dc);
 
             // Gradient for c_old in c = hf * c_old + hi * hc     
             // dc_next = hf * dc

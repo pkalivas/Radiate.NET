@@ -1,26 +1,60 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Radiate.Net.Data;
+using Radiate.Net.Data.Utils;
 using Radiate.NET.Engine;
 using Radiate.NET.Engine.Enums;
 using Radiate.NET.Engine.ParentalCriteria;
 using Radiate.NET.Engine.SurvivorCriteria;
+using Radiate.NET.Enums;
 using Radiate.NET.Models.Neat;
 using Radiate.NET.Models.Neat.Enums;
 using Radiate.NET.Models.Neat.Layers;
 
 namespace Radiate.Net.Examples.Examples
 {
-    public class EvolveLSTM : IExample
+    public class TemperatureTimeSeries : IExample
     {
         public async Task Run()
         {
-            var (inputs, answers) = new SimpleMemory().GetDataSet();
+            var dataLayerSize = 1;
+            var maxEpoch = 1000;
+            var evolveEpochs = 50;
+            var learningRate = .001f;
             
+            var (ins, outs) = new TempTimeSeries().GetDataSet();
+            var (inputs, target) = Utilities.Layer(ins, outs, dataLayerSize);
+
             var neat = new Neat()
-                .AddLayer(new RNN(1, 1, 10, ActivationFunction.Sigmoid));
+                .SetBatchSize(10)
+                .SetLossFunction(LossFunction.Difference)
+                .AddLayer(new LSTM(dataLayerSize, 1, 128, ActivationFunction.Sigmoid));
+
+            // neat = await Evolve(neat, inputs, target, evolveEpochs);
+            neat = await Train(neat, inputs, target, maxEpoch, learningRate);
             
+            foreach (var (first, second) in inputs.Zip(target))
+            {
+                Console.WriteLine($"Input {first[0]} Expecting {second[0]} Guess {neat.Forward(first)[0]}");
+            }
+        }
+
+        private async Task<Neat> Train(Neat neat, List<List<float>> inputs, List<List<float>> targets, int epochs, float learningRate)
+        {
+            neat.Train(inputs, targets, learningRate, (epoch, loss) =>
+            {
+                Console.WriteLine($"{epoch} - {loss}");
+                return epoch == epochs || Math.Abs(loss) < .01f;
+            });
+
+            neat.ResetGenome();
+            return neat;
+        }
+
+        private async Task<Neat> Evolve(Neat neat, List<List<float>> inputs, List<List<float>> targets, int epochs)
+        {
             var best = await new Population<Neat, NeatEnvironment>()
                 .Configure(settings =>
                 { 
@@ -42,7 +76,7 @@ namespace Radiate.Net.Examples.Examples
                     NewEdgeRate = .14f,
                     NewNodeRate = .14f,
                     EditWeights = .1f,
-                    WeightPerturb = 1.5f,
+                    WeightPerturb = 1.2f,
                     ActivationFunctions = new()
                     {
                         ActivationFunction.ReLU
@@ -50,7 +84,13 @@ namespace Radiate.Net.Examples.Examples
                 })
                 .SetSolver(member =>
                 {
-                    var meanSquaredError = inputs.Zip(answers)
+                    // var meanSquaredError = inputs.Zip(targets)
+                    //     .Select(pair => Math.Pow(member.Forward(pair.First)[0] - pair.Second[0], 2))
+                    //     .Sum();
+                    //
+                    // return 1f / inputs.Count * meanSquaredError;
+
+                    var meanSquaredError = inputs.Zip(targets)
                         .Select(pair => Math.Pow(member.Forward(pair.First)[0] - pair.Second[0], 2))
                         .Sum() / inputs.Count;
                     
@@ -60,23 +100,13 @@ namespace Radiate.Net.Examples.Examples
                 .Train((member, epoch) =>
                 {
                     Console.WriteLine($"{member.Fitness} - {epoch}");
-                    return epoch == 200;
+                    return epoch == epochs;
                 });
-            
-            var member = best.Model;
-            member.ResetGenome();
-            
-            foreach (var (point, idx) in inputs.Select((val, idx) => (val, idx)))
-            {
-                var output = member.Forward(point);
-                Console.WriteLine($"Input ({point[0]}) Expecting {answers[idx][0]} Guess {output[0]}");
-            }
 
-            Console.WriteLine("\nTesting Memory...");
-            Console.WriteLine($"Input {1f} Expecting {0f} Guess {member.Forward(new(){ 1f })[0]}");
-            Console.WriteLine($"Input {0f} Expecting {0f} Guess {member.Forward(new(){ 0f })[0]}");
-            Console.WriteLine($"Input {0f} Expecting {0f} Guess {member.Forward(new(){ 0f })[0]}");
-            Console.WriteLine($"Input {0f} Expecting {1f} Guess {member.Forward(new(){ 0f })[0]}");
+            var result = best.Model;
+            result.ResetGenome();
+
+            return result;
         }
     }
 }

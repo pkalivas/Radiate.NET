@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Radiate.Net.Data;
-using Radiate.Net.Data.Utils;
 using Radiate.NET.Enums;
 using Radiate.NET.Models.Neat;
 using Radiate.NET.Models.Neat.Enums;
@@ -10,18 +9,18 @@ using Radiate.NET.Models.Neat.Layers;
 
 namespace Radiate.Net.Examples.Examples
 {
-    public class TrainLSTM : IExample
+    public class TrainRNN : IExample
     {
         public Task Run()
         {
             var (inputs, target) = new SimpleMemory().GetDataSet();
-            
-            var neat = new Neat()
-                .SetBatchSize(10)
-                .SetLossFunction(LossFunction.Difference)
-                .AddLayer(new LSTM(1, 1, 32, ActivationFunction.Sigmoid));
 
-            neat.Train(inputs, target, .001f, (epoch, loss) =>
+            var neat = new Neat()
+                .SetBatchSize(target.Count)
+                .SetLossFunction(LossFunction.MeanSquaredError)
+                .AddLayer(new RNN(1, 1, 128, ActivationFunction.Sigmoid));
+
+            neat.Train(inputs, target, .0001f, (epoch, loss) =>
             {
                 Console.WriteLine($"{epoch} - {loss}");
                 return epoch == 100;

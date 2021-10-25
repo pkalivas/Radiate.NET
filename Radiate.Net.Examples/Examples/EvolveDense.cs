@@ -47,7 +47,7 @@ namespace Radiate.Net.Examples.Examples
                     ActivationFunctions = new List<ActivationFunction>
                     {
                         ActivationFunction.Sigmoid,
-                        ActivationFunction.Relu
+                        ActivationFunction.ReLU
                     }
                 })
                 .SetSolver(member =>

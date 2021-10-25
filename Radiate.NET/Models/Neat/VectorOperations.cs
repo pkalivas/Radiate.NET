@@ -32,32 +32,45 @@ namespace Radiate.NET.Models.Neat
             one
                 .Select(val => Activator.Deactivate(activationFunction, val))
                 .ToList();
-
-        public static List<float> Product(IEnumerable<float> one, IEnumerable<float> two) =>
-            one.Zip(two)
-                .Select(pair => pair.First * pair.Second)
+        
+        public static List<float> OuterProduct(IEnumerable<float> one, IEnumerable<float> two) =>
+            one
+                .SelectMany(val => two
+                    .Select(other => val * other))
                 .ToList();
 
+        public static List<float> Invert(IEnumerable<float> one) =>
+            one
+                .Select(val => 1 - val)
+                .ToList();
+
+        public static List<float> Pow(IEnumerable<float> one) =>
+            one
+                .Select(val => (float)Math.Pow(val, 2))
+                .ToList();
+        
         public static (float loss, List<float> errors) GetLoss(List<float> one, List<float> two, LossFunction lossFunction)
         {
             if (one.Count != two.Count)
             {
                 throw new Exception("Loss vector shapes don't match");
             }
-            //
-            var difference = Subtract(one, two);
-            return (difference.Sum(), difference);
-            // var squaredError = 0f;
-            // var result = one.Zip(two)
-            //     .Select(pair =>
-            //     {
-            //         var error = (float)Math.Pow(pair.First - pair.Second, 2);
-            //         squaredError += error;
-            //         return error;
-            //     })
-            //     .ToList();
-            //
-            // return ((1f / one.Count()) * squaredError, result);
+
+            if (lossFunction is LossFunction.Difference)
+            {
+                var result = Subtract(one, two);
+                return (result.Sum(), result);
+            }
+
+            if (lossFunction is LossFunction.MeanSquaredError)
+            {
+                var result = one.Zip(two)
+                    .Select(pair => (float)Math.Pow(pair.Second - pair.First, 2))
+                    .ToList();
+                return (1f - (result.Sum() / one.Count), result);
+            }
+
+            throw new Exception($"Loss function {lossFunction} is not implemented");
         }
     }
 }

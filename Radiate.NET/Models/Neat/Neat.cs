@@ -13,6 +13,7 @@ namespace Radiate.NET.Models.Neat
     {
         private List<ILayer> Layers { get; set; }
         private int BatchSize { get; set; }
+        private LossFunction LossFunction { get; set; }
 
         public Neat()
         {
@@ -33,6 +34,12 @@ namespace Radiate.NET.Models.Neat
             return this;
         }
 
+        public Neat SetLossFunction(LossFunction lossFunction)
+        {
+            LossFunction = lossFunction;
+            return this;
+        }
+
         public void Train(List<List<float>> inputs, List<List<float>> targets, float learningRate, Func<int, float, bool> func)
         {
             var passOutput = new List<List<float>>();
@@ -40,15 +47,12 @@ namespace Radiate.NET.Models.Neat
             var epoch = 0;
             var count = 0;
             var loss = 0f;
-
-            if (BatchSize > 1)
+        
+            foreach (var layer in Layers)
             {
-                foreach (var layer in Layers)
-                {
-                    layer.AddTracer();
-                }
+                layer.AddTracer();
             }
-
+            
             while (true)
             {
                 foreach (var (input, idx) in inputs.Select((input, idx) => (input, idx)))
@@ -86,10 +90,15 @@ namespace Radiate.NET.Models.Neat
 
         private float Backward(IReadOnlyList<List<float>> modelOutputs, IReadOnlyList<List<float>> networkTargets, float learningRate)
         {
+            if (LossFunction == null)
+            {
+                throw new Exception("Loss function not set.");
+            }
+            
             var totalLoss = 0f;
             for (var i = modelOutputs.Count - 1; i >= 0; i--)
             {
-                var (loss, errors) = VectorOperations.GetLoss(networkTargets[i], modelOutputs[i], LossFunction.Difference);
+                var (loss, errors) = VectorOperations.GetLoss(networkTargets[i], modelOutputs[i], LossFunction);
                 totalLoss += loss;
 
                 for (var j = Layers.Count - 1; j >= 0; j--)
@@ -122,6 +131,11 @@ namespace Radiate.NET.Models.Neat
                 {
                     childLayers.Add(await (layers.First as LSTM).Crossover(layers.Second as LSTM, neatEnv, crossoverRate));
                 }
+
+                if (layerType is LayerType.RNN)
+                {
+                    childLayers.Add(await (layers.First as RNN).Crossover(layers.Second as RNN, neatEnv, crossoverRate));
+                }
             }
 
             return new Neat()
@@ -142,6 +156,7 @@ namespace Radiate.NET.Models.Neat
                 {
                     LayerType.Dense => await (layers.First as Dense).Distance(layers.Second as Dense, neatEnv),
                     LayerType.LSTM => await (layers.First as LSTM).Distance(layers.Second as LSTM, neatEnv),
+                    LayerType.RNN => await (layers.First as RNN).Distance(layers.Second as RNN, neatEnv),
                     _ => throw new KeyNotFoundException($"{layers.First.GetType()} is not implemented")
                 };
             }
@@ -152,7 +167,8 @@ namespace Radiate.NET.Models.Neat
 
         public override T CloneGenome<T>() => new Neat()
         {
-            Layers = Layers.Select(layer => layer.CloneLayer()).ToList()
+            Layers = Layers.Select(layer => layer.CloneLayer()).ToList(),
+            BatchSize = BatchSize
         } as T;
 
         public override void ResetGenome()

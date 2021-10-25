@@ -27,6 +27,9 @@
       "Radiate.Net.Data/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v5.0",
+        "dependencies": {
+          "Newtonsoft.Json": "13.0.1"
+        },
         "compile": {
           "bin/placeholder/Radiate.Net.Data.dll": {}
         },

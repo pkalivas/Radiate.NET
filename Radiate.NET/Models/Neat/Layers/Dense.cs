@@ -18,7 +18,7 @@ namespace Radiate.NET.Models.Neat.Layers
         private ActivationFunction Activation { get; set; }
         private bool FastMode { get; set; }
 
-        public Dense() { }
+        private Dense() { }
         
 
         public Dense(int inputSize, int outputSize, ActivationFunction activation)
@@ -52,18 +52,13 @@ namespace Radiate.NET.Models.Neat.Layers
             }
         }
         
-
-        public Edge GetEdgeByInnovation(Guid innovation)
-        {
-            var edgeId = EdgeInnovationLookup[innovation];
-            return Edges[edgeId.Index];
-        }
         
-
         public List<float> GetOutputs() => 
             Outputs
                 .Select(output => Nodes[output.Index].ActivatedValue)
                 .ToList();
+
+        public bool HasTracer() => Tracer is not null;
         
         private void AddNode(ActivationFunction activation)
         {
@@ -224,7 +219,7 @@ namespace Radiate.NET.Models.Neat.Layers
                 Nodes[i].CurrentState = Nodes[i].IncomingEdges()
                     .Select((neuron, idx) => (neuron, data[idx]))
                     .Aggregate(Nodes[i].Bias, (sum, current) => sum + (current.Item2 * current.neuron.Weight));
-
+                
                 Nodes[i].Activate();
 
                 result.Add(Nodes[i].ActivatedValue);
@@ -378,8 +373,7 @@ namespace Radiate.NET.Models.Neat.Layers
                 var currentNode = Nodes[node.Index];
                 var currentError = currentNode.Error;
 
-                var correctionStep = learningRate * (currentError * Tracer?.GetNeuronDerivative(node) ??
-                                                     currentError * currentNode.DeactivatedValue);
+                var correctionStep = learningRate * currentError * Tracer!.GetNeuronDerivative(node);
 
                 // Reset the node's error if it isn't an InputNode
                 if (currentNode.NeuronType is not NeuronType.Input)
@@ -407,7 +401,7 @@ namespace Radiate.NET.Models.Neat.Layers
                     // Add the (correction step * current neuron's activated value) to the weight in order
                     // to adjust the weight. Then update the connection so it knows if it should update the 
                     // weight or store the delta for later.
-                    var delta = (correctionStep * Tracer?.GetNeuronActivation(srcNeuron.Id)) ?? (correctionStep * srcNeuron.ActivatedValue);
+                    var delta = correctionStep * Tracer!.GetNeuronActivation(srcNeuron.Id);
                     
                     currentEdge.Update(delta, Nodes);
                 }

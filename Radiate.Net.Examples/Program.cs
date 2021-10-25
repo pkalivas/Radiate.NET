@@ -12,8 +12,11 @@ namespace Radiate.Net.Examples
             var options = "\n[0] Stop\n" +
                           "[1] Evolve Dense\n" +
                           "[2] Evolve LSTM\n" +
-                          "[3] Train Dense\n" +
-                          "[4] Train LSTM\n" +
+                          "[3] Evolve RNN\n" +
+                          "[4] Train Dense\n" +
+                          "[5] Train LSTM\n" +
+                          "[6] Train RNN\n" +
+                          "[7] Temperature Time Series\n" +
                           ":: ";
 
             while (true)
@@ -47,12 +50,27 @@ namespace Radiate.Net.Examples
 
             if (choice == 3)
             {
-                await new TrainDense().Run();
+                await new EvolveRNN().Run();
             }
 
             if (choice == 4)
             {
+                await new TrainDense().Run();
+            }
+
+            if (choice == 5)
+            {
                 await new TrainLSTM().Run();
+            }
+
+            if (choice == 6)
+            {
+                await new TrainRNN().Run();
+            }
+
+            if (choice == 7)
+            {
+                await new TemperatureTimeSeries().Run();
             }
             
             stopwatch.Stop();

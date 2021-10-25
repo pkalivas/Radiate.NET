@@ -15,7 +15,7 @@ namespace Radiate.Net.Examples.Examples
             var (inputs, target) = new XOR().GetDataSet();
             
             var neat = new Neat()
-                .AddLayer(new Dense(2, 16, ActivationFunction.Relu))
+                .AddLayer(new Dense(2, 16, ActivationFunction.ReLU))
                 .AddLayer(new Dense(16, 1, ActivationFunction.Sigmoid));
 
             neat.Train(inputs, target, .1f, (epoch, loss) => epoch == 200);
