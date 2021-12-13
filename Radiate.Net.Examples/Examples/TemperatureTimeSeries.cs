@@ -21,7 +21,7 @@ namespace Radiate.Net.Examples.Examples
         {
             var dataLayerSize = 1;
             var maxEpoch = 1000;
-            var evolveEpochs = 50;
+            var evolveEpochs = 500;
             var learningRate = .001f;
             
             var (ins, outs) = new TempTimeSeries().GetDataSet();
@@ -30,10 +30,11 @@ namespace Radiate.Net.Examples.Examples
             var neat = new Neat()
                 .SetBatchSize(10)
                 .SetLossFunction(LossFunction.Difference)
-                .AddLayer(new LSTM(dataLayerSize, 1, 128, ActivationFunction.Sigmoid));
+                .AddLayer(new RNN(dataLayerSize, 1, 2, ActivationFunction.Sigmoid))
+                .AddLayer(new RNN(dataLayerSize, 1, 2, ActivationFunction.Sigmoid));
 
-            // neat = await Evolve(neat, inputs, target, evolveEpochs);
-            neat = await Train(neat, inputs, target, maxEpoch, learningRate);
+            neat = await Evolve(neat, inputs, target, evolveEpochs);
+            // neat = await Train(neat, inputs, target, maxEpoch, learningRate);
             
             foreach (var (first, second) in inputs.Zip(target))
             {

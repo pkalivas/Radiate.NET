@@ -17,14 +17,14 @@ namespace Radiate.Net.Examples.Examples
             var (inputs, target) = new SimpleMemory().GetDataSet();
             
             var neat = new Neat()
-                .SetBatchSize(10)
+                .SetBatchSize(inputs.Count)
                 .SetLossFunction(LossFunction.Difference)
                 .AddLayer(new LSTM(1, 1, 32, ActivationFunction.Sigmoid));
 
-            neat.Train(inputs, target, .001f, (epoch, loss) =>
+            neat.Train(inputs, target, .01f, (epoch, loss) =>
             {
                 Console.WriteLine($"{epoch} - {loss}");
-                return epoch == 100;
+                return epoch == 500;
             });
             
             neat.ResetGenome();
