@@ -4,14 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Radiate.Net.Data;
 using Radiate.NET.Domain.Activation;
-using Radiate.NET.Optimizers;
 using Radiate.NET.Optimizers.Evolution;
 using Radiate.NET.Optimizers.Evolution.Engine;
 using Radiate.NET.Optimizers.Evolution.Neat;
 
 namespace Radiate.Net.Examples.Examples
 {
-    public class EvolveDense : IExample
+    public class EvolveNEAT : IExample
     {
         public async Task Run()
         {

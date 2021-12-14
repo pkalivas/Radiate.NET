@@ -10,13 +10,13 @@ namespace Radiate.Net.Examples
         static void Main(string[] args)
         {
             var options = "\n[0] Stop\n" +
-                          "[1] Evolve Dense\n" +
+                          "[1] Evolve NEAT\n" +
                           "[2] Evolve Hello World\n" +
                           "[3] Train MLP Dense\n" +
                           "[4] Train MLP LSTM\n" +
-                          "[5] Boston Housing\n" +
-                          "[6] Dense Neural Net Minst\n" +
-                          "[7] Conv Net Minst\n" +
+                          "[5] Boston Housing Regression\n" +
+                          "[6] Dense Neural Net Mnist\n" +
+                          "[7] Conv Net Mnist\n" +
                           ":: ";
 
             while (true)
@@ -37,7 +37,7 @@ namespace Radiate.Net.Examples
         {
             if (choice == 1)
             {
-                await new EvolveDense().Run();
+                await new EvolveNEAT().Run();
             }
 
             if (choice == 2)

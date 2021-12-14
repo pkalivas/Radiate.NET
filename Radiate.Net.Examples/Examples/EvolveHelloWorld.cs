@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Radiate.Net.Data.Utils;
 using Radiate.NET.Optimizers.Evolution;
 using Radiate.NET.Optimizers.Evolution.Engine;
 
@@ -20,6 +21,7 @@ namespace Radiate.Net.Examples.Examples
 
         public async Task Run()
         {
+            var evolutionEpochs = 500;
             var helloWorld = new HelloWorld();
             var target = new char[12] { 'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '!'};
 
@@ -32,13 +34,16 @@ namespace Radiate.Net.Examples.Examples
 
             var population = new Population(fitnessFunction);
 
+            var progressBar = new ProgressBar(evolutionEpochs);
             var bestMember = await population.Evolve(helloWorld, (member, epoch) =>
             {
-                Console.WriteLine($"{(member.Model as HelloWorld).ToString()}");
-                return epoch == 500 || member.Fitness == 11;
+                var world = member.Model as HelloWorld;
+                var displayString = $"Genome: {world.ToString()} Fitness: {member.Fitness}";
+                progressBar.Tick(displayString);
+                return epoch == evolutionEpochs || member.Fitness == 12;
             });
-            
-            Console.WriteLine($"{(bestMember.Model as HelloWorld).ToString()}");
+
+            Console.WriteLine($"\nFinal Result: {(bestMember.Model as HelloWorld).ToString()} - Fitness: {bestMember.Fitness}");
         }
 
 

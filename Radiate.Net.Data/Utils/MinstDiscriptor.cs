@@ -8,7 +8,7 @@ namespace Radiate.Net.Data.Utils
     {
         public static void Describe(List<float[]> inputs, List<float[]> features)
         {
-            Console.WriteLine($"{String.Join("-", Enumerable.Range(0, 50).Select(_ => ""))}");
+            Console.WriteLine($"{string.Join("-", Enumerable.Range(0, 50).Select(_ => ""))}");
             Console.WriteLine($"Total data points: {inputs.Count}");
             Console.WriteLine($"Label occurances:");
     

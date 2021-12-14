@@ -59,6 +59,7 @@ namespace Radiate.Net.Examples.Examples
 
             var neuralNetwork = new MultiLayerPerceptron(inputSize, outputSize)
                 .AddLayer(new DenseInfo(hiddenLayerSize, Activation.Sigmoid))
+                .AddLayer(new DropoutInfo())
                 .AddLayer(new DenseInfo(hiddenLayerSize, Activation.SoftMax));
 
             var optimizer = new Optimizer(neuralNetwork, Loss.CrossEntropy);

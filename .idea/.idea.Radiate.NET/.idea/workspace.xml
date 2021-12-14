@@ -6,281 +6,25 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c70d7182-2b7f-4d24-be85-a48c258fe615" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/Layers/ConvTests.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/Layers/MaxPoolTests.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/Radiate.NET.UnitTests.csproj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/Tensors/SliceTests.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/Tensors/TensorTests.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/Utils/LayerUtils.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/CoverletSourceRootsMapping" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/FluentAssertions.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/Microsoft.TestPlatform.CommunicationUtilities.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/Microsoft.TestPlatform.CoreUtilities.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/Microsoft.TestPlatform.CrossPlatEngine.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/Microsoft.TestPlatform.PlatformAbstractions.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/Microsoft.TestPlatform.Utilities.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/Microsoft.VisualStudio.CodeCoverage.Shim.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/Microsoft.VisualStudio.TestPlatform.Common.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/Microsoft.VisualStudio.TestPlatform.ObjectModel.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/NUnit3.TestAdapter.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/NUnit3.TestAdapter.pdb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/Newtonsoft.Json.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/NuGet.Frameworks.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/Radiate.NET.UnitTests.deps.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/Radiate.NET.UnitTests.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/Radiate.NET.UnitTests.pdb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/Radiate.NET.UnitTests.runtimeconfig.dev.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/Radiate.NET.UnitTests.runtimeconfig.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/Radiate.NET.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/Radiate.NET.pdb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/System.Configuration.ConfigurationManager.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/System.Security.Cryptography.ProtectedData.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/cs/Microsoft.TestPlatform.CommunicationUtilities.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/cs/Microsoft.TestPlatform.CoreUtilities.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/cs/Microsoft.TestPlatform.CrossPlatEngine.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/cs/Microsoft.VisualStudio.TestPlatform.Common.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/cs/Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/de/Microsoft.TestPlatform.CommunicationUtilities.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/de/Microsoft.TestPlatform.CoreUtilities.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/de/Microsoft.TestPlatform.CrossPlatEngine.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/de/Microsoft.VisualStudio.TestPlatform.Common.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/de/Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/es/Microsoft.TestPlatform.CommunicationUtilities.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/es/Microsoft.TestPlatform.CoreUtilities.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/es/Microsoft.TestPlatform.CrossPlatEngine.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/es/Microsoft.VisualStudio.TestPlatform.Common.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/es/Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/fr/Microsoft.TestPlatform.CommunicationUtilities.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/fr/Microsoft.TestPlatform.CoreUtilities.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/fr/Microsoft.TestPlatform.CrossPlatEngine.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/fr/Microsoft.VisualStudio.TestPlatform.Common.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/fr/Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/it/Microsoft.TestPlatform.CommunicationUtilities.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/it/Microsoft.TestPlatform.CoreUtilities.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/it/Microsoft.TestPlatform.CrossPlatEngine.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/it/Microsoft.VisualStudio.TestPlatform.Common.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/it/Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/ja/Microsoft.TestPlatform.CommunicationUtilities.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/ja/Microsoft.TestPlatform.CoreUtilities.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/ja/Microsoft.TestPlatform.CrossPlatEngine.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/ja/Microsoft.VisualStudio.TestPlatform.Common.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/ja/Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/ko/Microsoft.TestPlatform.CommunicationUtilities.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/ko/Microsoft.TestPlatform.CoreUtilities.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/ko/Microsoft.TestPlatform.CrossPlatEngine.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/ko/Microsoft.VisualStudio.TestPlatform.Common.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/ko/Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/nunit.engine.api.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/nunit.engine.core.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/nunit.engine.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/nunit.framework.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/pl/Microsoft.TestPlatform.CommunicationUtilities.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/pl/Microsoft.TestPlatform.CoreUtilities.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/pl/Microsoft.TestPlatform.CrossPlatEngine.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/pl/Microsoft.VisualStudio.TestPlatform.Common.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/pl/Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/pt-BR/Microsoft.TestPlatform.CommunicationUtilities.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/pt-BR/Microsoft.TestPlatform.CoreUtilities.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/pt-BR/Microsoft.TestPlatform.CrossPlatEngine.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/pt-BR/Microsoft.VisualStudio.TestPlatform.Common.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/pt-BR/Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/ref/Radiate.NET.UnitTests.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/ru/Microsoft.TestPlatform.CommunicationUtilities.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/ru/Microsoft.TestPlatform.CoreUtilities.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/ru/Microsoft.TestPlatform.CrossPlatEngine.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/ru/Microsoft.VisualStudio.TestPlatform.Common.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/ru/Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/runtimes/win/lib/netstandard2.0/System.Security.Cryptography.ProtectedData.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/testcentric.engine.metadata.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/testhost.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/testhost.exe" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/tr/Microsoft.TestPlatform.CommunicationUtilities.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/tr/Microsoft.TestPlatform.CoreUtilities.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/tr/Microsoft.TestPlatform.CrossPlatEngine.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/tr/Microsoft.VisualStudio.TestPlatform.Common.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/tr/Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/xunit.abstractions.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/xunit.assert.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/xunit.core.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/xunit.execution.dotnet.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/zh-Hans/Microsoft.TestPlatform.CommunicationUtilities.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/zh-Hans/Microsoft.TestPlatform.CoreUtilities.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/zh-Hans/Microsoft.TestPlatform.CrossPlatEngine.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/zh-Hans/Microsoft.VisualStudio.TestPlatform.Common.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/zh-Hans/Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/zh-Hant/Microsoft.TestPlatform.CommunicationUtilities.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/zh-Hant/Microsoft.TestPlatform.CoreUtilities.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/zh-Hant/Microsoft.TestPlatform.CrossPlatEngine.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/zh-Hant/Microsoft.VisualStudio.TestPlatform.Common.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/bin/Debug/net5.0/zh-Hant/Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/obj/Debug/net5.0/.NETCoreApp,Version=v5.0.AssemblyAttributes.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/obj/Debug/net5.0/Radiate.NET.UnitTests.AssemblyInfo.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/obj/Debug/net5.0/Radiate.NET.UnitTests.AssemblyInfoInputs.cache" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/obj/Debug/net5.0/Radiate.NET.UnitTests.GeneratedMSBuildEditorConfig.editorconfig" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/obj/Debug/net5.0/Radiate.NET.UnitTests.assets.cache" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/obj/Debug/net5.0/Radiate.NET.UnitTests.csproj.AssemblyReference.cache" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/obj/Debug/net5.0/Radiate.NET.UnitTests.csproj.CopyComplete" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/obj/Debug/net5.0/Radiate.NET.UnitTests.csproj.CoreCompileInputs.cache" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/obj/Debug/net5.0/Radiate.NET.UnitTests.csproj.FileListAbsolute.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/obj/Debug/net5.0/Radiate.NET.UnitTests.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/obj/Debug/net5.0/Radiate.NET.UnitTests.genruntimeconfig.cache" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/obj/Debug/net5.0/Radiate.NET.UnitTests.pdb" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/obj/Debug/net5.0/ref/Radiate.NET.UnitTests.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/obj/Radiate.NET.UnitTests.csproj.nuget.dgspec.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/obj/Radiate.NET.UnitTests.csproj.nuget.g.props" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/obj/Radiate.NET.UnitTests.csproj.nuget.g.targets" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/obj/project.assets.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/obj/project.nuget.cache" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/obj/project.packagespec.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/obj/rider.project.restore.info" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET.sln.DotSettings.user" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Activation/Activation.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Activation/ActivationFunctionFactory.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Activation/ExpSigmoid.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Activation/IActivationFunction.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Activation/Linear.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Activation/ReLU.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Activation/Sigmoid.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Activation/SoftMax.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Activation/Tanh.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Gradients/Adam.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Gradients/Gradient.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Gradients/GradientFactory.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Gradients/GradientInfo.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Gradients/IGradient.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Gradients/SGD.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Loss/CrossEntropy.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Loss/Difference.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Loss/ILossFunction.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Loss/Loss.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Loss/LossFunctionFactory.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Loss/MeanSquaredError.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Loss/NoCostFunction.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Models/Epoch.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Records/Batch.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Records/Cost.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Records/Kernel.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Records/Prediction.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Records/Shape.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Services/BatchService.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Services/FeatureService.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Services/RetrievalService.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Services/ValidationService.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Tensors/SliceGenerator.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Domain/Tensors/Tensor.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/IPopulation.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Optimizer.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Perceptrons/IOptimizer.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Perceptrons/Info/ConvInfo.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Perceptrons/Info/DenseInfo.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Perceptrons/Info/DropoutInfo.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Perceptrons/Info/FlattenInfo.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Perceptrons/Info/LSTMInfo.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Perceptrons/Info/LayerInfo.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Perceptrons/Info/MaxPoolInfo.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Perceptrons/Info/SoftMaxInfo.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Perceptrons/Layers/Conv.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Perceptrons/Layers/Dense.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Perceptrons/Layers/Dropout.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Perceptrons/Layers/Flatten.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Perceptrons/Layers/LSTM.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Perceptrons/Layers/Layer.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Perceptrons/Layers/MaxPool.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Perceptrons/Layers/SoftMax.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Perceptrons/MultiLayerPerceptron.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.Net.Data/DataSets/BostonHousing/Boston.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.Net.Data/DataSets/Minst/test.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.Net.Data/DataSets/Minst/train.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.Net.Data/Minst.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.Net.Data/Models/MinstImage.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.Net.Data/Utils/MinstDiscriptor.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.Net.Data/Utils/ProgressBar.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.Net.Data/bin/Debug/net5.0/DataSets/TempTimeSeries/TempTimeSeries.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.Net.Examples/Examples/BostonRegressioncs.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.Net.Examples/Examples/ConvNetMinst.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.Net.Examples/Examples/EvolveHelloWorld.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.Net.Examples/Examples/NeuralNetDenseMinst.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.Net.Examples/bin/Debug/net5.0/DataSets/BostonHousing/Boston.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.Net.Examples/bin/Debug/net5.0/DataSets/Minst/test.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.Net.Examples/bin/Debug/net5.0/DataSets/Minst/train.gz" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Radiate.Net.Examples/bin/Debug/net5.0/DataSets/TempTimeSeries/TempTimeSeries.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Radiate.NET/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Radiate.NET/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET.sln" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET.sln" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Engine/Delegates/GetParents.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Engine/Delegates/GetParents.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Engine/Delegates/GetSurvivors.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Engine/Delegates/GetSurvivors.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Engine/Delegates/Run.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Engine/Delegates/Run.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Engine/Delegates/Solve.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Engine/Delegates/Solve.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Engine/Enums/ParentPicker.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Engine/Enums/ParentPicker.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Engine/Enums/SurvivorPicker.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Engine/Enums/SurvivorPicker.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Engine/EvolutionEnvironment.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Engine/EvolutionEnvironment.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Engine/Generation.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Engine/Generation.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Engine/Genome.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Engine/Genome.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Engine/Member.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Engine/Member.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Engine/Niche.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Engine/Niche.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Engine/ParentalCriteria/BestInSpecies.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Engine/ParentalCriteria/BestInSpecies.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Engine/ParentalCriteria/BiasedRandom.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Engine/ParentalCriteria/BiasedRandom.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Engine/ParentalCriteria/IParentPicker.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Engine/ParentalCriteria/IParentPicker.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Engine/ParentalCriteria/ParentPickerResolver.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Engine/ParentalCriteria/ParentPickerResolver.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Engine/Population.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Population.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Engine/PopulationSettings.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Engine/PopulationSettings.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Engine/SurvivorCriteria/Fittest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Engine/SurvivorCriteria/Fittest.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Engine/SurvivorCriteria/ISurvivorPicker.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Engine/SurvivorCriteria/ISurvivorPicker.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Engine/SurvivorCriteria/SurvivorPickerResolver.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Engine/SurvivorCriteria/SurvivorPickerResolver.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Models/Neat/Activated.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Neat/Activated.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Models/Neat/Activator.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Models/Neat/Edge.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Neat/Edge.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Models/Neat/EdgeId.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Neat/EdgeId.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Models/Neat/Enums/ActivationFunction.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Models/Neat/Enums/LayerType.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Models/Neat/Enums/NeuronType.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Neat/NeuronType.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Models/Neat/Layers/Dense.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Models/Neat/Layers/ILayer.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Models/Neat/Layers/LSTM.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Models/Neat/Layers/RNN.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Models/Neat/Neat.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Neat/Neat.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Models/Neat/NeatEnvironment.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Neat/NeatEnvironment.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Models/Neat/Neuron.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Neat/Neuron.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Models/Neat/NeuronId.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Neat/NeuronId.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Models/Neat/NeuronLink.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Neat/NeuronLink.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Models/Neat/NodeUpdate.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Neat/NodeUpdate.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Models/Neat/Pending.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Neat/Pending.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Models/Neat/Tracer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Evolution/Neat/Tracer.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Models/Neat/VectorOperations.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/Models/Neat/Wraps/NeatWrap.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Radiate.NET.UnitTests/obj/Debug/net5.0/Radiate.NET.UnitTests.csproj.AssemblyReference.cache" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/obj/Debug/net5.0/Radiate.NET.UnitTests.csproj.AssemblyReference.cache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Radiate.NET.UnitTests/obj/rider.project.restore.info" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET.UnitTests/obj/rider.project.restore.info" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Radiate.NET/Optimizers/Optimizer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/Optimizers/Optimizer.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Radiate.NET/bin/Debug/net5.0/Radiate.NET.dll" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/bin/Debug/net5.0/Radiate.NET.dll" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Radiate.NET/bin/Debug/net5.0/Radiate.NET.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/bin/Debug/net5.0/Radiate.NET.pdb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/bin/Debug/net5.0/ref/Radiate.NET.dll" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/bin/Debug/net5.0/ref/Radiate.NET.dll" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/obj/Debug/net5.0/Radiate.NET.csproj.CoreCompileInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/obj/Debug/net5.0/Radiate.NET.csproj.CoreCompileInputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/obj/Debug/net5.0/Radiate.NET.csproj.FileListAbsolute.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/obj/Debug/net5.0/Radiate.NET.csproj.FileListAbsolute.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Radiate.NET/obj/Debug/net5.0/Radiate.NET.dll" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/obj/Debug/net5.0/Radiate.NET.dll" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Radiate.NET/obj/Debug/net5.0/Radiate.NET.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/obj/Debug/net5.0/Radiate.NET.pdb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.NET/obj/Debug/net5.0/ref/Radiate.NET.dll" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/obj/Debug/net5.0/ref/Radiate.NET.dll" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.Net.Data/DataSets/TempTimeSeries.json" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Data/DataSets/TempTimeSeries/TempTimeSeries.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.Net.Data/IDataSet.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Data/IDataSet.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.Net.Data/Radiate.Net.Data.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Data/Radiate.Net.Data.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.Net.Data/SimpleMemory.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Data/SimpleMemory.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.Net.Data/TempTimeSeries.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.Net.Data/Utils/Utilities.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Data/Utils/Utilities.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.Net.Data/XOR.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Data/XOR.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.Net.Data/bin/Debug/net5.0/DataSets/TempTimeSeries.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Radiate.NET/obj/rider.project.restore.info" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.NET/obj/rider.project.restore.info" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Radiate.Net.Data/Utils/MinstDiscriptor.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Data/Utils/MinstDiscriptor.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Radiate.Net.Data/bin/Debug/net5.0/Radiate.Net.Data.dll" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Data/bin/Debug/net5.0/Radiate.Net.Data.dll" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Radiate.Net.Data/bin/Debug/net5.0/Radiate.Net.Data.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Data/bin/Debug/net5.0/Radiate.Net.Data.pdb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.Net.Data/bin/Debug/net5.0/ref/Radiate.Net.Data.dll" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Data/bin/Debug/net5.0/ref/Radiate.Net.Data.dll" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.Net.Data/obj/Debug/net5.0/Radiate.Net.Data.csproj.AssemblyReference.cache" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Data/obj/Debug/net5.0/Radiate.Net.Data.csproj.AssemblyReference.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.Net.Data/obj/Debug/net5.0/Radiate.Net.Data.csproj.CoreCompileInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Data/obj/Debug/net5.0/Radiate.Net.Data.csproj.CoreCompileInputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.Net.Data/obj/Debug/net5.0/Radiate.Net.Data.csproj.FileListAbsolute.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Data/obj/Debug/net5.0/Radiate.Net.Data.csproj.FileListAbsolute.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Radiate.Net.Data/obj/Debug/net5.0/Radiate.Net.Data.dll" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Data/obj/Debug/net5.0/Radiate.Net.Data.dll" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Radiate.Net.Data/obj/Debug/net5.0/Radiate.Net.Data.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Data/obj/Debug/net5.0/Radiate.Net.Data.pdb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.Net.Data/obj/Debug/net5.0/ref/Radiate.Net.Data.dll" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Data/obj/Debug/net5.0/ref/Radiate.Net.Data.dll" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.Net.Examples/Examples/EvolveDense.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Examples/Examples/EvolveDense.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.Net.Examples/Examples/EvolveLSTM.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.Net.Examples/Examples/EvolveRNN.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.Net.Examples/Examples/TemperatureTimeSeries.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.Net.Examples/Examples/TrainDense.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Examples/Examples/TrainDense.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.Net.Examples/Examples/TrainLSTM.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Examples/Examples/TrainLSTM.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.Net.Examples/Examples/TrainRNN.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Radiate.Net.Data/obj/rider.project.restore.info" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Data/obj/rider.project.restore.info" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Radiate.Net.Examples/Examples/EvolveDense.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Examples/Examples/EvolveNEAT.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Radiate.Net.Examples/Examples/EvolveHelloWorld.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Examples/Examples/EvolveHelloWorld.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Radiate.Net.Examples/Examples/NeuralNetDenseMinst.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Examples/Examples/NeuralNetDenseMinst.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Radiate.Net.Examples/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Examples/Program.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.Net.Examples/bin/Debug/net5.0/DataSets/TempTimeSeries.json" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Radiate.Net.Examples/bin/Debug/net5.0/Radiate.NET.dll" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Examples/bin/Debug/net5.0/Radiate.NET.dll" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Radiate.Net.Examples/bin/Debug/net5.0/Radiate.NET.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Examples/bin/Debug/net5.0/Radiate.NET.pdb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Radiate.Net.Examples/bin/Debug/net5.0/Radiate.Net.Data.dll" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Examples/bin/Debug/net5.0/Radiate.Net.Data.dll" afterDir="false" />
@@ -290,10 +34,10 @@
       <change beforePath="$PROJECT_DIR$/Radiate.Net.Examples/bin/Debug/net5.0/ref/Radiate.Net.Examples.dll" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Examples/bin/Debug/net5.0/ref/Radiate.Net.Examples.dll" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Radiate.Net.Examples/obj/Debug/net5.0/Radiate.Net.Examples.csproj.AssemblyReference.cache" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Examples/obj/Debug/net5.0/Radiate.Net.Examples.csproj.AssemblyReference.cache" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Radiate.Net.Examples/obj/Debug/net5.0/Radiate.Net.Examples.csproj.CoreCompileInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Examples/obj/Debug/net5.0/Radiate.Net.Examples.csproj.CoreCompileInputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Radiate.Net.Examples/obj/Debug/net5.0/Radiate.Net.Examples.csproj.FileListAbsolute.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Examples/obj/Debug/net5.0/Radiate.Net.Examples.csproj.FileListAbsolute.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Radiate.Net.Examples/obj/Debug/net5.0/Radiate.Net.Examples.dll" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Examples/obj/Debug/net5.0/Radiate.Net.Examples.dll" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Radiate.Net.Examples/obj/Debug/net5.0/Radiate.Net.Examples.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Examples/obj/Debug/net5.0/Radiate.Net.Examples.pdb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Radiate.Net.Examples/obj/Debug/net5.0/ref/Radiate.Net.Examples.dll" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Examples/obj/Debug/net5.0/ref/Radiate.Net.Examples.dll" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Radiate.Net.Examples/obj/rider.project.restore.info" beforeDir="false" afterPath="$PROJECT_DIR$/Radiate.Net.Examples/obj/rider.project.restore.info" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -418,7 +162,8 @@
       <workItem from="1638482052961" duration="1192000" />
       <workItem from="1638768067536" duration="12326000" />
       <workItem from="1638797225154" duration="13198000" />
-      <workItem from="1639407259824" duration="37946000" />
+      <workItem from="1639407259824" duration="38402000" />
+      <workItem from="1639497256041" duration="1303000" />
     </task>
     <task id="LOCAL-00001" summary="Adding LSTM and performance improvements. Add Backprop. Add Testing Project.">
       <created>1634918674385</created>
@@ -476,14 +221,7 @@
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/Radiate.NET/Models/Neat/Layers/LSTM.cs</url>
           <line>180</line>
-          <properties documentPath="C:\Users\Peter\Desktop\Radiate.NET\Radiate.NET\Models\Neat\Layers\LSTM.cs" initialLine="179" containingFunctionPresentation="method 'Backward'">
-            <startOffsets>
-              <option value="8837" />
-            </startOffsets>
-            <endOffsets>
-              <option value="8873" />
-            </endOffsets>
-          </properties>
+          <properties documentPath="C:\Users\Peter\Desktop\Radiate.NET\Radiate.NET\Models\Neat\Layers\LSTM.cs" initialLine="179" containingFunctionPresentation="method 'Backward'" />
           <option name="timeStamp" value="2" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">

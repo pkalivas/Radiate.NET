@@ -29,7 +29,7 @@ namespace Radiate.Net.Data.Utils
                 Console.WriteLine("\n");
             }
             
-            var percent = Math.Round((float)_tick / _maxVal * 100, 2);
+            var percent = Math.Round((float)_tick / _maxVal * 100);
             var tickPct = ((float)percent / 100) * _barSize;
             var bar = string.Join("", Enumerable.Range(0, _barSize).Select(val => val <= tickPct? "#" : " "));
             var timeSince = DateTime.Now - _startTime;

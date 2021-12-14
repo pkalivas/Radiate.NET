@@ -63,9 +63,9 @@ namespace Radiate.NET.Optimizers
                     var batchErrors = new List<Cost>();
                     foreach (var (x, y) in inputs.Zip(answers))
                     {
-                        var prediction = _optimizer.PassForward(x).ElementsOneD;
+                        var prediction = _optimizer.PassForward(x).Read1D();
                         
-                        batchErrors.Add(_lossFunction.Calculate(prediction, y.ElementsOneD));
+                        batchErrors.Add(_lossFunction.Calculate(prediction, y.Read1D()));
                         predictions.Add(prediction);
                     }
 
