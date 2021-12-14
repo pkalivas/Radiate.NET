@@ -33,7 +33,7 @@ namespace Radiate.Examples.Examples
             var testTargets = rawLabels.Take(splitIndex).ToList();
 
             var linearRegressor = new MultiLayerPerceptron(inputSize, outputSize)
-                .AddLayer(new DenseInfo(outputSize, Activation.Linear));
+                .AddLayer(new DenseInfo(Activation.Linear));
             
             var optimizer = new Optimizer(linearRegressor, Loss.MSE);
 

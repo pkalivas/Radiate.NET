@@ -38,6 +38,7 @@ namespace Radiate.Examples.Examples
                 return epoch.Count == trainEpochs;
             });
             
+            Console.WriteLine();
             foreach (var (ins, outs) in inputs.Zip(targets))
             {
                 var pred = classifier.Predict(ins);

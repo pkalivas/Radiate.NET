@@ -51,7 +51,7 @@ namespace Radiate.Data.Utils
 
             if (_tick == _maxVal)
             {
-                Console.WriteLine("\n");
+                Console.WriteLine();
             }
         }
     }
