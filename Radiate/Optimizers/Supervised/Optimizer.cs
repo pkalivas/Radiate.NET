@@ -31,8 +31,7 @@ namespace Radiate.Optimizers.Supervised
             _shape = shape;
             _lossFunction = LossFunctionFactory.Get(lossFunction);
         }
-
-
+        
         public async Task<List<Epoch>> Train(List<float[]> features, List<float[]> targets, Func<List<Epoch>, bool> trainFunc) =>
             await Train(features, targets, DefaultBatchSize, trainFunc);
         
