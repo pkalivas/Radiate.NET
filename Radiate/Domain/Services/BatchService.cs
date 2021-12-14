@@ -6,7 +6,7 @@ using Radiate.Domain.Tensors;
 
 namespace Radiate.Domain.Services
 {
-    public class BatchService
+    public static class BatchService
     {
         public static List<Batch> CreateBatches(
             IReadOnlyCollection<float[]> features,

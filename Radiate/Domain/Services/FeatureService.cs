@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Radiate.Domain.Services
 {
-    public class FeatureService
+    public static class FeatureService
     {
         private const float Tolerance = 0.001f;
 

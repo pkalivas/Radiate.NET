@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Radiate.Domain.Services
 {
-    public class ValidationService
+    public static class ValidationService
     {
         public static float ClassificationAccuracy(List<float[]> predictions, List<float[]> targets)
         {

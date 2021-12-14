@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Radiate.Domain.Services
 {
-    public class RetrievalService
+    public static class RetrievalService
     {
         private const int CsvHeaderRows = 1;
         
