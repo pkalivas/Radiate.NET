@@ -18,7 +18,7 @@ namespace Radiate.Examples.Examples
         public async Task Run()
         {
             var trainEpochs = 500;
-            var (inputs, targets) = new SimpleMemory().GetDataSet();
+            var (inputs, targets) = await new SimpleMemory().GetDataSet();
 
             var gradient = new GradientInfo { Gradient = Gradient.Adam };
             

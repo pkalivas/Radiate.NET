@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Radiate.Data
 {
     public class SimpleMemory : IDataSet
     {
-        public (List<float[]> inputs, List<float[]> targets) GetDataSet()
+        public Task<(List<float[]> inputs, List<float[]> targets)> GetDataSet()
         {
             var inputs = new List<float[]>
             {
@@ -28,7 +29,7 @@ namespace Radiate.Data
                 new float[1] { 1 }
             };
 
-            return (inputs, targets);
+            return Task.Run(() => (inputs, targets));
         }
     }
 }

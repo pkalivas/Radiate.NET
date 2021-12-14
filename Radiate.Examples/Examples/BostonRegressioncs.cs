@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Radiate.Data;
 using Radiate.Data.Utils;
 using Radiate.Domain.Activation;
 using Radiate.Domain.Loss;
@@ -17,16 +18,12 @@ namespace Radiate.Examples.Examples
         public async Task Run()
         {
             var splitPct = .75;
-            var learningRate = 0.01f;
-            var hiddenLayerSize = 64;
             var outputSize = 1;
             var maxEpochs = 200;
 
-            var (features, labels) = await Utilities.ReadBostonHousing();
+            var (normalizedInputs, labels) = await new BostonHousing().GetDataSet();
             
-            var splitIndex = (int) (features.Count - (features.Count * splitPct));
-
-            var normalizedInputs = FeatureService.Standardize(features);
+            var splitIndex = (int) (normalizedInputs.Count - (normalizedInputs.Count * splitPct));
             var rawLabels = labels.Select(lab => lab.ToArray()).ToList();
             var inputSize = normalizedInputs.Select(input => input.Length).Distinct().Single();
 

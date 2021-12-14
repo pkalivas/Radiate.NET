@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net5.0</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
         <RootNamespace>Radiate.Data</RootNamespace>
     </PropertyGroup>
 
@@ -10,9 +10,22 @@
     </ItemGroup>
 
     <ItemGroup>
+      <None Update="DataSets\BostonHousing\Boston.csv">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="DataSets\Minst\test.gz">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="DataSets\Minst\train.gz">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
       <None Update="DataSets\TempTimeSeries\TempTimeSeries.json">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Radiate\Radiate.csproj" />
     </ItemGroup>
 
 </Project>

@@ -14,7 +14,7 @@ namespace Radiate.Examples.Examples
     {
         public async Task Run()
         {
-            var (inputs, answers) = new XOR().GetDataSet();
+            var (inputs, answers) = await new XOR().GetDataSet();
 
             var neat = new Neat(2, 1, Activation.ExpSigmoid);
             var popSettings = new PopulationSettings

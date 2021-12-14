@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Radiate.Data;
 using Radiate.Data.Models;
 using Radiate.Data.Utils;
 using Radiate.Domain.Activation;
@@ -11,7 +12,6 @@ using Radiate.Optimizers;
 using Radiate.Optimizers.Supervised;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
-using Radiate.Optimizers.Supervised.Perceptrons.Layers;
 
 namespace Radiate.Examples.Examples
 {
@@ -25,25 +25,12 @@ namespace Radiate.Examples.Examples
             var maxEpochs = 50;
             var batchSize = 50;
 
-            var testFeaturesLocation = $"{Environment.CurrentDirectory}\\DataSets\\Minst\\test.gz";
-            var features = (await Utilities.UnzipGZAndLoad<List<MinstImage>>(testFeaturesLocation))
-                .Take(featureLimit)
-                .ToList();
-            
-            var rawInputs = features
-                .Select(diget => diget.Image.Select(point => (float)point).ToList())
-                .ToList();
-            var rawLabels = features
-                .Select(diget => diget.Label)
-                .ToList();
-
-            var normalizedInputs = FeatureService.Normalize(rawInputs);
-            var indexedLabels = FeatureService.OneHotEncode(rawLabels);
+            var (normalizedInputs, indexedLabels) = await new Mnist(featureLimit).GetDataSet();
 
             var inputSize = normalizedInputs.Select(input => input.Length).Distinct().Single();
             var outputSize = indexedLabels.Select(target => target.Length).Distinct().Single();
 
-            var splitIndex = (int) (features.Count - (features.Count * splitPct));
+            var splitIndex = (int) (normalizedInputs.Count - (normalizedInputs.Count * splitPct));
             var trainFeatures = normalizedInputs.Skip(splitIndex).ToList();
             var trainTargets = indexedLabels.Skip(splitIndex).ToList();
             var testFeatures = normalizedInputs.Take(splitIndex).ToList();
@@ -56,7 +43,7 @@ namespace Radiate.Examples.Examples
             var optimizer = new Optimizer(neuralNetwork, Loss.CrossEntropy);
 
             var progressBar = new ProgressBar(maxEpochs);
-            await optimizer.Train(trainFeatures, trainTargets, 50, (epochs) => 
+            await optimizer.Train(trainFeatures, trainTargets, batchSize, (epochs) => 
             {
                 var currentEpoch = epochs.Last();
                 progressBar.Tick($"Loss: {currentEpoch.Loss} Accuracy: {currentEpoch.ClassificationAccuracy}");

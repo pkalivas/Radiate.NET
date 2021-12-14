@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Radiate.Data;
 using Radiate.Data.Models;
 using Radiate.Data.Utils;
 using Radiate.Domain.Activation;
@@ -27,20 +28,7 @@ namespace Radiate.Examples.Examples
             var maxEpochs = 500;
             var batchSize = 50;
 
-            var testFeaturesLocation = $"{Environment.CurrentDirectory}\\DataSets\\Minst\\test.gz";
-            var features = (await Utilities.UnzipGZAndLoad<List<MinstImage>>(testFeaturesLocation))
-                .Take(featureLimit)
-                .ToList();
-            
-            var rawInputs = features
-                .Select(diget => diget.Image.Select(point => (float)point).ToList())
-                .ToList();
-            var rawLabels = features
-                .Select(diget => diget.Label)
-                .ToList();
-
-            var normalizedInputs = FeatureService.Normalize(rawInputs);
-            var indexedLabels = FeatureService.OneHotEncode(rawLabels);
+            var (normalizedInputs, indexedLabels) = await new Mnist(featureLimit).GetDataSet();
 
             var inputSize = normalizedInputs.Select(input => input.Length).Distinct().Single();
             var outputSize = indexedLabels.Select(target => target.Length).Distinct().Single();
@@ -49,7 +37,7 @@ namespace Radiate.Examples.Examples
             Console.WriteLine("\nTotal Loaded Data:");
             MinstDiscriptor.Describe(normalizedInputs, indexedLabels);
 
-            var splitIndex = (int) (features.Count - (features.Count * splitPct));
+            var splitIndex = (int) (normalizedInputs.Count - (normalizedInputs.Count * splitPct));
             var trainFeatures = normalizedInputs.Skip(splitIndex).ToList();
             var trainTargets = indexedLabels.Skip(splitIndex).ToList();
             var testFeatures = normalizedInputs.Take(splitIndex).ToList();

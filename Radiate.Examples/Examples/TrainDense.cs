@@ -16,7 +16,7 @@ namespace Radiate.Examples.Examples
     {
         public async Task Run()
         {
-            var (inputs, targets) = new XOR().GetDataSet();
+            var (inputs, targets) = await new XOR().GetDataSet();
 
             var gradient = new GradientInfo { Gradient = Gradient.SGD };
             
