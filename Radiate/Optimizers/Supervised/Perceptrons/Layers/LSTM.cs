@@ -24,7 +24,7 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
         {
             var gateInputSize = shape.Height + shape.Width;
 
-            var gateShape = new Shape(gateInputSize, shape.Width, 0);
+            var gateShape = new Shape(gateInputSize, shape.Width);
             _cellActivation = cellActivation;
             _hiddenActivation = hiddenActivation;
             _inputGate = new Dense(gateShape, new Sigmoid());

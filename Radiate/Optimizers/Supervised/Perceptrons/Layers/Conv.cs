@@ -17,8 +17,8 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
         private readonly Stack<Tensor> _inputs;
         private readonly Tensor[] _filters;
         private readonly Tensor[] _filterGradients;
-        private Tensor _bias;
-        private Tensor _biasGradients;
+        private readonly Tensor _bias;
+        private readonly Tensor _biasGradients;
         
         public Conv(Shape shape, Kernel kernel, int stride, IActivationFunction activation) : base(shape)
         {
@@ -28,12 +28,12 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
             _activation = activation;
             _kernel = kernel;
             _sliceGenerator = new SliceGenerator(_kernel, depth, stride);
-            _outputs = new();
-            _inputs = new();
+            _outputs = new Stack<Tensor>();
+            _inputs = new Stack<Tensor>();
             _filters = new Tensor[count];
             _filterGradients = new Tensor[count];
-            _bias = Tensor.Fill(new Shape(count, 0, 0), 0f);
-            _biasGradients = Tensor.Fill(new Shape(count, 0, 0), 0f);
+            _bias = Tensor.Fill(new Shape(count), 0f);
+            _biasGradients = Tensor.Fill(new Shape(count), 0f);
 
             for (var i = 0; i < count; i++)
             {
@@ -120,7 +120,6 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
                 
             }
 
-            // return output;
             return _activation.Activate(output);
         }
         

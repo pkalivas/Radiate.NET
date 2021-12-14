@@ -17,7 +17,7 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
         public MaxPool(Shape shape, Kernel kernel, int stride) : base(shape)
         {
             _kernel = kernel;
-            _inputs = new();
+            _inputs = new Stack<Tensor>();
             _gradients = Tensor.Fill(shape, 0f);
             _stride = stride;
             _sliceGenerator = new SliceGenerator(kernel, shape.Depth, stride);

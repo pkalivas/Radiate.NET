@@ -20,7 +20,7 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
         public SoftMax(Shape shape) : base(shape)
         {
             _weights = Tensor.Random2D(shape.Width, shape.Height);
-            _bias = Tensor.Fill(new Shape(shape.Width, 0, 0), 0); 
+            _bias = Tensor.Fill(new Shape(shape.Width), 0); 
             _inputs = new Stack<Tensor>();
             _outputs = new Stack<Tensor>();
             _weightGradients = new float[shape.Width, shape.Height].ToTensor();
