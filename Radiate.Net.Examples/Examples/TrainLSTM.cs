@@ -1,47 +1,56 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Radiate.Net.Data;
 using Radiate.Net.Data.Utils;
+using Radiate.NET.Domain.Activation;
+using Radiate.NET.Domain.Gradients;
+using Radiate.NET.Domain.Loss;
 using Radiate.NET.Enums;
-using Radiate.NET.Models.Neat;
-using Radiate.NET.Models.Neat.Enums;
-using Radiate.NET.Models.Neat.Layers;
+using Radiate.NET.Optimizers;
+using Radiate.NET.Optimizers.Evolution.Neat;
+using Radiate.NET.Optimizers.Perceptrons;
+using Radiate.NET.Optimizers.Perceptrons.Info;
 
 namespace Radiate.Net.Examples.Examples
 {
     public class TrainLSTM : IExample
     {
-        public Task Run()
+        public async Task Run()
         {
-            var (inputs, target) = new SimpleMemory().GetDataSet();
-            
-            var neat = new Neat()
-                .SetBatchSize(inputs.Count)
-                .SetLossFunction(LossFunction.Difference)
-                .AddLayer(new LSTM(1, 1, 32, ActivationFunction.Sigmoid));
+            var trainEpochs = 500;
+            var (inputs, targets) = new SimpleMemory().GetDataSet();
 
-            neat.Train(inputs, target, .01f, (epoch, loss) =>
+            var gradient = new GradientInfo { Gradient = Gradient.Adam };
+            
+            var mlp = new MultiLayerPerceptron(1, 1)
+                .AddLayer(new LSTMInfo(16, 16))
+                .AddLayer(new DenseInfo(16, Activation.Sigmoid));
+            
+            var classifier = new Optimizer(mlp, Loss.MSE, gradient);
+            
+            var batchSize = targets.Count;
+            var progressBar = new ProgressBar(trainEpochs);
+            await classifier.Train(inputs, targets, batchSize, (epoch) =>
             {
-                Console.WriteLine($"{epoch} - {loss}");
-                return epoch == 500;
+                var current = epoch.Last();
+                var displayString = $"Loss: {current.Loss} Accuracy: {current.RegressionAccuracy}";
+                progressBar.Tick(displayString);
+                return epoch.Count == trainEpochs;
             });
             
-            neat.ResetGenome();
-
-            foreach (var (point, idx) in inputs.Select((val, idx) => (val, idx)))
+            foreach (var (ins, outs) in inputs.Zip(targets))
             {
-                var output = neat.Forward(point);
-                Console.WriteLine($"Input {point[0]} Expecting {target[idx][0]} Guess {output[0]}");
+                var pred = classifier.Predict(ins);
+                Console.WriteLine($"Input {ins[0]} Expecting {outs[0]} Guess {pred.Confidence}");
             }
             
             Console.WriteLine("\nTesting Memory...");
-            Console.WriteLine($"Input {1f} Expecting {0f} Guess {neat.Forward(new(){ 1f })[0]}");
-            Console.WriteLine($"Input {0f} Expecting {0f} Guess {neat.Forward(new(){ 0f })[0]}");
-            Console.WriteLine($"Input {0f} Expecting {0f} Guess {neat.Forward(new(){ 0f })[0]}");
-            Console.WriteLine($"Input {0f} Expecting {1f} Guess {neat.Forward(new(){ 0f })[0]}");
-            
-            return Task.CompletedTask;
+            Console.WriteLine($"Input {1f} Expecting {0f} Guess {classifier.Predict(new float[1] { 1 }).Confidence}");
+            Console.WriteLine($"Input {0f} Expecting {0f} Guess {classifier.Predict(new float[1] { 0 }).Confidence}");
+            Console.WriteLine($"Input {0f} Expecting {0f} Guess {classifier.Predict(new float[1] { 0 }).Confidence}");
+            Console.WriteLine($"Input {0f} Expecting {1f} Guess {classifier.Predict(new float[1] { 0 }).Confidence}");
         }
     }
 }

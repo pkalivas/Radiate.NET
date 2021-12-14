@@ -1,28 +1,45 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace Radiate.Net.Data.Utils
 {
     public static class Utilities
     {
-        public static (List<List<float>> inputs, List<List<float>> targets) Layer(List<List<float>> ins, List<List<float>> outs, int size)
+        public static async Task<(List<List<float>>, List<List<float>>)> ReadBostonHousing()
         {
-            var inputs = new List<List<float>>();
-            var targets = new List<List<float>>();
+            var fileName = $"{Environment.CurrentDirectory}\\DataSets\\BostonHousing\\Boston.csv";
+            var contents = await File.ReadAllTextAsync(fileName);
 
-            for (var i = size; i < ins.Count; i++)
+            var features = new List<List<float>>();
+            var labels = new List<List<float>>();
+            foreach (var row in contents.Split("\n").Skip(1))
             {
-                var tempIn = new List<float>();
-                var tempOut = new List<float>();
-                for (var j = 0; j < size; j++)
-                {
-                    tempIn.AddRange(ins[i - j]);
-                }
-                
-                inputs.Add(tempIn);
-                targets.Add(outs[i]);
+                var columns = row
+                    .Split(",")
+                    .Skip(1)
+                    .Select(Convert.ToSingle)
+                    .ToList();
+
+                features.Add(columns.Take(columns.Count - 1).ToList());
+                labels.Add(columns.Skip(columns.Count - 1).ToList());
             }
 
-            return (inputs, targets);
+            return (features, labels);
+        }
+        
+        public static async Task<T> UnzipGZAndLoad<T>(string filePath)
+        {
+            await using var fileStream = File.OpenRead(filePath);
+            await using var zippedStream = new GZipStream(fileStream, CompressionMode.Decompress);
+            
+            using var jsonReader = new JsonTextReader(new StreamReader(zippedStream));
+
+            return JsonSerializer.CreateDefault().Deserialize<T>(jsonReader);
         }
     }
 }

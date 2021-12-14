@@ -4,7 +4,7 @@ namespace Radiate.Net.Data
 {
     public interface IDataSet
     {
-        (List<List<float>> inputs, List<List<float>> targets) GetDataSet();
+        (List<float[]> inputs, List<float[]> targets) GetDataSet();
 
     }
 }

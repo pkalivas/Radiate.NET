@@ -9,7 +9,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="DataSets\TempTimeSeries.json">
+      <None Update="DataSets\TempTimeSeries\TempTimeSeries.json">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>

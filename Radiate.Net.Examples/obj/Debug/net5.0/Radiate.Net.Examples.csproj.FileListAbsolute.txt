@@ -1,3 +1,4 @@
+C:\Users\Peter\Desktop\Radiate.NET\Radiate.Net.Examples\bin\Debug\net5.0\DataSets\TempTimeSeries\TempTimeSeries.json
 C:\Users\Peter\Desktop\Radiate.NET\Radiate.Net.Examples\bin\Debug\net5.0\Radiate.Net.Examples.exe
 C:\Users\Peter\Desktop\Radiate.NET\Radiate.Net.Examples\bin\Debug\net5.0\Radiate.Net.Examples.deps.json
 C:\Users\Peter\Desktop\Radiate.NET\Radiate.Net.Examples\bin\Debug\net5.0\Radiate.Net.Examples.runtimeconfig.json
@@ -20,4 +21,3 @@ C:\Users\Peter\Desktop\Radiate.NET\Radiate.Net.Examples\obj\Debug\net5.0\Radiate
 C:\Users\Peter\Desktop\Radiate.NET\Radiate.Net.Examples\obj\Debug\net5.0\ref\Radiate.Net.Examples.dll
 C:\Users\Peter\Desktop\Radiate.NET\Radiate.Net.Examples\obj\Debug\net5.0\Radiate.Net.Examples.pdb
 C:\Users\Peter\Desktop\Radiate.NET\Radiate.Net.Examples\obj\Debug\net5.0\Radiate.Net.Examples.genruntimeconfig.cache
-C:\Users\Peter\Desktop\Radiate.NET\Radiate.Net.Examples\bin\Debug\net5.0\DataSets\TempTimeSeries.json

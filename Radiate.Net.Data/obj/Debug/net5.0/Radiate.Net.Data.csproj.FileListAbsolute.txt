@@ -1,3 +1,4 @@
+C:\Users\Peter\Desktop\Radiate.NET\Radiate.Net.Data\bin\Debug\net5.0\DataSets\TempTimeSeries\TempTimeSeries.json
 C:\Users\Peter\Desktop\Radiate.NET\Radiate.Net.Data\bin\Debug\net5.0\Radiate.Net.Data.deps.json
 C:\Users\Peter\Desktop\Radiate.NET\Radiate.Net.Data\bin\Debug\net5.0\Radiate.Net.Data.dll
 C:\Users\Peter\Desktop\Radiate.NET\Radiate.Net.Data\bin\Debug\net5.0\ref\Radiate.Net.Data.dll
@@ -10,4 +11,3 @@ C:\Users\Peter\Desktop\Radiate.NET\Radiate.Net.Data\obj\Debug\net5.0\Radiate.Net
 C:\Users\Peter\Desktop\Radiate.NET\Radiate.Net.Data\obj\Debug\net5.0\Radiate.Net.Data.dll
 C:\Users\Peter\Desktop\Radiate.NET\Radiate.Net.Data\obj\Debug\net5.0\ref\Radiate.Net.Data.dll
 C:\Users\Peter\Desktop\Radiate.NET\Radiate.Net.Data\obj\Debug\net5.0\Radiate.Net.Data.pdb
-C:\Users\Peter\Desktop\Radiate.NET\Radiate.Net.Data\bin\Debug\net5.0\DataSets\TempTimeSeries.json

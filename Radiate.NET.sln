@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Radiate.Net.Examples", "Rad
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Radiate.Net.Data", "Radiate.Net.Data\Radiate.Net.Data.csproj", "{5B8D87F3-C66E-4290-8CD6-BFA3B11C68B3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Radiate.NET.UnitTests", "Radiate.NET.UnitTests\Radiate.NET.UnitTests.csproj", "{57681567-9E39-4FF4-A355-518B86D276D5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{5B8D87F3-C66E-4290-8CD6-BFA3B11C68B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5B8D87F3-C66E-4290-8CD6-BFA3B11C68B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5B8D87F3-C66E-4290-8CD6-BFA3B11C68B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57681567-9E39-4FF4-A355-518B86D276D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57681567-9E39-4FF4-A355-518B86D276D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57681567-9E39-4FF4-A355-518B86D276D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57681567-9E39-4FF4-A355-518B86D276D5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

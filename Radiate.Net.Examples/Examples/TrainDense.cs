@@ -1,32 +1,38 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Radiate.Net.Data;
-using Radiate.NET.Models.Neat;
-using Radiate.NET.Models.Neat.Enums;
-using Radiate.NET.Models.Neat.Layers;
+using Radiate.NET.Domain.Activation;
+using Radiate.NET.Domain.Gradients;
+using Radiate.NET.Domain.Loss;
+using Radiate.NET.Optimizers;
+using Radiate.NET.Optimizers.Perceptrons;
+using Radiate.NET.Optimizers.Perceptrons.Info;
 
 namespace Radiate.Net.Examples.Examples
 {
     public class TrainDense : IExample
     {
-        public Task Run()
+        public async Task Run()
         {
-            var (inputs, target) = new XOR().GetDataSet();
+            var (inputs, targets) = new XOR().GetDataSet();
+
+            var gradient = new GradientInfo { Gradient = Gradient.SGD };
             
-            var neat = new Neat()
-                .AddLayer(new Dense(2, 16, ActivationFunction.ReLU))
-                .AddLayer(new Dense(16, 1, ActivationFunction.Sigmoid));
-
-            neat.Train(inputs, target, .1f, (epoch, loss) => epoch == 200);
-
-            foreach (var (point, idx) in inputs.Select((val, idx) => (val, idx)))
+            var mlp = new MultiLayerPerceptron(2, 1)
+                .AddLayer(new DenseInfo(32, Activation.ReLU))
+                .AddLayer(new DenseInfo(32, Activation.Sigmoid));
+            
+            var classifier = new Optimizer(mlp, Loss.MSE, gradient);
+            
+            await classifier.Train(inputs, targets, (epoch) => epoch.Count == 500);
+            
+            foreach (var (ins, outs) in inputs.Zip(targets))
             {
-                var output = neat.Forward(point);
-                Console.WriteLine($"Input ({point[0]} {point[1]}) output ({output[0]} answer ({target[idx][0]})");
+                var pred = classifier.Predict(ins);
+                Console.WriteLine($"Answer {outs[0]} Confidence {pred.Confidence}");
             }
-
-            return Task.CompletedTask;
         }
     }
 }

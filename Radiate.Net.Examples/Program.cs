@@ -11,12 +11,12 @@ namespace Radiate.Net.Examples
         {
             var options = "\n[0] Stop\n" +
                           "[1] Evolve Dense\n" +
-                          "[2] Evolve LSTM\n" +
-                          "[3] Evolve RNN\n" +
-                          "[4] Train Dense\n" +
-                          "[5] Train LSTM\n" +
-                          "[6] Train RNN\n" +
-                          "[7] Temperature Time Series\n" +
+                          "[2] Evolve Hello World\n" +
+                          "[3] Train MLP Dense\n" +
+                          "[4] Train MLP LSTM\n" +
+                          "[5] Boston Housing\n" +
+                          "[6] Dense Neural Net Minst\n" +
+                          "[7] Conv Net Minst\n" +
                           ":: ";
 
             while (true)
@@ -35,9 +35,6 @@ namespace Radiate.Net.Examples
 
         private static async Task Dispatch(int choice)
         {
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-            
             if (choice == 1)
             {
                 await new EvolveDense().Run();
@@ -45,36 +42,33 @@ namespace Radiate.Net.Examples
 
             if (choice == 2)
             {
-                await new EvolveLSTM().Run();
+                await new EvolveHelloWorld().Run();
             }
 
             if (choice == 3)
             {
-                await new EvolveRNN().Run();
+                await new TrainDense().Run();
             }
 
             if (choice == 4)
             {
-                await new TrainDense().Run();
+                await new TrainLSTM().Run();
             }
 
             if (choice == 5)
             {
-                await new TrainLSTM().Run();
+                await new BostonRegression().Run();
             }
 
             if (choice == 6)
             {
-                await new TrainRNN().Run();
+                await new NeuralNetDenseMinst().Run();
             }
 
             if (choice == 7)
             {
-                await new TemperatureTimeSeries().Run();
+                await new ConvNetMinst().Run();
             }
-            
-            stopwatch.Stop();
-            Console.WriteLine($"Finished in {stopwatch.ElapsedMilliseconds} milliseconds.");
         }
     }
 }
