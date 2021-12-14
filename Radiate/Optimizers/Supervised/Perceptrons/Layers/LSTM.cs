@@ -66,7 +66,7 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
             var dx = (iE + fE + oE + gE).Read1D();
 
             var cellGrad = dS * current.ForgetOut;
-            var hiddenGrad = dx.Skip(Shape.Height).Take(Shape.Width).ToArray();
+            var hiddenGrad = dx.Skip(Shape.Height).Take(Shape.Width);
 
             current.CellGradient = cellGrad;
             current.HiddenGradient = hiddenGrad.ToTensor();
@@ -94,9 +94,7 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
 
         private Tensor OperateGates(Tensor input, LSTMCell prevCell)
         {
-            var cellInput = input.Read1D().Concat(prevCell.Hidden.Read1D())
-                .ToArray()
-                .ToTensor();
+            var cellInput = input.Read1D().Concat(prevCell.Hidden.Read1D()).ToTensor();
 
             var gOut = _gateGate.FeedForward(cellInput);
             var iOut = _inputGate.FeedForward(cellInput);
