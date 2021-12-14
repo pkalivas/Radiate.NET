@@ -6,11 +6,11 @@ using Radiate.Domain.Activation;
 using Radiate.Domain.Gradients;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
-using Radiate.Optimizers.Perceptrons.Info;
-using Radiate.Optimizers.Perceptrons.Layers;
-using SoftMax = Radiate.Optimizers.Perceptrons.Layers.SoftMax;
+using Radiate.Optimizers.Supervised.Perceptrons.Info;
+using Radiate.Optimizers.Supervised.Perceptrons.Layers;
+using SoftMax = Radiate.Optimizers.Supervised.Perceptrons.Layers.SoftMax;
 
-namespace Radiate.Optimizers.Perceptrons
+namespace Radiate.Optimizers.Supervised.Perceptrons
 {
 public class MultiLayerPerceptron : IOptimizer
     {

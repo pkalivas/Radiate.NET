@@ -8,8 +8,9 @@ using Radiate.Domain.Activation;
 using Radiate.Domain.Loss;
 using Radiate.Domain.Services;
 using Radiate.Optimizers;
-using Radiate.Optimizers.Perceptrons;
-using Radiate.Optimizers.Perceptrons.Info;
+using Radiate.Optimizers.Supervised;
+using Radiate.Optimizers.Supervised.Perceptrons;
+using Radiate.Optimizers.Supervised.Perceptrons.Info;
 
 namespace Radiate.Examples.Examples
 {
@@ -40,21 +41,12 @@ namespace Radiate.Examples.Examples
 
             var inputSize = normalizedInputs.Select(input => input.Length).Distinct().Single();
             var outputSize = indexedLabels.Select(target => target.Length).Distinct().Single();
-            
-            Console.WriteLine($"Input size: {inputSize}\nOutput size: {outputSize}");
-            Console.WriteLine("\nTotal Loaded Data:");
-            MinstDiscriptor.Describe(normalizedInputs, indexedLabels);
 
             var splitIndex = (int) (features.Count - (features.Count * splitPct));
             var trainFeatures = normalizedInputs.Skip(splitIndex).ToList();
             var trainTargets = indexedLabels.Skip(splitIndex).ToList();
             var testFeatures = normalizedInputs.Take(splitIndex).ToList();
             var testTargets = indexedLabels.Take(splitIndex).ToList();
-
-            Console.WriteLine("Training Data:");
-            MinstDiscriptor.Describe(trainFeatures, trainTargets);
-            Console.WriteLine("\nTesting Data:");
-            MinstDiscriptor.Describe(testFeatures, testTargets);
 
             var neuralNetwork = new MultiLayerPerceptron(inputSize, outputSize)
                 .AddLayer(new DenseInfo(hiddenLayerSize, Activation.Sigmoid))
@@ -63,7 +55,6 @@ namespace Radiate.Examples.Examples
 
             var optimizer = new Optimizer(neuralNetwork, Loss.CrossEntropy);
 
-            Console.WriteLine("\n\n");
             var progressBar = new ProgressBar(maxEpochs);
             await optimizer.Train(trainFeatures, trainTargets, (epochs) => 
             {

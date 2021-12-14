@@ -1,6 +1,6 @@
 ﻿using Radiate.Domain.Activation;
 
-namespace Radiate.Optimizers.Perceptrons.Info
+namespace Radiate.Optimizers.Supervised.Perceptrons.Info
 {
     public class LSTMInfo : LayerInfo
     {

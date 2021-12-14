@@ -8,9 +8,8 @@ using Radiate.Domain.Models;
 using Radiate.Domain.Records;
 using Radiate.Domain.Services;
 using Radiate.Domain.Tensors;
-using Radiate.Optimizers.Perceptrons;
 
-namespace Radiate.Optimizers
+namespace Radiate.Optimizers.Supervised
 {
     public class Optimizer
     {

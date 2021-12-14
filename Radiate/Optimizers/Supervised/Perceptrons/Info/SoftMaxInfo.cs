@@ -1,4 +1,4 @@
-﻿namespace Radiate.Optimizers.Perceptrons.Info
+﻿namespace Radiate.Optimizers.Supervised.Perceptrons.Info
 {
     public class SoftMaxInfo : LayerInfo
     {

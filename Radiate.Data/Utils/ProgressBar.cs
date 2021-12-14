@@ -37,7 +37,7 @@ namespace Radiate.Data.Utils
 
             var iterTime = iterationTime.Seconds >= 1 ? $"{iterationTime.Seconds}s" : $"{iterationTime.Milliseconds}ms";
             
-            var display = $"[{_tick}] " +
+            var display = $" [{_tick}] " +
                 $"{timeSince.Hours}:{timeSince.Minutes}:{timeSince.Seconds}:{timeSince.Milliseconds} " +
                 $"{iterTime}/iter {percent}% [{bar}] - "+
                 $"{displayString}";

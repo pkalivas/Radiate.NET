@@ -1,7 +1,7 @@
 ﻿using Radiate.Domain.Activation;
 using Radiate.Domain.Records;
 
-namespace Radiate.Optimizers.Perceptrons.Info
+namespace Radiate.Optimizers.Supervised.Perceptrons.Info
 {
     public class ConvInfo : LayerInfo
     {

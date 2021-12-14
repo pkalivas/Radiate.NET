@@ -2,7 +2,7 @@
 using Radiate.Domain.Gradients;
 using Radiate.Domain.Tensors;
 
-namespace Radiate.Optimizers.Perceptrons
+namespace Radiate.Optimizers.Supervised
 {
     public interface IOptimizer
     {

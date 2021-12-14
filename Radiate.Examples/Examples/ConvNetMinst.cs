@@ -10,8 +10,9 @@ using Radiate.Domain.Loss;
 using Radiate.Domain.Records;
 using Radiate.Domain.Services;
 using Radiate.Optimizers;
-using Radiate.Optimizers.Perceptrons;
-using Radiate.Optimizers.Perceptrons.Info;
+using Radiate.Optimizers.Supervised;
+using Radiate.Optimizers.Supervised.Perceptrons;
+using Radiate.Optimizers.Supervised.Perceptrons.Info;
 
 namespace Radiate.Examples.Examples
 {

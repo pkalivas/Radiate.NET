@@ -3,7 +3,7 @@ using Radiate.Domain.Gradients;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
 
-namespace Radiate.Optimizers.Perceptrons.Layers
+namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
 {
     public class Flatten : Layer
     {

@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using Radiate.Optimizers.Perceptrons.Layers;
+using Radiate.Optimizers.Supervised.Perceptrons.Layers;
 using Radiate.UnitTests.Utils;
 using Xunit;
 
