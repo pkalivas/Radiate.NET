@@ -7,10 +7,11 @@ namespace Radiate.Domain.Tensors
 {
  public class Tensor
     {
-        public static int seed = 0;
-        public float[] ElementsOneD { get; set; }
-        public float[,] ElementsTwoD { get; set; }
-        public float[,,] ElementsThreeD { get; set; }
+        private static int seed = 0;
+        
+        private float[] ElementsOneD { get; set; }
+        private float[,] ElementsTwoD { get; set; }
+        private float[,,] ElementsThreeD { get; set; }
         private Shape _shape { get; set; }
         
         public Tensor(float[] elements)

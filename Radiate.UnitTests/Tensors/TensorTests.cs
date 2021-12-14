@@ -33,5 +33,11 @@ namespace Radiate.UnitTests.Tensors
             twoMax.Should().Be(5);
             oneMax.Should().Be(5);
         }
+
+        [Fact]
+        public void Tensor_Summatory_Test()
+        {
+            
+        }
     }
 }

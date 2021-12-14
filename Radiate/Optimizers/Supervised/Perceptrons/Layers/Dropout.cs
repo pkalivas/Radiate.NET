@@ -21,7 +21,7 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
         public override Tensor Predict(Tensor input) => input;
 
         public override Tensor FeedForward(Tensor input) =>
-            input.ElementsOneD
+            input.Read1D()
                 .Select(ins => _random.NextDouble() < _dropoutRate ? 0 : ins)
                 .ToArray()
                 .ToTensor();

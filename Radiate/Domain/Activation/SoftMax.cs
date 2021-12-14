@@ -11,9 +11,9 @@ namespace Radiate.Domain.Activation
         
         public Tensor Activate(Tensor values)
         {
-            var expSum = values.ElementsOneD.Sum(val => (float)Math.Exp(val));
+            var expSum = values.Read1D().Sum(val => (float)Math.Exp(val));
             
-            return values.ElementsOneD
+            return values.Read1D()
                 .Select(val => (float)Math.Exp(val) / expSum)
                 .ToArray()
                 .ToTensor();
@@ -21,28 +21,28 @@ namespace Radiate.Domain.Activation
 
         public Tensor Deactivate(Tensor values)
         {
-            var diagMatrix = values.ElementsOneD
+            var diagMatrix = values.Read1D()
                 .Select((val, idx) => Enumerable
-                    .Range(0, values.ElementsOneD.Length)
+                    .Range(0, values.Read1D().Length)
                     .Select(num => num == idx ? val : 0)
                     .ToArray())
                 .ToArray();
             
-            var tiledMatrix = values.ElementsOneD
+            var tiledMatrix = values.Read1D()
                 .Select(val => Enumerable
-                    .Range(0, values.ElementsOneD.Length)
+                    .Range(0, values.Read1D().Length)
                     .Select(_ => val)
                     .ToArray())
                 .ToArray();
             
-            var transposedMatrix = values.ElementsOneD
-                .Select(_ => values.ElementsOneD.Select(val => val).ToArray())
+            var transposedMatrix = values.Read1D()
+                .Select(_ => values.Read1D().Select(val => val).ToArray())
                 .ToArray();
             
-            var result = new float[values.ElementsOneD.Length];
-            for (var i = 0; i < values.ElementsOneD.Length; i++)
+            var result = new float[values.Read1D().Length];
+            for (var i = 0; i < values.Read1D().Length; i++)
             {
-                for (var j = 0; j < values.ElementsOneD.Length; j++)
+                for (var j = 0; j < values.Read1D().Length; j++)
                 {
                     result[i] += diagMatrix[j][i] - (tiledMatrix[j][i] * transposedMatrix[j][i]);
                 }

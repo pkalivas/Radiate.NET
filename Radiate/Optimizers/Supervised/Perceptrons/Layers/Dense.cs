@@ -14,11 +14,10 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
         private readonly IActivationFunction _activation;
         private readonly Stack<Tensor> _inputs;
         private readonly Stack<Tensor> _outputs;
-
         private readonly Tensor _weights;
         private readonly Tensor _bias;
-        private Tensor _weightGradients;
-        private Tensor _biasGradients;
+        private readonly Tensor _weightGradients;
+        private readonly Tensor _biasGradients;
 
         
         public Dense(Shape shape, IActivationFunction activation) : base(shape)
@@ -47,7 +46,7 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
             var result = new float[Shape.Width].ToTensor();
             for (var i = 0; i < Shape.Width; i++)
             {
-                result[i] = _bias[i] + input.ElementsOneD
+                result[i] = _bias[i] + input.Read1D()
                     .Select((inVal, idx) => _weights[i, idx] * inVal)
                     .Sum();
             }
@@ -67,7 +66,7 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
 
         public override Tensor PassBackward(Tensor pass)
         {
-            var errors = pass.ElementsOneD;
+            var errors = pass.Read1D();
             if (errors.Length != Shape.Width)
             {
                 throw new Exception($"Error shape of {errors.Length} does not match Dense layer {Shape}.");

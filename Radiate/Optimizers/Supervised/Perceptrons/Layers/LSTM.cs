@@ -39,7 +39,7 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
         {
             var prevCell = _forwardTrack.Pop();
 
-            var cellInput = input.ElementsOneD.Concat(prevCell.Hidden.ElementsOneD)
+            var cellInput = input.Read1D().Concat(prevCell.Hidden.Read1D())
                 .ToArray()
                 .ToTensor();
 
@@ -70,7 +70,7 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
         {
             var prevCell = _forwardTrack.Peek();
 
-            var cellInput = input.ElementsOneD.Concat(prevCell.Hidden.ElementsOneD)
+            var cellInput = input.Read1D().Concat(prevCell.Hidden.Read1D())
                 .ToArray()
                 .ToTensor();
 
@@ -121,7 +121,7 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
             var oE = _outputGate.PassBackward(dOutput);
             var gE = _gateGate.PassBackward(dGate);
 
-            var dx = (iE + fE + oE + gE).ElementsOneD;
+            var dx = (iE + fE + oE + gE).Read1D();
 
             var cellGrad = dS * current.ForgetOut;
             var hiddenGrad = dx.Skip(Shape.Height).Take(Shape.Width).ToArray();

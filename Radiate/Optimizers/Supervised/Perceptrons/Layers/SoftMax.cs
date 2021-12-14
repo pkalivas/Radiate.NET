@@ -14,8 +14,8 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
         private readonly Stack<Tensor> _outputs;
         private readonly Tensor _weights;
         private readonly Tensor _bias;
-        private Tensor _weightGradients;
-        private Tensor _biasGradients;
+        private readonly Tensor _weightGradients;
+        private readonly Tensor _biasGradients;
         
         public SoftMax(Shape shape) : base(shape)
         {
@@ -42,7 +42,7 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
             var dotProduct = new float[Shape.Width].ToTensor();
             for (var i = 0; i < Shape.Width; i++)
             {
-                dotProduct[i] = _bias[i] + input.ElementsOneD
+                dotProduct[i] = _bias[i] + input.Read1D()
                     .Select((inVal, idx) => _weights[i, idx] * inVal)
                     .Sum();
 
@@ -50,7 +50,7 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
             }
             
             var result = new float[Shape.Width].ToTensor();
-            for (var i = 0; i < dotProduct.ElementsOneD.Length; i++)
+            for (var i = 0; i < dotProduct.Read1D().Length; i++)
             {
                 result[i] /= expTotal;
             }
@@ -65,7 +65,7 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
             var dotProduct = new float[Shape.Width].ToTensor();
             for (var i = 0; i < Shape.Width; i++)
             {
-                dotProduct[i] = _bias[i] + input.ElementsOneD
+                dotProduct[i] = _bias[i] + input.Read1D()
                     .Select((inVal, idx) => _weights[i, idx] * inVal)
                     .Sum();
 
@@ -73,7 +73,7 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
             }
             
             var result = new float[Shape.Width].ToTensor();
-            for (var i = 0; i < dotProduct.ElementsOneD.Length; i++)
+            for (var i = 0; i < dotProduct.Read1D().Length; i++)
             {
                 result[i] = (float)Math.Exp(dotProduct[i]) / expTotal;
             }
@@ -81,9 +81,9 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
             _inputs.Push(pass);
             _outputs.Push(dotProduct);
             
-            var expSum = dotProduct.ElementsOneD.Sum(val => (float)Math.Pow(Math.E, val));
+            var expSum = dotProduct.Read1D().Sum(val => (float)Math.Pow(Math.E, val));
             
-            return dotProduct.ElementsOneD
+            return dotProduct.Read1D()
                 .Select(val => (float)Math.Pow(Math.E, val) / expSum)
                 .ToArray()
                 .ToTensor();
@@ -94,12 +94,12 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
         public override Tensor PassBackward(Tensor pass)
         {
             var oneD = pass.Read1D();
-            var error = pass.ElementsOneD.Single(p => p != 0);
+            var error = pass.Read1D().Single(p => p != 0);
             var previousOut = _outputs.Pop();
             var previousIn = _inputs.Pop();
             
 
-            var prevExp = previousOut.ElementsOneD.Select(val => (float)Math.Exp(val)).ToArray();
+            var prevExp = previousOut.Read1D().Select(val => (float)Math.Exp(val)).ToArray();
             var prevSum = prevExp.Sum();
             
             var deltaGrad = new float[Shape.Width];
@@ -143,7 +143,7 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
 
         private static Tensor CalcD(Tensor errors)
         {
-            var values = errors.ElementsOneD;
+            var values = errors.Read1D();
             var diagMatrix = values
                 .Select((val, idx) => Enumerable
                     .Range(0, values.Length)
