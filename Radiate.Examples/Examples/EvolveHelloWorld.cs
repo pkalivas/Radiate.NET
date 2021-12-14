@@ -38,12 +38,12 @@ namespace Radiate.Examples.Examples
             var bestMember = await population.Evolve(helloWorld, (member, epoch) =>
             {
                 var world = member.Model as HelloWorld;
-                var displayString = $"Genome: {world.ToString()} Fitness: {member.Fitness}";
+                var displayString = $"Genome: {world.Print()} Fitness: {member.Fitness}";
                 progressBar.Tick(displayString);
                 return epoch == evolutionEpochs || member.Fitness == 12;
             });
 
-            Console.WriteLine($"\nFinal Result: {(bestMember.Model as HelloWorld).ToString()} - Fitness: {bestMember.Fitness}");
+            Console.WriteLine($"\nFinal Result: {(bestMember.Model as HelloWorld).Print()} - Fitness: {bestMember.Fitness}");
         }
 
 
@@ -62,7 +62,7 @@ namespace Radiate.Examples.Examples
                     .ToArray();
             }
 
-            public string ToString() => String.Join("", Chars);
+            public string Print() => String.Join("", Chars);
 
             public override Task<Genome> Crossover(Genome other, EvolutionEnvironment environment, double crossoverRate)
             {

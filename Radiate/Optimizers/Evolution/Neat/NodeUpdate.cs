@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Radiate.Optimizers.Evolution.Neat
 {
@@ -21,7 +22,8 @@ namespace Radiate.Optimizers.Evolution.Neat
         public (float value, int output) IsActivated() => UpdateType switch
         {
             UpdateType.Activated => (Activated.Value, Activated.Output),
-            UpdateType.Pending => (0, 0)
+            UpdateType.Pending => (0, 0),
+            _ => throw new Exception($"Activation Not Valid {UpdateType}")
         };
 
         public static NodeUpdate Process(List<NodeUpdate> updates, Neuron node, int output)

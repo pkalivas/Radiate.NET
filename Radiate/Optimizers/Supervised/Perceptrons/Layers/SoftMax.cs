@@ -85,10 +85,7 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
             
             return dotProduct.Read1D()
                 .Select(val => (float)Math.Pow(Math.E, val) / expSum)
-                .ToArray()
                 .ToTensor();
-            
-            return result;
         }
 
         public override Tensor PassBackward(Tensor pass)

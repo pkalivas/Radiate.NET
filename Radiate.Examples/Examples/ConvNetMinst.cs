@@ -23,10 +23,7 @@ namespace Radiate.Examples.Examples
         {
             var featureLimit = 100;
             var splitPct = .75;
-            var learningRate = 0.1f;
-            var hiddenLayerSize = 32;
             var maxEpochs = 500;
-            var batchSize = 50;
 
             var (normalizedInputs, indexedLabels) = await new Mnist(featureLimit).GetDataSet();
 
