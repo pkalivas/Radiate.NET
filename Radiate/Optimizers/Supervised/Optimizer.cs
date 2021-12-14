@@ -20,7 +20,7 @@ namespace Radiate.Optimizers.Supervised
         private readonly GradientInfo _gradientInfo;
         private readonly Shape _shape;
 
-        public Optimizer(IOptimizer optimizer, Loss lossFunction) : this(optimizer, lossFunction, new(0, 0, 0), new GradientInfo()) { }
+        public Optimizer(IOptimizer optimizer, Loss lossFunction) : this(optimizer, lossFunction, new GradientInfo()) { }
         
         public Optimizer(IOptimizer optimizer, Loss lossFunction, GradientInfo gradient) : this(optimizer, lossFunction, new(0, 0, 0), gradient) { }
 
