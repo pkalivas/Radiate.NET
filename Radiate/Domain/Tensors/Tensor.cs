@@ -13,6 +13,26 @@ namespace Radiate.Domain.Tensors
         private float[,] ElementsTwoD { get; set; }
         private float[,,] ElementsThreeD { get; set; }
         private Shape _shape { get; set; }
+
+        public Tensor(int height, int width = 0, int depth = 0)
+        {
+            switch (height)
+            {
+                case > 0 when width > 0 && depth > 0:
+                    ElementsThreeD = new float[height, width, depth];
+                    break;
+                case > 0 when width > 0 && depth <= 0:
+                    ElementsTwoD = new float[height, width];
+                    break;
+                case > 0 when width <= 0 && depth <= 0:
+                    ElementsOneD = new float[height];
+                    break;
+                default:
+                    throw new Exception($"Cannot make Tensor with {height} {width} {depth}");
+            }
+
+            _shape = SetShape();
+        }
         
         public Tensor(float[] elements)
         {

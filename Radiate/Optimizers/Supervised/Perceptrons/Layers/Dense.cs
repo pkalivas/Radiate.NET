@@ -23,12 +23,12 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
         public Dense(Shape shape, IActivationFunction activation) : base(shape)
         {
             _activation = activation;
-            _weights = Tensor.Random2D(shape.Width, shape.Height);
-            _bias = Tensor.Random1D(shape.Width);
             _inputs = new Stack<Tensor>();
             _outputs = new Stack<Tensor>();
-            _weightGradients = new float[shape.Width, shape.Height].ToTensor();
-            _biasGradients = new float[shape.Width].ToTensor();
+            _weights = Tensor.Random2D(shape.Width, shape.Height);
+            _bias = Tensor.Random1D(shape.Width);
+            _weightGradients = new Tensor(shape.Width, shape.Height);
+            _biasGradients = new Tensor(shape.Width);
         }
         
         public override Tensor Predict(Tensor input)

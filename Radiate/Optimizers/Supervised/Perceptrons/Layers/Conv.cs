@@ -32,8 +32,8 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
             _inputs = new Stack<Tensor>();
             _filters = new Tensor[count];
             _filterGradients = new Tensor[count];
-            _bias = Tensor.Fill(new Shape(count), 0f);
-            _biasGradients = Tensor.Fill(new Shape(count), 0f);
+            _bias = new Tensor(count);
+            _biasGradients = new Tensor(count);
 
             for (var i = 0; i < count; i++)
             {
