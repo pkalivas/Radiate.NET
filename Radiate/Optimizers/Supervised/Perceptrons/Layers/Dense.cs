@@ -30,33 +30,12 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
             _weightGradients = new Tensor(shape.Width, shape.Height);
             _biasGradients = new Tensor(shape.Width);
         }
-        
-        public override Tensor Predict(Tensor input)
-        {
-            if (input.Shape.Height != Shape.Height)
-            {
-                throw new Exception($"Input shape of {input} does not match Dense layer {Shape}");
-            }
-            
-            if (input.Shape.Width > 0)
-            {
-                throw new Exception($"Cannot pass multi-dimensional tensor to dense layer.");
-            }
-            
-            var result = new float[Shape.Width].ToTensor();
-            for (var i = 0; i < Shape.Width; i++)
-            {
-                result[i] = _bias[i] + input.Read1D()
-                    .Select((inVal, idx) => _weights[i, idx] * inVal)
-                    .Sum();
-            }
-            
-            return _activation.Activate(result);
-        }
+
+        public override Tensor Predict(Tensor input) => Operate(input);
         
         public override Tensor FeedForward(Tensor input)
         {
-            var output = Predict(input);
+            var output = Operate(input);
             
             _inputs.Push(input);
             _outputs.Push(output);
@@ -102,6 +81,29 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
             _weightGradients.Zero();
             
             return Task.CompletedTask;
+        }
+
+        private Tensor Operate(Tensor input)
+        {
+            if (input.Shape.Height != Shape.Height)
+            {
+                throw new Exception($"Input shape of {input} does not match Dense layer {Shape}");
+            }
+            
+            if (input.Shape.Width > 0)
+            {
+                throw new Exception($"Cannot pass multi-dimensional tensor to dense layer.");
+            }
+            
+            var result = new float[Shape.Width].ToTensor();
+            for (var i = 0; i < Shape.Width; i++)
+            {
+                result[i] = _bias[i] + input.Read1D()
+                    .Select((inVal, idx) => _weights[i, idx] * inVal)
+                    .Sum();
+            }
+            
+            return _activation.Activate(result);
         }
     }
 }
