@@ -16,7 +16,7 @@ namespace Radiate.Examples.Examples
         {
             var (inputs, answers) = new XOR().GetDataSet();
 
-            var neat = new Neat(2, 1, Activation.Sigmoid);
+            var neat = new Neat(2, 1, Activation.ExpSigmoid);
             var popSettings = new PopulationSettings
             {
                 Size = 100,

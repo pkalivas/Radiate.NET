@@ -11,6 +11,7 @@ using Radiate.Optimizers;
 using Radiate.Optimizers.Supervised;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
+using Radiate.Optimizers.Supervised.Perceptrons.Layers;
 
 namespace Radiate.Examples.Examples
 {
@@ -18,9 +19,9 @@ namespace Radiate.Examples.Examples
     {
         public async Task Run()
         {
-            var featureLimit = 100;
+            var featureLimit = 500;
             var splitPct = .75;
-            var hiddenLayerSize = 64;
+            var hiddenLayerSize = 256;
             var maxEpochs = 50;
             var batchSize = 50;
 
@@ -50,17 +51,15 @@ namespace Radiate.Examples.Examples
 
             var neuralNetwork = new MultiLayerPerceptron(inputSize, outputSize)
                 .AddLayer(new DenseInfo(hiddenLayerSize, Activation.Sigmoid))
-                .AddLayer(new DropoutInfo())
                 .AddLayer(new DenseInfo(hiddenLayerSize, Activation.SoftMax));
 
             var optimizer = new Optimizer(neuralNetwork, Loss.CrossEntropy);
 
             var progressBar = new ProgressBar(maxEpochs);
-            await optimizer.Train(trainFeatures, trainTargets, (epochs) => 
+            await optimizer.Train(trainFeatures, trainTargets, 50, (epochs) => 
             {
                 var currentEpoch = epochs.Last();
-                var displayString = $"Loss: {currentEpoch.Loss} Classification Accuracy: {currentEpoch.ClassificationAccuracy}";
-                progressBar.Tick(displayString);
+                progressBar.Tick($"Loss: {currentEpoch.Loss} Accuracy: {currentEpoch.ClassificationAccuracy}");
                 return maxEpochs == epochs.Count || Math.Abs(currentEpoch.Loss) < .1;
             });
 
