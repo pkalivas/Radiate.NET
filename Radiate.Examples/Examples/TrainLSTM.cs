@@ -6,7 +6,6 @@ using Radiate.Data.Utils;
 using Radiate.Domain.Activation;
 using Radiate.Domain.Gradients;
 using Radiate.Domain.Loss;
-using Radiate.Optimizers;
 using Radiate.Optimizers.Supervised;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
@@ -24,7 +23,7 @@ namespace Radiate.Examples.Examples
             
             var mlp = new MultiLayerPerceptron(1, 1)
                 .AddLayer(new LSTMInfo(16, 16))
-                .AddLayer(new DenseInfo(16, Activation.Sigmoid));
+                .AddLayer(new DenseInfo(Activation.Sigmoid));
             
             var classifier = new Optimizer(mlp, Loss.MSE, gradient);
             

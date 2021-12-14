@@ -19,11 +19,11 @@ namespace Radiate.Examples.Examples
     {
         public async Task Run()
         {
-            var featureLimit = 500;
-            var splitPct = .75;
-            var hiddenLayerSize = 256;
-            var maxEpochs = 50;
-            var batchSize = 50;
+            const int featureLimit = 500;
+            const double splitPct = .75;
+            const int hiddenLayerSize = 256;
+            const int maxEpochs = 50;
+            const int batchSize = 50;
 
             var (normalizedInputs, indexedLabels) = await new Mnist(featureLimit).GetDataSet();
 

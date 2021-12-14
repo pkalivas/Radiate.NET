@@ -21,7 +21,7 @@ namespace Radiate.Examples.Examples
 
         public async Task Run()
         {
-            var evolutionEpochs = 500;
+            const int evolutionEpochs = 500;
             var helloWorld = new HelloWorld();
             var target = new char[12] { 'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '!'};
 

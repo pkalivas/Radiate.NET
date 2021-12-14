@@ -21,9 +21,9 @@ namespace Radiate.Examples.Examples
     {
         public async Task Run()
         {
-            var featureLimit = 100;
-            var splitPct = .75;
-            var maxEpochs = 500;
+            const int featureLimit = 100;
+            const double splitPct = .75;
+            const int maxEpochs = 500;
 
             var (normalizedInputs, indexedLabels) = await new Mnist(featureLimit).GetDataSet();
 

@@ -5,8 +5,6 @@ using Radiate.Data;
 using Radiate.Data.Utils;
 using Radiate.Domain.Activation;
 using Radiate.Domain.Loss;
-using Radiate.Domain.Services;
-using Radiate.Optimizers;
 using Radiate.Optimizers.Supervised;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
@@ -17,9 +15,9 @@ namespace Radiate.Examples.Examples
     {
         public async Task Run()
         {
-            var splitPct = .75;
-            var outputSize = 1;
-            var maxEpochs = 200;
+            const double splitPct = .75;
+            const int outputSize = 1;
+            const int maxEpochs = 200;
 
             var (normalizedInputs, labels) = await new BostonHousing().GetDataSet();
             

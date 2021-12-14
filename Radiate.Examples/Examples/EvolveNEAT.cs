@@ -58,7 +58,7 @@ namespace Radiate.Examples.Examples
             
             var population = new Population(popSettings, neatEnvironment, fitnessFunction);
 
-            var best = await population.Evolve(neat, ((member, epoch) => epoch == 500));
+            var best = await population.Evolve(neat, ((_, epoch) => epoch == 500));
 
             var member = best.Model;
             member.ResetGenome();

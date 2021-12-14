@@ -22,7 +22,7 @@ namespace Radiate.Examples.Examples
             
             var mlp = new MultiLayerPerceptron(2, 1)
                 .AddLayer(new DenseInfo(32, Activation.ReLU))
-                .AddLayer(new DenseInfo(32, Activation.Sigmoid));
+                .AddLayer(new DenseInfo(Activation.Sigmoid));
             
             var classifier = new Optimizer(mlp, Loss.MSE, gradient);
             
