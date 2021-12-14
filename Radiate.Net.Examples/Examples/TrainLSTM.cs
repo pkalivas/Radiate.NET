@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Radiate.Net.Data;
@@ -7,9 +6,7 @@ using Radiate.Net.Data.Utils;
 using Radiate.NET.Domain.Activation;
 using Radiate.NET.Domain.Gradients;
 using Radiate.NET.Domain.Loss;
-using Radiate.NET.Enums;
 using Radiate.NET.Optimizers;
-using Radiate.NET.Optimizers.Evolution.Neat;
 using Radiate.NET.Optimizers.Perceptrons;
 using Radiate.NET.Optimizers.Perceptrons.Info;
 

@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Radiate.NET.Domain.Activation;
-using Radiate.NET.Enums;
 using Radiate.NET.Optimizers.Evolution.Engine;
-using Radiate.NET.Optimizers.Perceptrons.Layers;
 
 namespace Radiate.NET.Optimizers.Evolution.Neat
 {
