@@ -34,68 +34,10 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
             _forwardTrack = new Stack<LSTMCell>(new[] { new LSTMCell(shape.Width) });
             _backwardTrack = new Stack<LSTMCell>(new[] { new LSTMCell(shape.Width) });
         }
-        
-        public override Tensor Predict(Tensor input)
-        {
-            var prevCell = _forwardTrack.Pop();
 
-            var cellInput = input.Read1D().Concat(prevCell.Hidden.Read1D())
-                .ToArray()
-                .ToTensor();
+        public override Tensor Predict(Tensor input) => OperateGates(input, _forwardTrack.Pop());
 
-            var gOut = _gateGate.FeedForward(cellInput);
-            var iOut = _inputGate.FeedForward(cellInput);
-            var fOut = _forgetGate.FeedForward(cellInput);
-            var oOut = _outputGate.FeedForward(cellInput);
-
-            var currentCellState = fOut * prevCell.Cell + gOut * iOut;
-            var currentCellHidden = _hiddenActivation.Activate(currentCellState) + oOut;
-            
-            _forwardTrack.Push(new LSTMCell
-            {
-                Cell = currentCellState,
-                Hidden = currentCellHidden,
-                ForgetOut = fOut,
-                GateOut = gOut,
-                InputOut = iOut,
-                OutputOut = oOut,
-                PreviousCell = prevCell.Cell,
-                PreviousHidden = prevCell.Hidden
-            });
-
-            return currentCellHidden;
-        }
-
-        public override Tensor FeedForward(Tensor input)
-        {
-            var prevCell = _forwardTrack.Peek();
-
-            var cellInput = input.Read1D().Concat(prevCell.Hidden.Read1D())
-                .ToArray()
-                .ToTensor();
-
-            var gOut = _gateGate.FeedForward(cellInput);
-            var iOut = _inputGate.FeedForward(cellInput);
-            var fOut = _forgetGate.FeedForward(cellInput);
-            var oOut = _outputGate.FeedForward(cellInput);
-
-            var currentCellState = fOut * prevCell.Cell + gOut * iOut;
-            var currentCellHidden = _hiddenActivation.Activate(currentCellState) + oOut;
-            
-            _forwardTrack.Push(new LSTMCell
-            {
-                Cell = currentCellState,
-                Hidden = currentCellHidden,
-                ForgetOut = fOut,
-                GateOut = gOut,
-                InputOut = iOut,
-                OutputOut = oOut,
-                PreviousCell = prevCell.Cell,
-                PreviousHidden = prevCell.Hidden
-            });
-
-            return currentCellHidden;
-        }
+        public override Tensor FeedForward(Tensor input) => OperateGates(input, _forwardTrack.Peek());
 
         public override Tensor PassBackward(Tensor errors)
         {
@@ -148,6 +90,35 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
             _backwardTrack.Push(new LSTMCell(Shape.Width));
 
             return Task.CompletedTask;
+        }
+
+        private Tensor OperateGates(Tensor input, LSTMCell prevCell)
+        {
+            var cellInput = input.Read1D().Concat(prevCell.Hidden.Read1D())
+                .ToArray()
+                .ToTensor();
+
+            var gOut = _gateGate.FeedForward(cellInput);
+            var iOut = _inputGate.FeedForward(cellInput);
+            var fOut = _forgetGate.FeedForward(cellInput);
+            var oOut = _outputGate.FeedForward(cellInput);
+
+            var currentCellState = fOut * prevCell.Cell + gOut * iOut;
+            var currentCellHidden = _hiddenActivation.Activate(currentCellState) + oOut;
+            
+            _forwardTrack.Push(new LSTMCell
+            {
+                Cell = currentCellState,
+                Hidden = currentCellHidden,
+                ForgetOut = fOut,
+                GateOut = gOut,
+                InputOut = iOut,
+                OutputOut = oOut,
+                PreviousCell = prevCell.Cell,
+                PreviousHidden = prevCell.Hidden
+            });
+
+            return currentCellHidden;
         }
     }
     

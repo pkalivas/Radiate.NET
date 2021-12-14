@@ -118,7 +118,7 @@ namespace Radiate.Domain.Tensors
         public Tensor Reshape(Shape otherShape)
         {
             var currentFlat = Flatten();
-            var ten = Tensor.Like(otherShape);
+            var ten = Like(otherShape);
             var count = 0;
             for (var j = 0; j < otherShape.Height; j++)
                 if (otherShape.Width > 0)
