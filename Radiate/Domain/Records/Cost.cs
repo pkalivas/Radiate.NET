@@ -1,4 +1,4 @@
-﻿namespace Radiate.Domain.Records
-{
-    public record Cost(float[] Errors, float loss);
-}
+﻿
+namespace Radiate.Domain.Records;
+
+public record Cost(float[] Errors, float loss);

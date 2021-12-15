@@ -1,12 +1,11 @@
 ﻿using Radiate.Domain.Records;
 
-namespace Radiate.Domain.Loss
+namespace Radiate.Domain.Loss;
+
+public class NoCostFunction : ILossFunction
 {
-    public class NoCostFunction : ILossFunction
+    public Cost Calculate(float[] output, float[] target)
     {
-        public Cost Calculate(float[] output, float[] target)
-        {
-            throw new System.NotImplementedException();
-        }
+        throw new System.NotImplementedException();
     }
 }

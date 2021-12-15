@@ -1,8 +1,7 @@
-﻿namespace Radiate.Domain.Gradients
+﻿namespace Radiate.Domain.Gradients;
+
+public enum Gradient
 {
-    public enum Gradient
-    {
-        SGD = 0,
-        Adam = 1
-    }
+    SGD = 0,
+    Adam = 1
 }

@@ -1,9 +1,8 @@
-﻿namespace Radiate.Optimizers.Evolution.Neat
+﻿namespace Radiate.Optimizers.Evolution.Neat;
+
+public enum NeuronType
 {
-    public enum NeuronType
-    {
-        Input = 0,
-        Output = 1,
-        Hidden = 2
-    }
+    Input = 0,
+    Output = 1,
+    Hidden = 2
 }

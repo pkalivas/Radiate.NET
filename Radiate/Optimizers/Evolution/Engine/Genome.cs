@@ -1,17 +1,15 @@
-﻿using System.Threading.Tasks;
+﻿
+namespace Radiate.Optimizers.Evolution.Engine;
 
-namespace Radiate.Optimizers.Evolution.Engine
+public abstract class Genome
 {
-    public abstract class Genome
-    {
-        public abstract Task<Genome> Crossover(Genome other, EvolutionEnvironment environment, double crossoverRate);
+    public abstract Task<Genome> Crossover(Genome other, EvolutionEnvironment environment, double crossoverRate);
 
-        public abstract Task<double> Distance(Genome other, EvolutionEnvironment environment);
-        
-        public abstract float[] Forward(float[] data);
+    public abstract Task<double> Distance(Genome other, EvolutionEnvironment environment);
+    
+    public abstract float[] Forward(float[] data);
 
-        public abstract Genome CloneGenome();
+    public abstract Genome CloneGenome();
 
-        public abstract void ResetGenome();
-    }
+    public abstract void ResetGenome();
 }

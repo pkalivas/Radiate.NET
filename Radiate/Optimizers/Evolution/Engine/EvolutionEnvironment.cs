@@ -1,13 +1,12 @@
 ﻿
-namespace Radiate.Optimizers.Evolution.Engine
-{
-    public abstract class EvolutionEnvironment
-    {
-        public abstract void Reset();
-    }
+namespace Radiate.Optimizers.Evolution.Engine;
 
-    public class BaseEvolutionEnvironment : EvolutionEnvironment
-    {
-        public override void Reset() { }
-    }
+public abstract class EvolutionEnvironment
+{
+    public abstract void Reset();
+}
+
+public class BaseEvolutionEnvironment : EvolutionEnvironment
+{
+    public override void Reset() { }
 }

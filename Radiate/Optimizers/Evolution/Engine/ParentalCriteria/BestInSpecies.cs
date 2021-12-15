@@ -1,19 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Radiate.Optimizers.Evolution.Engine.ParentalCriteria
+﻿
+namespace Radiate.Optimizers.Evolution.Engine.ParentalCriteria;
+        
+public class BestInSpecies : IParentPicker
 {
-    public class BestInSpecies : IParentPicker
+    public (Guid parentOne, Guid parentTwo) Pick(double inbreedRate, List<Niche> species)
     {
-        public (Guid parentOne, Guid parentTwo) Pick(double inbreedRate, List<Niche> species)
-        {
-            var random = new Random();
+        var random = new Random();
 
-            var speciesOne = species[random.Next(species.Count)];
-            var speciesTwo = species[random.Next(species.Count)];
+        var speciesOne = species[random.Next(species.Count)];
+        var speciesTwo = species[random.Next(species.Count)];
 
-            return (speciesOne.BestMember(), speciesTwo.BestMember());
-        }
-
+        return (speciesOne.BestMember(), speciesTwo.BestMember());
     }
+
 }

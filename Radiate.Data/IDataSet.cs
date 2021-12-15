@@ -1,11 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿
+namespace Radiate.Data;
 
-namespace Radiate.Data
+public interface IDataSet
 {
-    public interface IDataSet
-    {
-        Task<(List<float[]> inputs, List<float[]> targets)> GetDataSet();
+    Task<(List<float[]> inputs, List<float[]> targets)> GetDataSet();
 
-    }
 }

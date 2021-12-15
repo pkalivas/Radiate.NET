@@ -1,9 +1,8 @@
 ﻿using Radiate.Domain.Records;
 
-namespace Radiate.Domain.Loss
+namespace Radiate.Domain.Loss;
+
+public interface ILossFunction
 {
-    public interface ILossFunction
-    {
-        Cost Calculate(float[] output, float[] target);
-    }
+    Cost Calculate(float[] output, float[] target);
 }

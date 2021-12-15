@@ -1,8 +1,7 @@
-﻿namespace Radiate.Optimizers.Evolution.Engine.Enums
+﻿namespace Radiate.Optimizers.Evolution.Engine.Enums;
+
+public enum ParentPicker
 {
-    public enum ParentPicker
-    {
-        BestInSpecies = 0,
-        BiasedRandom = 1
-    }
+    BestInSpecies = 0,
+    BiasedRandom = 1
 }

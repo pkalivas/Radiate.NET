@@ -1,9 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿
+namespace Radiate.Examples.Examples;
 
-namespace Radiate.Examples.Examples
+public interface IExample
 {
-    public interface IExample
-    {
-        Task Run();
-    }
+    Task Run();
 }

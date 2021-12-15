@@ -1,7 +1,6 @@
-﻿namespace Radiate.Optimizers.Evolution.Engine.Enums
+﻿namespace Radiate.Optimizers.Evolution.Engine.Enums;
+
+public enum SurvivorPicker
 {
-    public enum SurvivorPicker
-    {
-        Fittest = 0
-    }
+    Fittest = 0
 }

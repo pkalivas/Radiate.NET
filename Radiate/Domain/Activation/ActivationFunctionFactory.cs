@@ -1,18 +1,16 @@
-﻿using System;
+﻿
+namespace Radiate.Domain.Activation;
 
-namespace Radiate.Domain.Activation
+public static class ActivationFunctionFactory
 {
-    public static class ActivationFunctionFactory
+    public static IActivationFunction Get(Activation activation) => activation switch
     {
-        public static IActivationFunction Get(Activation activation) => activation switch
-        {
-            Activation.Sigmoid => new Sigmoid(),
-            Activation.ReLU => new ReLU(),
-            Activation.Linear => new Linear(),
-            Activation.Tanh => new Tanh(),
-            Activation.SoftMax => new SoftMax(),
-            Activation.ExpSigmoid => new ExpSigmoid(),
-            _ => throw new Exception($"Activation {activation} is not implemented.")
-        };
-    }
+        Activation.Sigmoid => new Sigmoid(),
+        Activation.ReLU => new ReLU(),
+        Activation.Linear => new Linear(),
+        Activation.Tanh => new Tanh(),
+        Activation.SoftMax => new SoftMax(),
+        Activation.ExpSigmoid => new ExpSigmoid(),
+        _ => throw new Exception($"Activation {activation} is not implemented.")
+    };
 }

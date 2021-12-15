@@ -1,12 +1,11 @@
-﻿namespace Radiate.Optimizers.Supervised.Perceptrons.Info
-{
-    public class SoftMaxInfo : LayerInfo
-    {
-        public int LayerSize { get; set; }
+﻿namespace Radiate.Optimizers.Supervised.Perceptrons.Info;
 
-        public SoftMaxInfo(int layerSize = 0)
-        {
-            LayerSize = layerSize;
-        }
+public class SoftMaxInfo : LayerInfo
+{
+    public int LayerSize { get; set; }
+
+    public SoftMaxInfo(int layerSize = 0)
+    {
+        LayerSize = layerSize;
     }
 }

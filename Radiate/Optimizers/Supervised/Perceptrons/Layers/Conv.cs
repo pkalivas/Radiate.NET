@@ -1,127 +1,123 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Radiate.Domain.Activation;
+﻿using Radiate.Domain.Activation;
 using Radiate.Domain.Gradients;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
 
-namespace Radiate.Optimizers.Supervised.Perceptrons.Layers
+namespace Radiate.Optimizers.Supervised.Perceptrons.Layers;
+
+public class Conv : Layer
 {
-    public class Conv : Layer
+    private readonly IActivationFunction _activation;
+    private readonly Kernel _kernel;
+    private readonly SliceGenerator _sliceGenerator;
+    private readonly Stack<Tensor> _outputs;
+    private readonly Stack<Tensor> _inputs;
+    private readonly Tensor[] _filters;
+    private readonly Tensor[] _filterGradients;
+    private readonly Tensor _bias;
+    private readonly Tensor _biasGradients;
+    
+    public Conv(Shape shape, Kernel kernel, int stride, IActivationFunction activation) : base(shape)
     {
-        private readonly IActivationFunction _activation;
-        private readonly Kernel _kernel;
-        private readonly SliceGenerator _sliceGenerator;
-        private readonly Stack<Tensor> _outputs;
-        private readonly Stack<Tensor> _inputs;
-        private readonly Tensor[] _filters;
-        private readonly Tensor[] _filterGradients;
-        private readonly Tensor _bias;
-        private readonly Tensor _biasGradients;
+        var (count, dim) = kernel;
+        var (_, _, depth) = shape;
         
-        public Conv(Shape shape, Kernel kernel, int stride, IActivationFunction activation) : base(shape)
-        {
-            var (count, dim) = kernel;
-            var (_, _, depth) = shape;
-            
-            _activation = activation;
-            _kernel = kernel;
-            _sliceGenerator = new SliceGenerator(_kernel, depth, stride);
-            _outputs = new Stack<Tensor>();
-            _inputs = new Stack<Tensor>();
-            _filters = new Tensor[count];
-            _filterGradients = new Tensor[count];
-            _bias = new Tensor(count);
-            _biasGradients = new Tensor(count);
+        _activation = activation;
+        _kernel = kernel;
+        _sliceGenerator = new SliceGenerator(_kernel, depth, stride);
+        _outputs = new Stack<Tensor>();
+        _inputs = new Stack<Tensor>();
+        _filters = new Tensor[count];
+        _filterGradients = new Tensor[count];
+        _bias = new Tensor(count);
+        _biasGradients = new Tensor(count);
 
-            for (var i = 0; i < count; i++)
-            {
-                _filters[i] = Tensor.Random3D(dim, dim, depth) / (float)Math.Pow(_kernel.Dim, _kernel.Dim);
-                _filterGradients[i] = Tensor.Fill(new Shape(dim, dim, depth), 0f);
-            }
+        for (var i = 0; i < count; i++)
+        {
+            _filters[i] = Tensor.Random3D(dim, dim, depth) / (float)Math.Pow(_kernel.Dim, _kernel.Dim);
+            _filterGradients[i] = Tensor.Fill(new Shape(dim, dim, depth), 0f);
         }
+    }
 
-        public override Tensor Predict(Tensor input) => Convolve(input);
+    public override Tensor Predict(Tensor input) => Convolve(input);
 
-        public override Tensor FeedForward(Tensor input)
+    public override Tensor FeedForward(Tensor input)
+    {
+        _inputs.Push(input);
+        
+        var output = Convolve(input);
+        
+        _outputs.Push(output);
+        
+        return output;
+    }
+
+    public override Tensor PassBackward(Tensor errors)
+    {
+        var prevInput = _inputs.Pop();
+        var prevOutput = _outputs.Pop();
+        var output = Tensor.Like(prevInput.Shape);
+        
+        foreach (var (prevInSlice, j, k) in _sliceGenerator.Slice(prevInput))
         {
-            _inputs.Push(input);
-            
-            var output = Convolve(input);
-            
-            _outputs.Push(output);
-            
-            return output;
-        }
-
-        public override Tensor PassBackward(Tensor errors)
-        {
-            var prevInput = _inputs.Pop();
-            var prevOutput = _outputs.Pop();
-            var output = Tensor.Like(prevInput.Shape);
-            
-            foreach (var (prevInSlice, j, k) in _sliceGenerator.Slice(prevInput))
-            {
-                for (var i = 0; i < _filters.Length; i++)
-                {
-                    _filterGradients[i] += errors[j, k, i] * prevInSlice;// * prevOutput[j, k, i];
-                }
-            }
-
-            foreach (var (lossSlice, j, k) in _sliceGenerator.Slice(errors))
-            {
-                for (var i = 0; i < _filters.Length; i++)
-                {
-                    var kernel = _filters[i];
-                    for (var l = 0; l < output.Shape.Depth; l++)
-                    {
-                        output[j, k, l] += Tensor.Sum(lossSlice, kernel);// *  prevOutput[j, k, l];
-                    }
-
-                    _biasGradients[i] += errors[j, k, i];
-                }
-            }
-
-            return output;
-        }
-
-        public override Task UpdateWeights(GradientInfo gradientInfo, int epoch)
-        {
-            var gradient = GradientFactory.Get(gradientInfo);
             for (var i = 0; i < _filters.Length; i++)
             {
-                _filters[i].Add(gradient.Calculate(_filterGradients[i], epoch));
-                _filterGradients[i].Zero();
+                _filterGradients[i] += errors[j, k, i] * prevInSlice;// * prevOutput[j, k, i];
             }
-            
-            _bias.Zero();
-            _bias.Add(_biasGradients);
-
-            _biasGradients.Zero();
-            
-            return Task.CompletedTask;
         }
-        
-        private Tensor Convolve(Tensor input)
+
+        foreach (var (lossSlice, j, k) in _sliceGenerator.Slice(errors))
         {
-            var (hStride, wStride) = _sliceGenerator.CalcStride(input);
-            var output = new float[hStride, wStride, _kernel.Count].ToTensor();
-
-            foreach (var (slice, sHeight, sWidth) in _sliceGenerator.Slice(input))
+            for (var i = 0; i < _filters.Length; i++)
             {
-                for (var i = 0; i < _kernel.Count; i++)
+                var kernel = _filters[i];
+                for (var l = 0; l < output.Shape.Depth; l++)
                 {
-                    var currentKernel = _filters[i];
-                    var currentBias = _bias[i];
-
-                    output[sHeight, sWidth, i] += Tensor.Sum(slice, currentKernel) + currentBias;
+                    output[j, k, l] += Tensor.Sum(lossSlice, kernel);// *  prevOutput[j, k, l];
                 }
-                
-            }
 
-            return _activation.Activate(output);
+                _biasGradients[i] += errors[j, k, i];
+            }
+        }
+
+        return output;
+    }
+
+    public override Task UpdateWeights(GradientInfo gradientInfo, int epoch)
+    {
+        var gradient = GradientFactory.Get(gradientInfo);
+        for (var i = 0; i < _filters.Length; i++)
+        {
+            _filters[i].Add(gradient.Calculate(_filterGradients[i], epoch));
+            _filterGradients[i].Zero();
         }
         
+        _bias.Zero();
+        _bias.Add(_biasGradients);
+
+        _biasGradients.Zero();
+        
+        return Task.CompletedTask;
     }
-} 
+    
+    private Tensor Convolve(Tensor input)
+    {
+        var (hStride, wStride) = _sliceGenerator.CalcStride(input);
+        var output = new float[hStride, wStride, _kernel.Count].ToTensor();
+
+        foreach (var (slice, sHeight, sWidth) in _sliceGenerator.Slice(input))
+        {
+            for (var i = 0; i < _kernel.Count; i++)
+            {
+                var currentKernel = _filters[i];
+                var currentBias = _bias[i];
+
+                output[sHeight, sWidth, i] += Tensor.Sum(slice, currentKernel) + currentBias;
+            }
+            
+        }
+
+        return _activation.Activate(output);
+    }
+    
+}

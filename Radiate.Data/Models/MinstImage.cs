@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
+﻿
+namespace Radiate.Data.Models;
 
-namespace Radiate.Data.Models
-{
-    public record MinstImage(List<int> Image, int Label);
-}
+public record MinstImage(List<int> Image, int Label);
