@@ -8,8 +8,6 @@ public static class LossFunctionFactory
         Loss.Difference => new Difference(),
         Loss.MSE => new MeanSquaredError(),
         Loss.CrossEntropy => new CrossEntropy(),
-        Loss.None => new NoCostFunction(),
-        Loss.SMCrossEntropy => new SMCrossEntropy(),
         _ => throw new Exception($"Loss {loss} is not implemented.")
     };
 }
