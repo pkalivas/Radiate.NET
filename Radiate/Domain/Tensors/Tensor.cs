@@ -1,4 +1,5 @@
-﻿using Radiate.Domain.Records;
+﻿using Newtonsoft.Json;
+using Radiate.Domain.Records;
 
 namespace Radiate.Domain.Tensors;
 
@@ -6,10 +7,19 @@ public class Tensor
 {
     private static int seed = 0;
     
+    [JsonProperty]
     private float[] ElementsOneD { get; set; }
+    
+    [JsonProperty]
     private float[,] ElementsTwoD { get; set; }
+
+    [JsonProperty]
     private float[,,] ElementsThreeD { get; set; }
+    
+    [JsonProperty]
     private Shape _shape { get; set; }
+    
+    public Tensor() { }
 
     public Tensor(int height, int width = 0, int depth = 0)
     {

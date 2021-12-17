@@ -9,15 +9,24 @@ public class MaxPool : Layer
 {
     private readonly Kernel _kernel;
     private readonly Stack<Tensor> _inputs;
-    private readonly Queue<List<(Tensor slice, int sHeight, int sWidth, int sDepth)>> _slices;
+    private readonly Stack<List<(Tensor slice, int sHeight, int sWidth, int sDepth)>> _slices;
     private readonly SliceGenerator _sliceGenerator;
     private readonly int _stride;
+
+    public MaxPool(MaxPoolWrap wrap) : base(wrap.Shape)
+    {
+        _kernel = wrap.Kernel;
+        _inputs = new Stack<Tensor>();
+        _slices = new Stack<List<(Tensor slice, int sHeight, int sWidth, int sDepth)>>();
+        _stride = wrap.Stride;
+        _sliceGenerator = new SliceGenerator(_kernel, Shape.Depth, _stride);
+    }
     
     public MaxPool(Shape shape, Kernel kernel, int stride) : base(shape)
     {
         _kernel = kernel;
         _inputs = new Stack<Tensor>();
-        _slices = new();
+        _slices = new Stack<List<(Tensor slice, int sHeight, int sWidth, int sDepth)>>();
         _stride = stride;
         _sliceGenerator = new SliceGenerator(kernel, shape.Depth, stride);
     }
@@ -33,11 +42,11 @@ public class MaxPool : Layer
         return pooledResult;
     }
 
-    public override Tensor PassBackward(Tensor  errors)
+    public override Task<Tensor> PassBackward(Tensor  errors)
     {
         var prevInput = _inputs.Pop();
         var output = Tensor.Fill(prevInput.Shape, 0f);
-        var previousSlices = _slices.Dequeue();
+        var previousSlices = _slices.Pop();
 
         foreach (var (slice, sHeight, sWidth, sDepth) in previousSlices)
         {
@@ -62,7 +71,7 @@ public class MaxPool : Layer
             }
         }
         
-        return output;
+        return Task.Run(() => output);
     }
 
     public override Task UpdateWeights(GradientInfo gradient, int epoch)
@@ -92,7 +101,7 @@ public class MaxPool : Layer
             output[sHeight, sWidth, sDepth] = slice.Max();
         }
         
-        _slices.Enqueue(slices);
+        _slices.Push(slices);
         
         return output;
     }

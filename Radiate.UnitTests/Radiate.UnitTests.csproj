@@ -23,10 +23,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Data" />
-    </ItemGroup>
-
-    <ItemGroup>
       <None Update="Data\conv\0-kernel_3_3_1.csv">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
@@ -84,6 +80,10 @@
       <None Update="Data\conv\output_28_28_16.csv">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Data\saves" />
     </ItemGroup>
 
 </Project>

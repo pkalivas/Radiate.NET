@@ -15,8 +15,8 @@ public class ConvNetMinst : IExample
 {
     public async Task Run()
     {
-        const int featureLimit = 200;
-        const double splitPct = .85;
+        const int featureLimit = 500;
+        const double splitPct = .95;
         const int maxEpochs = 500;
 
         var (normalizedInputs, indexedLabels) = await new Mnist(featureLimit).GetDataSet();
@@ -41,10 +41,8 @@ public class ConvNetMinst : IExample
         
         var imageShape = new Shape(28, 28, 1);
         var neuralNetwork = new MultiLayerPerceptron()
-            .AddLayer(new ConvInfo(8, 3))
-            .AddLayer(new MaxPoolInfo(8, 3) { Stride = 2})
-            .AddLayer(new ConvInfo(8, 3))
-            .AddLayer(new MaxPoolInfo(8, 3) { Stride = 2 })
+            .AddLayer(new ConvInfo(16, 3))
+            .AddLayer(new MaxPoolInfo(16, 3) { Stride = 2})
             .AddLayer(new FlattenInfo())
             .AddLayer(new DenseInfo(64, Activation.Sigmoid))
             .AddLayer(new DenseInfo(outputSize, Activation.SoftMax));
@@ -57,7 +55,7 @@ public class ConvNetMinst : IExample
 
         Console.WriteLine("\n\n");
         var progressBar = new ProgressBar(maxEpochs);
-        await optimizer.Train(trainFeatures, trainTargets, (epochs) => 
+        await optimizer.Train(trainFeatures, trainTargets, 20, (epochs) => 
         {
             var currentEpoch = epochs.Last();
             var prevEpoch = epochs.Count > 1 ? epochs.ElementAt(epochs.Count - 2) : currentEpoch;

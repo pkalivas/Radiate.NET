@@ -8,5 +8,4 @@ public enum LayerType
     LSTM = 3,
     MaxPool = 4,
     Conv = 5,
-    SoftMax = 6
 }

@@ -26,7 +26,7 @@ public class ConvNetTests
         var maxPoolLayer = await LayerUtils.LoadMaxPoolFromFiles();
         var maxPoolOut = maxPoolLayer.FeedForward(convOut);
 
-        var flattenLayer = new Flatten(maxPoolOut.Shape, maxPoolOut.Shape);
+        var flattenLayer = new Flatten(maxPoolOut.Shape);
         var flattenOut = flattenLayer.FeedForward(maxPoolOut);
 
         var denseLayer = await LayerUtils.LoadDenseFromFiles(Activation.SoftMax);
@@ -69,7 +69,6 @@ public class ConvNetTests
     public async Task ConvNet_Can_Backprop()
     {
         var input = (await Csv.LoadFromCsv("conv", "input")).Single();
-        var maxPoolBack = (await Csv.LoadFromCsv("maxpool", "error")).Single();
 
         var convLayer = await LayerUtils.LoadConvFromFiles();
         var convOut = convLayer.FeedForward(input);
@@ -77,7 +76,7 @@ public class ConvNetTests
         var maxPoolLayer = await LayerUtils.LoadMaxPoolFromFiles();
         var maxPoolOut = maxPoolLayer.FeedForward(convOut);
 
-        var flattenLayer = new Flatten(maxPoolOut.Shape, maxPoolOut.Shape);
+        var flattenLayer = new Flatten(maxPoolOut.Shape);
         var flattenOut = flattenLayer.FeedForward(maxPoolOut);
 
         var denseLayer = await LayerUtils.LoadDenseFromFiles(Activation.SoftMax);
@@ -86,14 +85,15 @@ public class ConvNetTests
         var lossFunc = new Difference();
         var target = Tensor.Fill(denseOut.Shape, 0f);
         target[3] = 1;
+        
         var errors = lossFunc.Calculate(denseOut.Read1D(), target.Read1D()).Errors.ToTensor();
 
-        var denseError = denseLayer.PassBackward(errors);
-        var denseErrorTruth = (await Csv.LoadFromCsv("dense", "error")).Single();
-        
-        var flattenError = flattenLayer.PassBackward(denseError);
-        var maxPoolError = maxPoolLayer.PassBackward(flattenError);
-        var convError = convLayer.PassBackward(maxPoolError);
-        var t = "";
+        var denseError = await denseLayer.PassBackward(errors);
+        var flattenError = await flattenLayer.PassBackward(denseError);
+        var maxPoolError = await maxPoolLayer.PassBackward(flattenError);
+        var convError = await convLayer.PassBackward(maxPoolError);
+
+        var hasErrors = convError.Max();
+        hasErrors.Should().NotBe(null);
     }
 }

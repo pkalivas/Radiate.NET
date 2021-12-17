@@ -11,30 +11,37 @@ namespace Radiate.Optimizers.Supervised.Perceptrons;
 public class MultiLayerPerceptron : IOptimizer
 {
     private readonly Shape _inputShape;
-    private readonly int _outputSize;
     private readonly List<LayerInfo> _layerInfo;
     private readonly List<Layer> _layers;
 
     public MultiLayerPerceptron()
     {
         _inputShape = new Shape(0);
-        _outputSize = 0;
         _layerInfo = new List<LayerInfo>();
         _layers = new List<Layer>();
     }
     
-    public MultiLayerPerceptron(Shape inputShape, int outputSize, IEnumerable<LayerWrap> layerWraps)
+    public MultiLayerPerceptron(MultiLayerPerceptronWrap wrap)
     {
-        _inputShape = inputShape;
-        _outputSize = outputSize;
-        _layers = layerWraps.Select(wrap => wrap.Load()).ToList();
+        _inputShape = wrap.InputShape;
         _layerInfo = new List<LayerInfo>();
+        _layers = wrap.LayerWraps
+            .Select(layerWrap => layerWrap.LayerType switch
+            {
+                LayerType.Conv => (Layer) new Conv(layerWrap.Conv),
+                LayerType.Dense => new Dense(layerWrap.Dense),
+                LayerType.Dropout => new Dropout(layerWrap.Dropout),
+                LayerType.Flatten => new Flatten(layerWrap.Flatten),
+                LayerType.LSTM => new LSTM(layerWrap.Lstm),
+                LayerType.MaxPool => new MaxPool(layerWrap.MaxPool),
+                _ => throw new Exception($"Layer {layerWrap.LayerType} is not loadable.")
+            })
+            .ToList();
     }
     
-    public MultiLayerPerceptron(Shape inputShape, int outputSize)
+    public MultiLayerPerceptron(Shape inputShape)
     {
         _inputShape = inputShape;
-        _outputSize = outputSize;
         _layerInfo = new List<LayerInfo>();
         _layers = new List<Layer>();
     }
@@ -42,12 +49,6 @@ public class MultiLayerPerceptron : IOptimizer
     public MultiLayerPerceptron AddLayer(LayerInfo layerInfo)
     {
         _layerInfo.Add(layerInfo);
-        return this;
-    }
-    
-    public MultiLayerPerceptron AddLayer(Layer layer)
-    {
-        _layers.Add(layer);
         return this;
     }
 
@@ -72,11 +73,11 @@ public class MultiLayerPerceptron : IOptimizer
         return input;
     }
     
-    public void PassBackward(Tensor errors, int epoch)
+    public async Task PassBackward(Tensor errors, int epoch)
     {
         for (var i = _layers.Count - 1; i >= 0; i--)
         {
-            errors = _layers[i].PassBackward(errors);
+            errors = await _layers[i].PassBackward(errors);
         }
     }
 
@@ -90,17 +91,11 @@ public class MultiLayerPerceptron : IOptimizer
         MultiLayerPerceptronWrap = new()
         {
             InputShape = _inputShape,
-            OutputSize = _outputSize,
             LayerWraps = _layers.Select(layer => layer.Save()).ToList()
         }
     };
 
-    public IOptimizer Load(OptimizerWrap wrap) => new MultiLayerPerceptron(
-        wrap.MultiLayerPerceptronWrap.InputShape,
-        wrap.MultiLayerPerceptronWrap.OutputSize, 
-        wrap.MultiLayerPerceptronWrap.LayerWraps);
-
-    private Layer GetLayer(LayerInfo info, Shape shape)
+    private static Layer GetLayer(LayerInfo info, Shape shape)
     {
         var (height, width, depth) = shape;
 
@@ -124,9 +119,9 @@ public class MultiLayerPerceptron : IOptimizer
             return new Dropout(dropoutInfo.DropoutPercent);
         }
         
-        if (info is FlattenInfo flatten)
+        if (info is FlattenInfo _)
         {
-            return new Flatten(shape, shape);
+            return new Flatten(shape);
         }
 
         if (info is MaxPoolInfo maxPool)

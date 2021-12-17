@@ -37,55 +37,40 @@ public static class LayerUtils
         var bias = (await Csv.LoadFromCsv("conv", "biases")).Single();
         var input = (await Csv.LoadFromCsv("conv", "input")).Single();
 
-        return new LayerWrap
+        return new Conv(new ConvWrap
         {
-            LayerType = LayerType.Conv,
-            Conv = new ConvWrap
-            {
-                Shape = input.Shape,
-                Stride = 1,
-                Kernel = new Kernel(16, 3),
-                Activation = Activation.Linear,
-                Bias = bias,
-                BiasGradients = bias,
-                Filters = kernels,
-                FilterGradients = kernels.Select(kern => Tensor.Like(kern.Shape)).ToArray()
-            }
-        }.Load();
+            Shape = input.Shape,
+            Stride = 1,
+            Kernel = new Kernel(16, 3),
+            Activation = Activation.Linear,
+            Bias = bias,
+            BiasGradients = bias,
+            Filters = kernels,
+            FilterGradients = kernels.Select(kern => Tensor.Like(kern.Shape)).ToArray()
+        });
     }
 
-    public static async Task<Layer> LoadMaxPoolFromFiles() => await Task.Run(() => new LayerWrap
+    public static async Task<Layer> LoadMaxPoolFromFiles() => await Task.Run(() => new MaxPool(new MaxPoolWrap
     {
-        LayerType = LayerType.MaxPool,
-        MaxPool = new()
-        {
-            Shape = new Shape(28, 28, 16),
-            Kernel = new Kernel(16, 2),
-            Stride = StrideTwo
-        }
-    }.Load());
+        Shape = new Shape(28, 28, 16),
+        Kernel = new Kernel(16, 2),
+        Stride = StrideTwo
+    }));
 
     public static async Task<Layer> LoadDenseFromFiles(Activation activation)
     {
         var weights = (await Csv.LoadFromCsv("dense", "weights")).Single();
         var biases = (await Csv.LoadFromCsv("dense", "biases")).Single();
-        var input = (await Csv.LoadFromCsv("dense", "input")).Single();
-        var output = (await Csv.LoadFromCsv("dense", "output")).Single();
 
-        
-        return new LayerWrap
+        return new Dense(new DenseWrap
         {
-            LayerType = LayerType.Dense,
-            Dense = new DenseWrap
-            {
-                Activation = activation,
-                Bias = biases,
-                Weights = weights,
-                WeightGradients = Tensor.Like(weights.Shape),
-                BiasGradients = Tensor.Like(biases.Shape),
-                Shape = new Shape(weights.Shape.Width, weights.Shape.Height)
-            }
-        }.Load();
+            Activation = activation,
+            Bias = biases,
+            Weights = weights,
+            WeightGradients = Tensor.Like(weights.Shape),
+            BiasGradients = Tensor.Like(biases.Shape),
+            Shape = new Shape(weights.Shape.Width, weights.Shape.Height)
+        });
     }
 
 
