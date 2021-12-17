@@ -1,29 +1,39 @@
 ﻿using Radiate.Domain.Activation;
 using Radiate.Domain.Gradients;
+using Radiate.Domain.Models;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
 using Radiate.Optimizers.Supervised.Perceptrons.Layers;
-using SoftMax = Radiate.Optimizers.Supervised.Perceptrons.Layers.SoftMax;
 
 namespace Radiate.Optimizers.Supervised.Perceptrons;
 
 public class MultiLayerPerceptron : IOptimizer
 {
-    private readonly int _inputSize;
+    private readonly Shape _inputShape;
     private readonly int _outputSize;
     private readonly List<LayerInfo> _layerInfo;
     private readonly List<Layer> _layers;
 
     public MultiLayerPerceptron()
     {
+        _inputShape = new Shape(0);
+        _outputSize = 0;
         _layerInfo = new List<LayerInfo>();
         _layers = new List<Layer>();
     }
     
-    public MultiLayerPerceptron(int inputSize, int outputSize)
+    public MultiLayerPerceptron(Shape inputShape, int outputSize, IEnumerable<LayerWrap> layerWraps)
     {
-        _inputSize = inputSize;
+        _inputShape = inputShape;
+        _outputSize = outputSize;
+        _layers = layerWraps.Select(wrap => wrap.Load()).ToList();
+        _layerInfo = new List<LayerInfo>();
+    }
+    
+    public MultiLayerPerceptron(Shape inputShape, int outputSize)
+    {
+        _inputShape = inputShape;
         _outputSize = outputSize;
         _layerInfo = new List<LayerInfo>();
         _layers = new List<Layer>();
@@ -73,8 +83,23 @@ public class MultiLayerPerceptron : IOptimizer
     public async Task Update(GradientInfo gradientInfo, int epoch) =>
         await Task.WhenAll(_layers
             .Select(async layer => await layer.UpdateWeights(gradientInfo, epoch)));
-    
-    
+
+    public OptimizerWrap Save() => new()
+    {
+        OptimizerType = OptimizerType.MultiLayerPerceptron,
+        MultiLayerPerceptronWrap = new()
+        {
+            InputShape = _inputShape,
+            OutputSize = _outputSize,
+            LayerWraps = _layers.Select(layer => layer.Save()).ToList()
+        }
+    };
+
+    public IOptimizer Load(OptimizerWrap wrap) => new MultiLayerPerceptron(
+        wrap.MultiLayerPerceptronWrap.InputShape,
+        wrap.MultiLayerPerceptronWrap.OutputSize, 
+        wrap.MultiLayerPerceptronWrap.LayerWraps);
+
     private Layer GetLayer(LayerInfo info, Shape shape)
     {
         var (height, width, depth) = shape;
@@ -82,9 +107,8 @@ public class MultiLayerPerceptron : IOptimizer
         if (info is DenseInfo denseInfo)
         {
             var activation = ActivationFunctionFactory.Get(denseInfo.Activation);
-            var outputSize = _layerInfo.Last() == info ? _outputSize : denseInfo.LayerSize;
             
-            return new Dense(new Shape(height, outputSize, 0), activation);
+            return new Dense(new Shape(height, denseInfo.LayerSize, 0), activation);
         }
 
         if (info is LSTMInfo lstm)
@@ -113,21 +137,9 @@ public class MultiLayerPerceptron : IOptimizer
         if (info is ConvInfo conv)
         {
             var activation = ActivationFunctionFactory.Get(conv.Activation);
-
-            return new Conv(conv.Shape, conv.Kernel, conv.Stride, activation);
+            return new Conv(shape, conv.Kernel, conv.Stride, activation);
         }
-
-        if (info is SoftMaxInfo softMax)
-        {
-            var outputSize = _layerInfo.Last() == info ? _outputSize : softMax.LayerSize;
-            var inHeight = shape.Height == 0 ? 1 : shape.Height;
-            var inWidth = shape.Width == 0 ? 1 : shape.Width;
-            var inDepth = shape.Depth == 0 ? 1 : shape.Depth;
-            var incomingSize = inWidth * inDepth * inHeight;
-            var softMaxShape = new Shape(incomingSize, outputSize, 0);
-            return new SoftMax(softMaxShape);
-        }
-
+        
         throw new Exception($"Layer of {nameof(info)} does not exist");
     }
     

@@ -3,6 +3,7 @@ using Radiate.Data.Utils;
 using Radiate.Domain.Activation;
 using Radiate.Domain.Gradients;
 using Radiate.Domain.Loss;
+using Radiate.Domain.Records;
 using Radiate.Optimizers.Supervised;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
@@ -16,14 +17,15 @@ public class TrainLSTM : IExample
         const int trainEpochs = 500;
         
         var (inputs, targets) = await new SimpleMemory().GetDataSet();
-
-        var gradient = new GradientInfo { Gradient = Gradient.Adam };
         
-        var mlp = new MultiLayerPerceptron(1, 1)
+        var mlp = new MultiLayerPerceptron()
             .AddLayer(new LSTMInfo(16, 16))
-            .AddLayer(new DenseInfo(Activation.Sigmoid));
+            .AddLayer(new DenseInfo(1, Activation.Sigmoid));
         
-        var classifier = new Optimizer(mlp, Loss.MSE, gradient);
+        var classifier = new Optimizer(mlp, Loss.MSE, new Shape(1), new GradientInfo
+        {
+            Gradient = Gradient.Adam
+        });
         
         var batchSize = targets.Count;
         var progressBar = new ProgressBar(trainEpochs);

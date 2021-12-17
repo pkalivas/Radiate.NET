@@ -21,7 +21,7 @@ public class Mnist : IDataSet
             .ToList();
         
         var rawInputs = features
-            .Select(diget => diget.Image.Select(point => (float)point).ToList())
+            .Select(diget => diget.Image.Select(point => ((float)point / 255) - 0.5f).ToList())
             .ToList();
         var rawLabels = features
             .Select(diget => diget.Label)

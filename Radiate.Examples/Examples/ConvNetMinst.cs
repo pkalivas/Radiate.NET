@@ -7,6 +7,7 @@ using Radiate.Domain.Records;
 using Radiate.Optimizers.Supervised;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
+using Radiate.Optimizers.Supervised.Perceptrons.Layers;
 
 namespace Radiate.Examples.Examples;
 
@@ -14,8 +15,8 @@ public class ConvNetMinst : IExample
 {
     public async Task Run()
     {
-        const int featureLimit = 100;
-        const double splitPct = .75;
+        const int featureLimit = 200;
+        const double splitPct = .85;
         const int maxEpochs = 500;
 
         var (normalizedInputs, indexedLabels) = await new Mnist(featureLimit).GetDataSet();
@@ -39,18 +40,19 @@ public class ConvNetMinst : IExample
         MinstDiscriptor.Describe(testFeatures, testTargets);
         
         var imageShape = new Shape(28, 28, 1);
-        var kernel = new Kernel(3, 1);
-        var imageStride = 1;
-        var neuralNetwork = new MultiLayerPerceptron(inputSize, outputSize)
-            .AddLayer(new ConvInfo(imageShape, kernel, imageStride, Activation.ReLU))
-            .AddLayer(new MaxPoolInfo(kernel, 2))
+        var neuralNetwork = new MultiLayerPerceptron()
+            .AddLayer(new ConvInfo(8, 3))
+            .AddLayer(new MaxPoolInfo(8, 3) { Stride = 2})
+            .AddLayer(new ConvInfo(8, 3))
+            .AddLayer(new MaxPoolInfo(8, 3) { Stride = 2 })
             .AddLayer(new FlattenInfo())
-            .AddLayer(new DenseInfo(Activation.SoftMax));
+            .AddLayer(new DenseInfo(64, Activation.Sigmoid))
+            .AddLayer(new DenseInfo(outputSize, Activation.SoftMax));
 
         var optimizer = new Optimizer(neuralNetwork, Loss.CrossEntropy, imageShape, new GradientInfo
         {
             Gradient = Gradient.Adam,
-            LearningRate = 0.001f
+            LearningRate = 0.01f
         });
 
         Console.WriteLine("\n\n");

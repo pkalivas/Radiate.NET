@@ -15,6 +15,8 @@ public class SliceGenerator
         _stride = stride;
     }
 
+    public int Stride => _stride;
+
     public IEnumerable<(Tensor slice, int hStride, int wStride)> Slice(Tensor volume)
     {
         var (vHeight, _, _) = volume.Shape;
@@ -73,7 +75,7 @@ public class SliceGenerator
         
         var hStride = ((vHeight - kHeight) / _stride) +1;
         var wStride = ((vWidth - kWidth) / _stride) + 1;
-
+        
         return (hStride, wStride);
     }
 

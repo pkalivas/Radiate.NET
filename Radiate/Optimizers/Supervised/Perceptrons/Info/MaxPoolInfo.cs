@@ -4,12 +4,13 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Info;
 
 public class MaxPoolInfo : LayerInfo
 {
-    public Kernel Kernel { get; set; }
     public int Stride { get; set; }
 
-    public MaxPoolInfo(Kernel kernel, int stride = 1)
+    public Kernel Kernel;
+
+    public MaxPoolInfo(int kernelCount, int kernelDim, int stride = 1)
     {
-        Kernel = kernel;
+        Kernel = new Kernel(kernelCount, kernelDim);
         Stride = stride;
     }
 }

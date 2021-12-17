@@ -113,6 +113,31 @@ public class Tensor
 
         return result;
     }
+    
+    public static float SumT(Tensor one, Tensor other)
+    {
+        var oShape = one.Shape;
+        var tShape = other.Shape;
+        
+        if (oShape.Width != tShape.Width || oShape.Height != tShape.Height || oShape.Depth !=  tShape.Depth)
+        {
+            throw new Exception($"Cannot dot product two unlike matrices");
+        }
+
+        var result = 0.0f;
+        for (var i = 0; i < oShape.Height; i++) 
+        {
+            for (var j = 0; j < oShape.Width; j++) 
+            {
+                for (var k = 0; k < oShape.Depth; k++) 
+                {
+                    result += one.ElementsThreeD[i, j, k] * other.ElementsThreeD[j, i, k];
+                }
+            }
+        }
+
+        return result;
+    }
 
     public Tensor Flatten()
     {

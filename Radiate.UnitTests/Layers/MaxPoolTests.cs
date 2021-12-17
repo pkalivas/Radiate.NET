@@ -1,4 +1,7 @@
-﻿using Radiate.Optimizers.Supervised.Perceptrons.Layers;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Radiate.Optimizers.Supervised.Perceptrons.Layers;
 using Radiate.UnitTests.Utils;
 
 namespace Radiate.UnitTests.Layers;
@@ -65,6 +68,36 @@ public class MaxPoolTests
         var tensorSlice = input.Slice(hDiff, wDiff, dDiff);
 
         tensorSlice.Max().Should().Be(output[1, 1, 0]);
+    }
+
+    [Fact]
+    public async Task MaxPool_Can_FeedForward()
+    {
+        var input = (await Csv.LoadFromCsv("conv", "input")).Single();
+        var convTrueOutput = (await Csv.LoadFromCsv("conv", "output")).Single();
+        var maxPoolTrueOutput = (await Csv.LoadFromCsv("maxpool", "output")).Single();
+
+        var convLayer = await LayerUtils.LoadConvFromFiles();
+        var convOut = convLayer.FeedForward(input);
+        
+        foreach (var (aOut, lOut) in convTrueOutput.Flatten().Read1D().Zip(convOut.Flatten().Read1D()))
+        {
+            var roundAOut = Math.Round(aOut, 5);
+            var roundLOut = Math.Round(lOut, 5);
+            
+            roundAOut.Should().Be(roundLOut);
+        }
+
+        var maxPoolLayer = await LayerUtils.LoadMaxPoolFromFiles();
+        var maxPoolOut = maxPoolLayer.FeedForward(convOut);
+
+        foreach (var (aOut, mOut) in maxPoolTrueOutput.Flatten().Read1D().Zip(maxPoolOut.Flatten().Read1D()))
+        {
+            var roundAOut = Math.Round(aOut, 5);
+            var roundMOut = Math.Round(mOut, 5);
+
+            roundAOut.Should().Be(roundMOut);
+        }
     }
     
 }

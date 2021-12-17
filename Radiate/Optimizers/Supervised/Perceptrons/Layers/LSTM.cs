@@ -1,5 +1,6 @@
 ﻿using Radiate.Domain.Activation;
 using Radiate.Domain.Gradients;
+using Radiate.Domain.Models;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
 
@@ -16,6 +17,18 @@ public class LSTM : Layer
     private readonly Stack<LSTMCell> _forwardTrack;
     private readonly Stack<LSTMCell> _backwardTrack;
 
+    public LSTM(Shape shape, Activation cellActivation, Activation hiddenActivation, Dense inputGate, Dense forgetGate,
+        Dense gateGate, Dense outputGate, Stack<LSTMCell> forwardTrack, Stack<LSTMCell> backwardTrack) : base(shape)
+    {
+        _cellActivation = ActivationFunctionFactory.Get(cellActivation);
+        _hiddenActivation = ActivationFunctionFactory.Get(hiddenActivation);
+        _inputGate = inputGate;
+        _forgetGate = forgetGate;
+        _outputGate = outputGate;
+        _gateGate = gateGate;
+        _forwardTrack = forwardTrack;
+        _backwardTrack = backwardTrack;
+    }
 
     public LSTM(Shape shape, IActivationFunction cellActivation, IActivationFunction hiddenActivation) : base(shape)
     {
@@ -88,6 +101,23 @@ public class LSTM : Layer
 
         return Task.CompletedTask;
     }
+    
+    public override LayerWrap Save() => new()
+    {
+        LayerType = LayerType.LSTM,
+        Lstm = new LSTMWrap
+        {
+            Shape = Shape,
+            CellActivation = _cellActivation.GetType(),
+            HiddenActivation = _hiddenActivation.GetType(),
+            InputGate = _inputGate.Save().Dense,
+            ForgetGate = _forgetGate.Save().Dense,
+            GateGate = _gateGate.Save().Dense,
+            OutputGate = _outputGate.Save().Dense,
+            ForwardTrack = _forwardTrack,
+            BackwardTrack = _backwardTrack
+        }
+    };
 
     private Tensor OperateGates(Tensor input, LSTMCell prevCell)
     {

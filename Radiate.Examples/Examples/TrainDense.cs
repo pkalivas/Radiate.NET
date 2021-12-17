@@ -2,6 +2,7 @@
 using Radiate.Domain.Activation;
 using Radiate.Domain.Gradients;
 using Radiate.Domain.Loss;
+using Radiate.Domain.Records;
 using Radiate.Optimizers.Supervised;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
@@ -16,11 +17,11 @@ public class TrainDense : IExample
 
         var gradient = new GradientInfo { Gradient = Gradient.SGD };
         
-        var mlp = new MultiLayerPerceptron(2, 1)
+        var mlp = new MultiLayerPerceptron()
             .AddLayer(new DenseInfo(32, Activation.ReLU))
-            .AddLayer(new DenseInfo(Activation.Sigmoid));
+            .AddLayer(new DenseInfo(1, Activation.Sigmoid));
         
-        var classifier = new Optimizer(mlp, Loss.MSE, gradient);
+        var classifier = new Optimizer(mlp, Loss.MSE, new Shape(2), gradient);
         
         await classifier.Train(inputs, targets, (epoch) => epoch.Count == 500);
         

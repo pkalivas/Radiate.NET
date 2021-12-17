@@ -1,4 +1,5 @@
 ﻿using Radiate.Domain.Gradients;
+using Radiate.Domain.Models;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
 
@@ -13,67 +14,21 @@ public class Flatten : Layer
         _previousShape = previousShape;
     }
 
-    public override Tensor Predict(Tensor input)
-    {
-        var (height, width, depth) = input.Shape;
-        var newInput = new float[height * width * depth].ToTensor();
+    public override Tensor Predict(Tensor input) => input.Flatten();
 
-        var count = 0;
-        for (var i = 0; i < height; i++)
-        {
-            for (var j = 0; j < width; j++)
-            {
-                for (var k = 0; k < depth; k++)
-                {
-                    newInput[count] = input[i, j, k];
-                    count++;
-                }
-            }
-        }
+    public override Tensor FeedForward(Tensor input) => input.Flatten();
 
-        return newInput;
-    }
-    public override Tensor FeedForward(Tensor input)
-    {
-        var (height, width, depth) = input.Shape;
-        var newInput = new float[height * width * depth].ToTensor();
-
-        var count = 0;
-        for (var i = 0; i < height; i++)
-        {
-            for (var j = 0; j < width; j++)
-            {
-                for (var k = 0; k < depth; k++)
-                {
-                    newInput[count] = input[i, j, k];
-                    count++;
-                }
-            }
-        }
-
-        return newInput;
-    }
-
-    public override Tensor PassBackward(Tensor errors)
-    {
-        var newOutput = Tensor.Like(_previousShape);
-        var (height, width, depth) = newOutput.Shape;
-        
-        var count = 0;
-        for (var i = 0; i < height; i++)
-        {
-            for (var j = 0; j < width; j++)
-            {
-                for (var k = 0; k < depth; k++)
-                {
-                    newOutput[i, j, k] = errors[count];
-                    count++;
-                }
-            }
-        }
-
-        return newOutput;
-    }
+    public override Tensor PassBackward(Tensor errors) => errors.Reshape(_previousShape);
 
     public override Task UpdateWeights(GradientInfo gradient, int epoch) => Task.CompletedTask;
+    
+    public override LayerWrap Save() => new()
+    {
+        LayerType = LayerType.Flatten,
+        Flatten = new FlattenWrap
+        {
+            Shape = Shape,
+            PreviousShape = _previousShape
+        }
+    };
 }

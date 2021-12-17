@@ -19,6 +19,8 @@ public class Optimizer
     public Optimizer(IOptimizer optimizer, Loss lossFunction) : this(optimizer, lossFunction, new GradientInfo()) { }
     
     public Optimizer(IOptimizer optimizer, Loss lossFunction, GradientInfo gradient) : this(optimizer, lossFunction, new(0, 0, 0), gradient) { }
+    
+    public Optimizer(IOptimizer optimizer, Loss lossFunction, Shape shape) : this(optimizer, lossFunction, shape, new GradientInfo()) { }
 
     public Optimizer(IOptimizer optimizer, Loss lossFunction, Shape shape, GradientInfo gradientInfo)
     {

@@ -1,4 +1,5 @@
 ﻿using Radiate.Domain.Gradients;
+using Radiate.Domain.Models;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
 
@@ -25,4 +26,13 @@ public class Dropout : Layer
     public override Tensor PassBackward(Tensor errors) => errors;
 
     public override Task UpdateWeights(GradientInfo info, int epoch) => Task.CompletedTask;
+
+    public override LayerWrap Save() => new()
+    {
+        LayerType = LayerType.Dropout,
+        Dropout = new DropoutWrap
+        {
+            DropoutRate = _dropoutRate
+        }
+    };
 }

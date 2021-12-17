@@ -10,7 +10,6 @@ public class SoftMax : IActivationFunction
     public Tensor Activate(Tensor values)
     {
         var expSum = values.Read1D().Sum(val => (float)Math.Exp(val));
-        
         return values.Read1D()
             .Select(val => (float)Math.Exp(val) / expSum)
             .ToArray()
@@ -47,7 +46,7 @@ public class SoftMax : IActivationFunction
         }
         
         
-        return result.Select(val => val switch
+        return values.Read1D().Select(val => val switch
         {
             > MaxClipValue => MaxClipValue,
             < MinClipValue => MinClipValue,
@@ -59,4 +58,7 @@ public class SoftMax : IActivationFunction
     public float Activate(float value) => throw new Exception($"Softmax of single value is not real.");
 
     public float Deactivate(float value) => throw new Exception($"Cannot take dSoftmax of single value");
+
+    public Activation GetType() => Activation.SoftMax;
+
 }

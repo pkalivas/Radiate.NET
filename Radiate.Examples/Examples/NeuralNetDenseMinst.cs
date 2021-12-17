@@ -2,6 +2,7 @@
 using Radiate.Data.Utils;
 using Radiate.Domain.Activation;
 using Radiate.Domain.Loss;
+using Radiate.Domain.Records;
 using Radiate.Optimizers.Supervised;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
@@ -29,11 +30,11 @@ public class NeuralNetDenseMinst : IExample
         var testFeatures = normalizedInputs.Take(splitIndex).ToList();
         var testTargets = indexedLabels.Take(splitIndex).ToList();
 
-        var neuralNetwork = new MultiLayerPerceptron(inputSize, outputSize)
+        var neuralNetwork = new MultiLayerPerceptron()
             .AddLayer(new DenseInfo(hiddenLayerSize, Activation.Sigmoid))
-            .AddLayer(new DenseInfo(hiddenLayerSize, Activation.SoftMax));
+            .AddLayer(new DenseInfo(outputSize, Activation.SoftMax));
 
-        var optimizer = new Optimizer(neuralNetwork, Loss.CrossEntropy);
+        var optimizer = new Optimizer(neuralNetwork, Loss.CrossEntropy, new Shape(inputSize));
 
         var progressBar = new ProgressBar(maxEpochs);
         await optimizer.Train(trainFeatures, trainTargets, batchSize, (epochs) => 

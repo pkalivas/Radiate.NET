@@ -1,4 +1,5 @@
 ﻿using Radiate.Domain.Gradients;
+using Radiate.Domain.Models;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;  
 
@@ -18,5 +19,6 @@ public abstract class Layer
     public abstract Tensor FeedForward(Tensor pass);
     public abstract Tensor PassBackward(Tensor pass);
     public abstract Task UpdateWeights(GradientInfo gradient, int epoch);
-    
+    public abstract LayerWrap Save();
+
 }

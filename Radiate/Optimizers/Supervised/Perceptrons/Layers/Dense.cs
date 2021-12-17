@@ -1,5 +1,6 @@
 ﻿using Radiate.Domain.Activation;
 using Radiate.Domain.Gradients;
+using Radiate.Domain.Models;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
 
@@ -15,6 +16,16 @@ public class Dense : Layer
     private readonly Tensor _weightGradients;
     private readonly Tensor _biasGradients;
 
+    public Dense(Activation activation, Shape shape, Tensor weights, Tensor bias, Tensor weightGradients, Tensor biasGradients) : base(shape)
+    {
+        _activation = ActivationFunctionFactory.Get(activation);
+        _inputs = new Stack<Tensor>();
+        _outputs = new Stack<Tensor>();
+        _weights = weights;
+        _bias = bias;
+        _weightGradients = weightGradients;
+        _biasGradients = biasGradients;
+    }
     
     public Dense(Shape shape, IActivationFunction activation) : base(shape)
     {
@@ -62,7 +73,7 @@ public class Dense : Layer
                 resultError[j] += _weights[i, j] * errors[i];
             }
         }
-
+        
         return new Tensor(resultError);
     }
 
@@ -78,6 +89,20 @@ public class Dense : Layer
         
         return Task.CompletedTask;
     }
+    
+    public override LayerWrap Save() => new()
+    {
+        LayerType = LayerType.Dense,
+        Dense = new DenseWrap
+        {
+            Shape = Shape,
+            Activation = _activation.GetType(),
+            Weights = _weights,
+            WeightGradients = _weightGradients,
+            Bias = _bias,
+            BiasGradients = _biasGradients
+        }
+    };
 
     private Tensor Operate(Tensor input)
     {

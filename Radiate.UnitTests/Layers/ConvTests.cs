@@ -1,4 +1,7 @@
-﻿using Radiate.Domain.Activation;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Radiate.Domain.Activation;
 using Radiate.Optimizers.Supervised.Perceptrons.Layers;
 using Radiate.UnitTests.Utils;
 
@@ -12,9 +15,27 @@ public class ConvTests
         var layer = new Conv(LayerUtils.EightEightThreeShape, LayerUtils.FiveThreeKernel, LayerUtils.StrideOne, new ReLU());
         var output = layer.FeedForward(LayerUtils.EightEightThreeTensor);
 
-        var (oHeight, oWidth, oDepth) = output.Shape;
-        
+        var (_, _, oDepth) = output.Shape;
+
         oDepth.Should().Be(5);
     }
-}
 
+    [Fact]
+    public async Task Conv_Can_FeedForward()
+    {
+        var input = (await Csv.LoadFromCsv("conv", "input")).Single();
+        var output = (await Csv.LoadFromCsv("conv", "output")).Single();
+
+        var layer = await LayerUtils.LoadConvFromFiles();
+        var layerOut = layer.FeedForward(input);
+        
+        foreach (var (aOut, lOut) in output.Flatten().Read1D().Zip(layerOut.Flatten().Read1D()))
+        {
+            var roundAOut = Math.Round(aOut, 5);
+            var roundLOut = Math.Round(lOut, 5);
+            
+            roundAOut.Should().Be(roundLOut);
+        }
+    }
+
+}

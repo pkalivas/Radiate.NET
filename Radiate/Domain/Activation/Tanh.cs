@@ -11,4 +11,7 @@ public class Tanh : IActivationFunction
     public float Activate(float value) => (float)Math.Tanh(value);
 
     public float Deactivate(float value) => 1f - (float)Math.Pow(value, 2);
+    
+    public Activation GetType() => Activation.Tanh;
+
 }

@@ -1,4 +1,6 @@
-﻿using Radiate.Domain.Records;
+﻿using System.Numerics;
+using Radiate.Domain.Records;
+using Radiate.Domain.Tensors;
 
 namespace Radiate.Domain.Loss;
 
@@ -12,14 +14,14 @@ public class CrossEntropy : ILossFunction
         
         return new Cost(errors, errors.Sum());
         // var correctIndex = target.ToList().IndexOf(target.Max());
-        // var result = new float[output.Length];
+        // var result = Tensor.Fill(new float[output.Length].ToTensor().Shape, 0f);
         // var error = output[correctIndex];
         // var loss = error > 0f 
         //         ? -(float)Math.Log(error) 
         //         : (float) Complex.Log(error).Imaginary;
         //
         // result[correctIndex] = -1 / output[correctIndex];
-        // return new Cost(result, loss);
+        // return new Cost(result.Read1D(), loss);
 
     }
 }
