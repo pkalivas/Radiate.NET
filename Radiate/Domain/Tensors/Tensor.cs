@@ -5,8 +5,6 @@ namespace Radiate.Domain.Tensors;
 
 public class Tensor
 {
-    private static int seed = 0;
-    
     [JsonProperty]
     private float[] ElementsOneD { get; set; }
     
@@ -430,7 +428,7 @@ public class Tensor
 
     public static Tensor Random3D(int height, int width, int depth)
     {
-        var rand = new Random(seed++);
+        var rand = new Random();
         var result = new float[height, width, depth].ToTensor();
         for (var j = 0; j < height; j++)
         {
@@ -448,7 +446,7 @@ public class Tensor
     
     public static Tensor Random2D(int height, int width)
     {
-        var rand = new Random(seed++);
+        var rand = new Random();
         var result = new float[height, width].ToTensor();
         for (var j = 0; j < height; j++)
         {
@@ -463,7 +461,7 @@ public class Tensor
     
     public static Tensor Random1D(int height)
     {
-        var rand = new Random(seed++);
+        var rand = new Random();
         var result = new float[height].ToTensor();
         for (var j = 0; j < height; j++)
         {

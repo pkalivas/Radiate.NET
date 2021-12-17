@@ -88,10 +88,10 @@ public class ConvNetTests
         
         var errors = lossFunc.Calculate(denseOut.Read1D(), target.Read1D()).Errors.ToTensor();
 
-        var denseError = await denseLayer.PassBackward(errors);
-        var flattenError = await flattenLayer.PassBackward(denseError);
-        var maxPoolError = await maxPoolLayer.PassBackward(flattenError);
-        var convError = await convLayer.PassBackward(maxPoolError);
+        var denseError = denseLayer.PassBackward(errors);
+        var flattenError = flattenLayer.PassBackward(denseError);
+        var maxPoolError = maxPoolLayer.PassBackward(flattenError);
+        var convError = convLayer.PassBackward(maxPoolError);
 
         var hasErrors = convError.Max();
         hasErrors.Should().NotBe(null);

@@ -71,7 +71,7 @@ public class Dense : Layer
         return output;
     }
 
-    public override Task<Tensor> PassBackward(Tensor pass)
+    public override Tensor PassBackward(Tensor pass)
     {
         var errors = pass.Read1D();
         if (errors.Length != Shape.Width)
@@ -95,7 +95,7 @@ public class Dense : Layer
             }
         }
         
-        return Task.Run(() => new Tensor(resultError));
+        return new Tensor(resultError);
     }
 
     public override Task UpdateWeights(GradientInfo info, int epoch)

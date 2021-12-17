@@ -27,7 +27,6 @@ public class LSTMWrap
     public Shape Shape { get; set; }
     public Activation.Activation CellActivation { get; set; }
     public Activation.Activation HiddenActivation { get; set; }
-    public Shape MemoryShape { get; set; }
     public DenseWrap InputGate { get; set; }
     public DenseWrap ForgetGate { get; set; }
     public DenseWrap GateGate { get; set; }

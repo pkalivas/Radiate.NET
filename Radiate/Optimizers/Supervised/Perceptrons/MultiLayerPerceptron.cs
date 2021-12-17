@@ -73,11 +73,11 @@ public class MultiLayerPerceptron : IOptimizer
         return input;
     }
     
-    public async Task PassBackward(Tensor errors, int epoch)
+    public void PassBackward(Tensor errors, int epoch)
     {
         for (var i = _layers.Count - 1; i >= 0; i--)
         {
-            errors = await _layers[i].PassBackward(errors);
+            errors = _layers[i].PassBackward(errors);
         }
     }
 

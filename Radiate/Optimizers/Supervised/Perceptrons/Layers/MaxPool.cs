@@ -42,7 +42,7 @@ public class MaxPool : Layer
         return pooledResult;
     }
 
-    public override Task<Tensor> PassBackward(Tensor  errors)
+    public override Tensor PassBackward(Tensor  errors)
     {
         var prevInput = _inputs.Pop();
         var output = Tensor.Fill(prevInput.Shape, 0f);
@@ -71,7 +71,7 @@ public class MaxPool : Layer
             }
         }
         
-        return Task.Run(() => output);
+        return output;
     }
 
     public override Task UpdateWeights(GradientInfo gradient, int epoch)

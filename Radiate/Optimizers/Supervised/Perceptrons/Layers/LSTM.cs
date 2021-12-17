@@ -10,7 +10,6 @@ public class LSTM : Layer
 {
     private readonly IActivationFunction _cellActivation;
     private readonly IActivationFunction _hiddenActivation;
-    private readonly Shape _memoryShape;
     private readonly Dense _inputGate;
     private readonly Dense _forgetGate;
     private readonly Dense _gateGate;
@@ -22,7 +21,6 @@ public class LSTM : Layer
     {
         _cellActivation = ActivationFunctionFactory.Get(wrap.CellActivation);
         _hiddenActivation = ActivationFunctionFactory.Get(wrap.HiddenActivation);
-        _memoryShape = wrap.MemoryShape;
         _inputGate = new Dense(wrap.InputGate);
         _forgetGate = new Dense(wrap.ForgetGate);
         _gateGate = new Dense(wrap.GateGate);
@@ -36,7 +34,6 @@ public class LSTM : Layer
         var gateInputSize = shape.Height + shape.Width;
 
         var gateShape = new Shape(gateInputSize, shape.Width);
-        _memoryShape = gateShape;
         _cellActivation = cellActivation;
         _hiddenActivation = hiddenActivation;
         _inputGate = new Dense(gateShape, new Sigmoid());
@@ -51,7 +48,7 @@ public class LSTM : Layer
 
     public override Tensor FeedForward(Tensor input) => OperateGates(input, _forwardTrack.Peek());
 
-    public override async Task<Tensor> PassBackward(Tensor errors)
+    public override Tensor PassBackward(Tensor errors)
     {
         var current = _forwardTrack.Pop();
         var previous = _backwardTrack.Peek();
@@ -70,16 +67,12 @@ public class LSTM : Layer
         var dOutput = _cellActivation.Deactivate(current.OutputOut) * dO;
         var dGate = _hiddenActivation.Deactivate(current.GateOut) * dG;
 
-        var backPasses = new List<Task<Tensor>>()
-        {
-            _inputGate.PassBackward(dInput),
-            _forgetGate.PassBackward(dForget),
-            _outputGate.PassBackward(dOutput),
-            _gateGate.PassBackward(dGate)
-        };
+        var iE = _inputGate.PassBackward(dInput);
+        var fE = _forgetGate.PassBackward(dForget);
+        var oE = _outputGate.PassBackward(dOutput);
+        var gE = _gateGate.PassBackward(dGate);
 
-        var dx = (await Task.WhenAll(backPasses))
-            .Aggregate(Tensor.Like(_memoryShape), (all, curr) => all + curr).Read1D();
+        var dx = (iE + fE + oE + gE).Read1D();
 
         var cellGrad = dS * current.ForgetOut;
         var hiddenGrad = dx.Skip(Shape.Height).Take(Shape.Width);

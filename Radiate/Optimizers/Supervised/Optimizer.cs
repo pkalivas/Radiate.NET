@@ -57,7 +57,7 @@ public class Optimizer
 
                 foreach (var (passError, _) in batchErrors.Select(pair => pair).Reverse())
                 {
-                    await _optimizer.PassBackward(new Tensor(passError), epochs.Count);
+                    _optimizer.PassBackward(new Tensor(passError), epochs.Count);
                 }
 
                 await _optimizer.Update(_gradientInfo, epochs.Count);

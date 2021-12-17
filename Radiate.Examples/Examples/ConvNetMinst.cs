@@ -7,7 +7,6 @@ using Radiate.Domain.Records;
 using Radiate.Optimizers.Supervised;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
-using Radiate.Optimizers.Supervised.Perceptrons.Layers;
 
 namespace Radiate.Examples.Examples;
 

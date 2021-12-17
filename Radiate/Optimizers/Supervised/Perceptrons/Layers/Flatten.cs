@@ -15,7 +15,7 @@ public class Flatten : Layer
 
     public override Tensor FeedForward(Tensor input) => input.Flatten();
 
-    public override Task<Tensor> PassBackward(Tensor errors) => Task.Run(() => errors.Reshape(Shape));
+    public override Tensor PassBackward(Tensor errors) => errors.Reshape(Shape);
 
     public override Task UpdateWeights(GradientInfo gradient, int epoch) => Task.CompletedTask;
     

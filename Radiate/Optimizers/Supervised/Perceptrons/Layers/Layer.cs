@@ -17,7 +17,7 @@ public abstract class Layer
     
     public abstract Tensor Predict(Tensor pass);
     public abstract Tensor FeedForward(Tensor pass);
-    public abstract Task<Tensor> PassBackward(Tensor pass);
+    public abstract Tensor PassBackward(Tensor pass);
     public abstract Task UpdateWeights(GradientInfo gradient, int epoch);
     public abstract LayerWrap Save();
 }

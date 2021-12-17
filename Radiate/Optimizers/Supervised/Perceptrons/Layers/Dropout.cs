@@ -29,7 +29,7 @@ public class Dropout : Layer
             .Select(ins => _random.NextDouble() < _dropoutRate ? 0 : ins)
             .ToTensor();
 
-    public override Task<Tensor> PassBackward(Tensor errors) => Task.Run(() => errors);
+    public override Tensor PassBackward(Tensor errors) => errors;
 
     public override Task UpdateWeights(GradientInfo info, int epoch) => Task.CompletedTask;
 

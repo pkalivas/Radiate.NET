@@ -87,13 +87,12 @@ public class Conv : Layer
         return result;
     }
 
-    public override async Task<Tensor> PassBackward(Tensor errors)
+    public override Tensor PassBackward(Tensor errors)
     {
-        var errorSliceTask = Task.Run(() => _sliceGenerator.Slice(errors));
         var prevInput = _inputs.Pop();
         var prevOut = _activation.Deactivate(_outputs.Pop());
         var previousSlices = _slices.Pop();
-        
+
         var output = Tensor.Like(prevInput.Shape);
         foreach (var (prevInSlice, j, k) in previousSlices)
         {
@@ -103,7 +102,7 @@ public class Conv : Layer
             }
         }
         
-        foreach (var (lossSlice, j, k) in await errorSliceTask)
+        foreach (var (lossSlice, j, k) in _sliceGenerator.Slice(errors))
         {
             for (var i = 0; i < _filters.Length; i++)
             {

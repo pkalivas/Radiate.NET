@@ -43,7 +43,7 @@ public class EvolveHelloWorld : IExample
     }
 
 
-    public class HelloWorld : Genome
+    private class HelloWorld : Genome
     {
         public char[] Chars { get; set; }
 

@@ -8,7 +8,7 @@ public interface IOptimizer
 {
     Tensor Predict(Tensor  inputs);
     Tensor  PassForward(Tensor  inputs);
-    Task PassBackward(Tensor  errors, int epoch);
+    void PassBackward(Tensor  errors, int epoch);
     Task Update(GradientInfo gradient, int epoch);
     OptimizerWrap Save();
 }
