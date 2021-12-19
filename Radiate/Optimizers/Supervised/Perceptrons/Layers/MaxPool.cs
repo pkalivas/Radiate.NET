@@ -96,7 +96,7 @@ public class MaxPool : Layer
     private Tensor Pool(Tensor input, List<Slice> slices)
     {
         var (hStride, wStride) = _sliceGenerator.CalcStride(input);
-        var output = new float[hStride, wStride, Shape.Depth].ToTensor();
+        var output = new Tensor(hStride, wStride, Shape.Depth);
 
         foreach (var (slice, sHeight, sWidth, sDepth) in slices)
         {

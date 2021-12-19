@@ -10,20 +10,17 @@ namespace Radiate.Optimizers.Supervised.Perceptrons;
 
 public class MultiLayerPerceptron : IOptimizer
 {
-    private readonly Shape _inputShape;
     private readonly List<LayerInfo> _layerInfo;
     private readonly List<Layer> _layers;
 
     public MultiLayerPerceptron()
     {
-        _inputShape = new Shape(0);
         _layerInfo = new List<LayerInfo>();
         _layers = new List<Layer>();
     }
     
     public MultiLayerPerceptron(MultiLayerPerceptronWrap wrap)
     {
-        _inputShape = wrap.InputShape;
         _layerInfo = new List<LayerInfo>();
         _layers = wrap.LayerWraps
             .Select(layerWrap => layerWrap.LayerType switch
@@ -41,7 +38,6 @@ public class MultiLayerPerceptron : IOptimizer
     
     public MultiLayerPerceptron(Shape inputShape)
     {
-        _inputShape = inputShape;
         _layerInfo = new List<LayerInfo>();
         _layers = new List<Layer>();
     }
@@ -90,7 +86,6 @@ public class MultiLayerPerceptron : IOptimizer
         OptimizerType = OptimizerType.MultiLayerPerceptron,
         MultiLayerPerceptronWrap = new()
         {
-            InputShape = _inputShape,
             LayerWraps = _layers.Select(layer => layer.Save()).ToList()
         }
     };

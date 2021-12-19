@@ -11,6 +11,5 @@ public class OptimizerWrap
 
 public class MultiLayerPerceptronWrap
 {
-    public Shape InputShape { get; set; }
     public List<LayerWrap> LayerWraps { get; set; }
 }

@@ -49,8 +49,8 @@ public class Dense : Layer
         {
             throw new Exception($"Cannot pass multi-dimensional tensor to dense layer.");
         }
-        
-        var result = new float[Shape.Width].ToTensor();
+
+        var result = new Tensor(Shape.Width);
         for (var i = 0; i < Shape.Width; i++)
         {
             result[i] = _bias[i] + input.Read1D()
@@ -83,7 +83,7 @@ public class Dense : Layer
         var input = _inputs.Pop();
         var grads = _activation.Deactivate(output);
         
-        var resultError = new float[Shape.Height];
+        var resultError = new Tensor(Shape.Height);
         for (var i = 0; i < Shape.Width; i++)
         {
             _biasGradients[i] += grads[i] * errors[i];
@@ -95,7 +95,7 @@ public class Dense : Layer
             }
         }
         
-        return new Tensor(resultError);
+        return resultError;
     }
 
     public override Task UpdateWeights(GradientInfo info, int epoch)

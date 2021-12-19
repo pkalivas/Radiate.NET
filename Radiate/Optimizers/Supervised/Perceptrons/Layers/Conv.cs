@@ -143,7 +143,7 @@ public class Conv : Layer
 
     private Tensor Convolve(List<Slice> slices)
     {
-        var output = new float[Shape.Height, Shape.Width, _kernel.Count].ToTensor();
+        var output = new Tensor(Shape.Height, Shape.Width, _kernel.Count);
 
         for (var i = 0; i < _kernel.Count; i++)
         {
