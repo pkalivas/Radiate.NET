@@ -33,7 +33,7 @@ public class ProgressBar
         var timeSince = DateTime.Now - _startTime;
         var iterationTime = DateTime.Now - _previousTime;
 
-        var iterTime = iterationTime.Seconds >= 1 ? $"{iterationTime.Seconds}s" : $"{iterationTime.Milliseconds}ms";
+        var iterTime = GetIterTime(iterationTime);
         
         var display = $"[{_tick}] " +
             $"{timeSince.Hours}:{timeSince.Minutes}:{timeSince.Seconds}:{timeSince.Milliseconds} " +
@@ -52,4 +52,11 @@ public class ProgressBar
             Console.WriteLine();
         }
     }
+
+    private string GetIterTime(TimeSpan iterTime) => (iterTime.Minutes, iterTime.Seconds, iterTime.Milliseconds) switch
+    {
+        (> 0, _, _) => $"{iterTime.Minutes}:{iterTime.Seconds}:{iterTime.Milliseconds}m",
+        (<= 0, > 0, _) => $"{iterTime.Seconds}:{iterTime.Milliseconds}s",
+        (<= 0, <= 0, > 0) => $"{iterTime.Milliseconds}ms"
+    };
 }
