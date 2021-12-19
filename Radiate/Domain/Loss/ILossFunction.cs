@@ -1,8 +1,9 @@
 ﻿using Radiate.Domain.Records;
+using Radiate.Domain.Tensors;
 
 namespace Radiate.Domain.Loss;
 
 public interface ILossFunction
 {
-    Cost Calculate(float[] output, float[] target);
+    Cost Calculate(Tensor output, Tensor target);
 }

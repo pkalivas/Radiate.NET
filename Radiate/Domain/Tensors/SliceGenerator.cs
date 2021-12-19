@@ -17,7 +17,7 @@ public class SliceGenerator
 
     public int Stride => _stride;
 
-    public IEnumerable<(Tensor slice, int hStride, int wStride)> Slice(Tensor volume)
+    public IEnumerable<Slice> Slice(Tensor volume)
     {
         var (vHeight, _, _) = volume.Shape;
         var (_, _, kDepth) = _kernelShape;
@@ -34,12 +34,12 @@ public class SliceGenerator
                 var sliceD = new[] { 0, kDepth };
                 var tensorSlice = volume.Slice(sliceH, sliceW, sliceD);
 
-                yield return (tensorSlice, i, j);
+                yield return new Slice(tensorSlice, i, j);
             }
         }
     }
 
-    public IEnumerable<(Tensor slice, int hStride, int wStride, int dStride)> Slice3D(Tensor volume)
+    public IEnumerable<Slice> Slice3D(Tensor volume)
     {
         var (_, _, vDepth) = volume.Shape;
         var (hStride, wStride) = CalcStride(volume);
@@ -62,7 +62,7 @@ public class SliceGenerator
 
                     var tensorSlice = volume.Slice(heightChange, widthChange, depthChange);
 
-                    yield return (tensorSlice, i, j, k);
+                    yield return new Slice(tensorSlice, i, j, k);
                 }
             }
         }

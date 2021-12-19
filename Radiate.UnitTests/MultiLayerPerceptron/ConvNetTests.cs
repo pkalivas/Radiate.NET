@@ -86,7 +86,7 @@ public class ConvNetTests
         var target = Tensor.Fill(denseOut.Shape, 0f);
         target[3] = 1;
         
-        var errors = lossFunc.Calculate(denseOut.Read1D(), target.Read1D()).Errors.ToTensor();
+        var errors = lossFunc.Calculate(denseOut, target).Errors;
 
         var denseError = denseLayer.PassBackward(errors);
         var flattenError = flattenLayer.PassBackward(denseError);

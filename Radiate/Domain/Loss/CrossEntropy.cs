@@ -6,22 +6,12 @@ namespace Radiate.Domain.Loss;
 
 public class CrossEntropy : ILossFunction
 {
-    public Cost Calculate(float[] output, float[] target)
+    public Cost Calculate(Tensor output, Tensor target)
     {
-        var errors = output.Zip(target)
+        var errors = output.Read1D().Zip(target.Read1D())
             .Select(pair => -pair.Second * (float)Math.Log(pair.First))
-            .ToArray();
+            .ToTensor();
         
         return new Cost(errors, errors.Sum());
-        // var correctIndex = target.ToList().IndexOf(target.Max());
-        // var result = Tensor.Fill(new float[output.Length].ToTensor().Shape, 0f);
-        // var error = output[correctIndex];
-        // var loss = error > 0f 
-        //         ? -(float)Math.Log(error) 
-        //         : (float) Complex.Log(error).Imaginary;
-        //
-        // result[correctIndex] = -1 / output[correctIndex];
-        // return new Cost(result.Read1D(), loss);
-
     }
 }

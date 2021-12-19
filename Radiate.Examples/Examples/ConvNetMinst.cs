@@ -14,9 +14,9 @@ public class ConvNetMinst : IExample
 {
     public async Task Run()
     {
-        const int featureLimit = 500;
+        const int featureLimit = 5000;
         const double splitPct = .95;
-        const int maxEpochs = 500;
+        const int maxEpochs = 50;
 
         var (normalizedInputs, indexedLabels) = await new Mnist(featureLimit).GetDataSet();
 
@@ -46,7 +46,7 @@ public class ConvNetMinst : IExample
             .AddLayer(new DenseInfo(64, Activation.Sigmoid))
             .AddLayer(new DenseInfo(outputSize, Activation.SoftMax));
 
-        var optimizer = new Optimizer(neuralNetwork, Loss.CrossEntropy, imageShape, new GradientInfo
+        var optimizer = new Optimizer(neuralNetwork, Loss.Difference, imageShape, new GradientInfo
         {
             Gradient = Gradient.Adam,
             LearningRate = 0.01f

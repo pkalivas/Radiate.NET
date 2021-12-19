@@ -41,7 +41,7 @@ public class Optimizer
 
         while (true)
         {
-            var predictions = new List<float[]>();
+            var predictions = new List<Tensor>();
             var epochErrors = new List<Cost>();
 
             foreach (var (inputs, answers) in batches)
@@ -49,29 +49,30 @@ public class Optimizer
                 var batchErrors = new List<Cost>();
                 foreach (var (x, y) in inputs.Zip(answers))
                 {
-                    var prediction = _optimizer.PassForward(x).Read1D();
+                    var prediction = _optimizer.PassForward(x);
                     
-                    batchErrors.Add(_lossFunction.Calculate(prediction, y.Read1D()));
+                    batchErrors.Add(_lossFunction.Calculate(prediction, y));
                     predictions.Add(prediction);
                 }
 
                 foreach (var (passError, _) in batchErrors.Select(pair => pair).Reverse())
                 {
-                    _optimizer.PassBackward(new Tensor(passError), epochs.Count);
+                    _optimizer.PassBackward(passError, epochs.Count);
                 }
 
                 await _optimizer.Update(_gradientInfo, epochs.Count);
                 
                 epochErrors.AddRange(batchErrors);
             }
-            
+
+            var predictionsInner = predictions.Select(pred => pred.Read1D()).ToList();
             epochs.Add(new Epoch
             {
-                Predictions = predictions,
+                Predictions = predictionsInner,
                 Loss = epochErrors.Sum(err => err.loss) / epochErrors.Count,
                 IterationLoss = epochErrors.Select(err => err.loss).ToList(),
-                ClassificationAccuracy = ValidationService.ClassificationAccuracy(predictions, targets),
-                RegressionAccuracy = ValidationService.RegressionAccuracy(predictions, targets)
+                ClassificationAccuracy = ValidationService.ClassificationAccuracy(predictionsInner, targets),
+                RegressionAccuracy = ValidationService.RegressionAccuracy(predictionsInner, targets)
             });
             
             if (trainFunc(epochs))
@@ -93,7 +94,7 @@ public class Optimizer
             foreach (var (feature, target) in input.Zip(answer))
             {
                 var prediction = _optimizer.Predict(feature);
-                var (_, loss) = _lossFunction.Calculate(prediction.Read1D(), target.Read1D());
+                var (_, loss) = _lossFunction.Calculate(prediction, target);
             
                 iterationLoss.Add(loss);
                 predictions.Add(prediction.Read1D());   

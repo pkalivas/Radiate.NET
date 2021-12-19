@@ -28,11 +28,11 @@ public class Adam : IGradient
         var ms = Tensor.Fill(gradientShape, 0f);
         var vs = Tensor.Fill(gradientShape, 0f);
 
-        return gradientShape switch
+        return gradient.GetDimension() switch
         {
-            (> 0, <= 0, <= 0) => Calc1D(gradient, ms, vs, lRate, bOneDiscount, bTwoDiscount),
-            (> 0, > 0, <= 0) => Calc2D(gradient, ms, vs, lRate, bOneDiscount, bTwoDiscount),
-            (> 0, > 0, > 0) => Calc3D(gradient, ms, vs, lRate, bOneDiscount, bTwoDiscount),
+            1 => Calc1D(gradient, ms, vs, lRate, bOneDiscount, bTwoDiscount),
+            2 => Calc2D(gradient, ms, vs, lRate, bOneDiscount, bTwoDiscount),
+            3 => Calc3D(gradient, ms, vs, lRate, bOneDiscount, bTwoDiscount),
             _ => throw new Exception($"Cannot calc adam of more than 3D")
         };
     }

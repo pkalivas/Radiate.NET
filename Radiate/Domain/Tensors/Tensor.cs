@@ -121,30 +121,44 @@ public class Tensor
 
         return result;
     }
-    
-    public static float SumT(Tensor one, Tensor other)
+
+    public float Sum()
     {
-        var oShape = one.Shape;
-        var tShape = other.Shape;
+        var (height, width, depth) = Shape;
+        var total = 0f;
+        var dimension = GetDimension();
         
-        if (oShape.Width != tShape.Width || oShape.Height != tShape.Height || oShape.Depth !=  tShape.Depth)
+        if (dimension == 1)
         {
-            throw new Exception($"Cannot dot product two unlike matrices");
+            total = Read1D().Sum();
         }
 
-        var result = 0.0f;
-        for (var i = 0; i < oShape.Height; i++) 
+        if (dimension == 2)
         {
-            for (var j = 0; j < oShape.Width; j++) 
+            for (var i = 0; i < height; i++)
             {
-                for (var k = 0; k < oShape.Depth; k++) 
+                for (var j = 0; j < width; j++)
                 {
-                    result += one.ElementsThreeD[i, j, k] * other.ElementsThreeD[j, i, k];
+                    total += this[i, j];
                 }
             }
         }
 
-        return result;
+        if (dimension == 3)
+        {
+            for (var i = 0; i < height; i++)
+            {
+                for (var j = 0; j < width; j++)
+                {
+                    for (var k = 0; k < depth; k++)
+                    {
+                        total += this[i, j, k];
+                    }
+                }
+            } 
+        }
+
+        return total;
     }
 
     public Tensor Flatten()
@@ -184,47 +198,6 @@ public class Tensor
         return ten;
     }
 
-    public void DStack(Tensor ten)
-    {
-        var (inHeight, inWidth, _) = ten.Shape;
-        var (height, width, depth) = Shape;
-        
-        if (ElementsTwoD is null && ElementsThreeD is null)
-        {
-            ElementsTwoD = ten.ElementsTwoD;
-        }
-        else
-        {
-            if (inHeight != height || inWidth != width)
-            {
-                throw new Exception($"Cannot stack odd sized tensor.");
-            }
-
-            if (depth == 0)
-            {
-                ElementsThreeD = new float[height, width, inWidth];
-                for (var i = 0; i < height; i++)
-                {
-                    for (var j = 0; j < width; j++)
-                    {
-                        ElementsThreeD[i, j, 0] = ElementsTwoD[i, j];
-                    }
-                }
-
-                ElementsTwoD = null;
-            }
-            
-            (height, width, depth) = Shape;
-            for (var i = 0; i < height; i++)
-            {
-                for (var j = 0; j < width; j++)
-                {
-                    ElementsThreeD[i, j, depth - 1] = ten[i, j];
-                }
-            }
-        }
-    }
-    
     public Tensor Slice(int[] height, int[] width, int[] depth)
     {
         var sliceH = height[1] - height[0];
@@ -269,11 +242,8 @@ public class Tensor
     {
         var result = new float[height * 2 + Shape.Height, width * 2 + Shape.Width, Shape.Depth].ToTensor();
         
-        for (var i = 0; i < result._shape.Height; i++)
-        for (var j = 0; j < result._shape.Width; j++)
-        for (var k = 0; k < Shape.Depth; k++)
-            result[i, j, k] = 0f;
-
+        result.Zero();
+        
         for (var i = height; i < result._shape.Height - height; i++)
             for (var j = width; j < result._shape.Width - width; j++)
             for (var k = 0; k < result._shape.Depth; k++)
@@ -396,21 +366,7 @@ public class Tensor
             else
                 ElementsOneD[j] += other.ElementsOneD[j];
     }
-    
-    public void Subtract(Tensor other)
-    {
-        for (var j = 0; j < _shape.Height; j++)
-            if (_shape.Width > 0)
-                for (var k = 0; k < _shape.Width; k++)
-                    if (_shape.Depth > 0)
-                        for (var l = 0; l < _shape.Depth; l++)
-                            ElementsThreeD[j, k, l] -= other.ElementsThreeD[j, k, l];
-                    else
-                        ElementsTwoD[j, k] -= other.ElementsTwoD[j, k];
-            else
-                ElementsOneD[j] -= other.ElementsOneD[j];
-    }
-    
+
     public void Mul(float value)
     {
         for (var j = 0; j < _shape.Height; j++)
@@ -425,52 +381,35 @@ public class Tensor
                 ElementsOneD[j] *= value;
     }
     
-
-    public static Tensor Random3D(int height, int width, int depth)
+    public static Tensor Random(int height, int width = 0, int depth = 0)
     {
         var rand = new Random();
-        var result = new float[height, width, depth].ToTensor();
-        for (var j = 0; j < height; j++)
+        var result = new Tensor(height, width, depth);
+        var dimension = result.GetDimension();
+
+        if (dimension == 1)
         {
-            for (var k = 0; k < width; k++)
+            TensorLoop((i) => result[i] = (float) rand.NextDouble() * 2 - 1, height);
+        }
+
+        if (dimension == 2)
+        {
+            TensorLoop((i, j) =>
             {
-                for (var l = 0; l < depth; l++)
-                {
-                    result[j, k, l] = (float)rand.NextDouble() * 2 - 1;
-                }
-            }
+                result[i, j] = (float)rand.NextDouble() * 2 - 1;
+            }, height, width);
         }
 
-        return result;
-    }
-    
-    public static Tensor Random2D(int height, int width)
-    {
-        var rand = new Random();
-        var result = new float[height, width].ToTensor();
-        for (var j = 0; j < height; j++)
+        if (dimension == 3)
         {
-            for (var k = 0; k < width; k++)
+            TensorLoop((i, j, k) =>
             {
-                result[j, k] = (float)rand.NextDouble() * 2 - 1;
-            }
+                result[i, j, k] = (float)rand.NextDouble() * 2 - 1;
+            }, height, width, depth);
         }
-
+        
         return result;
     }
-    
-    public static Tensor Random1D(int height)
-    {
-        var rand = new Random();
-        var result = new float[height].ToTensor();
-        for (var j = 0; j < height; j++)
-        {
-            result[j] = (float)rand.NextDouble() * 2 - 1;
-        }
-
-        return result;
-    }
-
 
     public string ToImageString(float scale = .5f)
     {
@@ -493,28 +432,6 @@ public class Tensor
         return result;
     }
 
-    public string Show()
-    {
-        var shape = Shape;
-        var result = "";
-        for (var i = 0; i < shape.Height; i++)
-        {
-            for (var j = 0; j < shape.Width; j++)
-            {
-                for (var k = 0; k < shape.Depth; k++)
-                {
-                    var value = ElementsThreeD[i, j, k];
-                    result += $"{Math.Round(value, 2)}, ";
-                }
-            }
-
-            result += "\n\n";
-        }
-
-        return result;
-    }
-    
-    
     public static Tensor Apply(Tensor ten, Func<float, float> func)
     {
         var result = Like(ten.Shape);
@@ -567,7 +484,7 @@ public class Tensor
             {
                 for (var k = 0; k < depth; k++)
                 {
-                    act(height, width, depth);
+                    act(i, j, k);
                 }    
             }
         }
@@ -579,7 +496,7 @@ public class Tensor
         {
             for (var j = 0; j < width; j++)
             {
-                act(height, width);
+                act(i, j);
             }
         }
     }
@@ -588,7 +505,7 @@ public class Tensor
     {
         for (var i = 0; i < height; i++)
         {
-            act(height);
+            act(i);
         }
     }
 
@@ -612,15 +529,13 @@ public class Tensor
         }
     }
 
-    private int GetDimension() => _shape switch
+    public int GetDimension() => _shape switch
     {
         (> 0, <= 0, <= 0) => 1,
         (> 0, > 0, <= 0) => 2,
         (> 0, > 0, > 0) => 3,
         _ => throw new Exception($"Dimension not supported")
     };
-    
-    
     
     
     

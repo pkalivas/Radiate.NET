@@ -9,7 +9,7 @@ public class MaxPool : Layer
 {
     private readonly Kernel _kernel;
     private readonly Stack<Tensor> _inputs;
-    private readonly Stack<List<(Tensor slice, int sHeight, int sWidth, int sDepth)>> _slices;
+    private readonly Stack<List<Slice>> _slices;
     private readonly SliceGenerator _sliceGenerator;
     private readonly int _stride;
 
@@ -17,7 +17,7 @@ public class MaxPool : Layer
     {
         _kernel = wrap.Kernel;
         _inputs = new Stack<Tensor>();
-        _slices = new Stack<List<(Tensor slice, int sHeight, int sWidth, int sDepth)>>();
+        _slices = new Stack<List<Slice>>();
         _stride = wrap.Stride;
         _sliceGenerator = new SliceGenerator(_kernel, Shape.Depth, _stride);
     }
@@ -26,19 +26,25 @@ public class MaxPool : Layer
     {
         _kernel = kernel;
         _inputs = new Stack<Tensor>();
-        _slices = new Stack<List<(Tensor slice, int sHeight, int sWidth, int sDepth)>>();
+        _slices = new Stack<List<Slice>>();
         _stride = stride;
         _sliceGenerator = new SliceGenerator(kernel, shape.Depth, stride);
     }
 
-    public override Tensor Predict(Tensor input) => Pool(input);
+    public override Tensor Predict(Tensor input)
+    {
+        var slices = _sliceGenerator.Slice3D(input).ToList();
+        return Pool(input, slices);
+    }
 
     public override Tensor FeedForward(Tensor  input)
     {
-        var pooledResult = Pool(input);
+        var slices = _sliceGenerator.Slice3D(input).ToList();
+        var pooledResult = Pool(input, slices);
         
         _inputs.Push(input);
-
+        _slices.Push(slices);
+        
         return pooledResult;
     }
 
@@ -74,10 +80,7 @@ public class MaxPool : Layer
         return output;
     }
 
-    public override Task UpdateWeights(GradientInfo gradient, int epoch)
-    {
-        return Task.CompletedTask;
-    }
+    public override Task UpdateWeights(GradientInfo gradient, int epoch) => Task.CompletedTask;
     
     public override LayerWrap Save() => new()
     {
@@ -90,18 +93,15 @@ public class MaxPool : Layer
         }
     };
 
-    private Tensor Pool(Tensor input)
+    private Tensor Pool(Tensor input, List<Slice> slices)
     {
         var (hStride, wStride) = _sliceGenerator.CalcStride(input);
         var output = new float[hStride, wStride, Shape.Depth].ToTensor();
-        var slices = _sliceGenerator.Slice3D(input).ToList();
 
         foreach (var (slice, sHeight, sWidth, sDepth) in slices)
         {
             output[sHeight, sWidth, sDepth] = slice.Max();
         }
-        
-        _slices.Push(slices);
         
         return output;
     }

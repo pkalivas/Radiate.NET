@@ -11,7 +11,7 @@ public class Conv : Layer
     private readonly IActivationFunction _activation;
     private readonly Kernel _kernel;
     private readonly SliceGenerator _sliceGenerator;
-    private readonly Stack<List<(Tensor slice, int sHeight, int sWidth)>> _slices;
+    private readonly Stack<List<Slice>> _slices;
     private readonly Stack<Tensor> _inputs;
     private readonly Stack<Tensor> _outputs;
     private readonly Tensor[] _filters;
@@ -24,7 +24,7 @@ public class Conv : Layer
         _activation = ActivationFunctionFactory.Get(wrap.Activation);
         _kernel = wrap.Kernel;
         _sliceGenerator = new SliceGenerator(_kernel, wrap.Shape.Depth, wrap.Stride);
-        _slices = new Stack<List<(Tensor slice, int sHeight, int sWidth)>>();
+        _slices = new Stack<List<Slice>>();
         _inputs = new Stack<Tensor>();
         _outputs = new Stack<Tensor>();
         _filters = wrap.Filters;
@@ -41,49 +41,36 @@ public class Conv : Layer
         _activation = activation;
         _kernel = kernel;
         _sliceGenerator = new SliceGenerator(_kernel, depth, stride);
-        _slices = new();
+        _slices = new Stack<List<Slice>>();
         _inputs = new Stack<Tensor>();
         _outputs = new Stack<Tensor>();
         _filters = new Tensor[count];
         _filterGradients = new Tensor[count];
-        _bias = Tensor.Random1D(count);
+        _bias = Tensor.Random(count);
         _biasGradients = new Tensor(count);
 
         for (var i = 0; i < count; i++)
         {
-            _filters[i] = Tensor.Random3D(dim, dim, depth) / (float)Math.Pow(_kernel.Dim, _kernel.Dim);
+            _filters[i] = Tensor.Random(dim, dim, depth) / (float)Math.Pow(_kernel.Dim, _kernel.Dim);
             _filterGradients[i] = Tensor.Fill(new Shape(dim, dim, depth), 0f);
         }
     }
 
     public override Tensor Predict(Tensor input)
     {
-        var output = new float[Shape.Height, Shape.Width, _kernel.Count].ToTensor();
         var slices = _sliceGenerator.Slice(input).ToList();
-
-        for (var i = 0; i < _kernel.Count; i++)
-        {
-            var currentKernel = _filters[i];
-            var currentBias = _bias[i];
-            
-            foreach (var (slice, sHeight, sWidth) in slices)
-            {
-                output[sHeight, sWidth, i] += Tensor.Sum(slice, currentKernel) + currentBias;
-            }
-        }
-        
-        _slices.Push(slices);
-        
-        return _activation.Activate(output);
+        return Convolve(slices);
     }
 
     public override Tensor FeedForward(Tensor input)
     {
+        var slices = _sliceGenerator.Slice(input).ToList();
+        var result = Convolve(slices);
+     
         _inputs.Push(input);
-
-        var result = Predict(input);
-        
+        _slices.Push(slices);
         _outputs.Push(result);
+        
         return result;
     }
 
@@ -94,7 +81,7 @@ public class Conv : Layer
         var previousSlices = _slices.Pop();
 
         var output = Tensor.Like(prevInput.Shape);
-        foreach (var (prevInSlice, j, k) in previousSlices)
+        foreach (var (prevInSlice, j, k, _) in previousSlices)
         {
             for (var i = 0; i < _filters.Length; i++)
             {
@@ -102,7 +89,7 @@ public class Conv : Layer
             }
         }
         
-        foreach (var (lossSlice, j, k) in _sliceGenerator.Slice(errors))
+        foreach (var (lossSlice, j, k, _) in _sliceGenerator.Slice(errors))
         {
             for (var i = 0; i < _filters.Length; i++)
             {
@@ -152,5 +139,25 @@ public class Conv : Layer
             BiasGradients = _biasGradients
         }
     };
+
+
+    private Tensor Convolve(List<Slice> slices)
+    {
+        var output = new float[Shape.Height, Shape.Width, _kernel.Count].ToTensor();
+
+        for (var i = 0; i < _kernel.Count; i++)
+        {
+            var currentKernel = _filters[i];
+            var currentBias = _bias[i];
+            
+            foreach (var (slice, sHeight, sWidth, _) in slices)
+            {
+                output[sHeight, sWidth, i] += Tensor.Sum(slice, currentKernel) + currentBias;
+            }
+        }
+        
+        return _activation.Activate(output);
+    }
+    
 
 }

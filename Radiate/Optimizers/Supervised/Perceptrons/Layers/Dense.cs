@@ -32,8 +32,8 @@ public class Dense : Layer
         _activation = activation;
         _inputs = new Stack<Tensor>();
         _outputs = new Stack<Tensor>();
-        _weights = Tensor.Random2D(shape.Width, shape.Height);
-        _bias = Tensor.Random1D(shape.Width);
+        _weights = Tensor.Random(shape.Width, shape.Height);
+        _bias = Tensor.Random(shape.Width);
         _weightGradients = new Tensor(shape.Width, shape.Height);
         _biasGradients = new Tensor(shape.Width);
     }
