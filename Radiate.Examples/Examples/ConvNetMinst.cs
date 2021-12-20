@@ -1,8 +1,11 @@
-﻿using Radiate.Data;
+﻿using System.IO;
+using Newtonsoft.Json;
+using Radiate.Data;
 using Radiate.Data.Utils;
 using Radiate.Domain.Activation;
 using Radiate.Domain.Gradients;
 using Radiate.Domain.Loss;
+using Radiate.Domain.Models;
 using Radiate.Domain.Records;
 using Radiate.Optimizers.Supervised;
 using Radiate.Optimizers.Supervised.Perceptrons;
@@ -15,8 +18,8 @@ public class ConvNetMinst : IExample
     public async Task Run()
     {
         const int featureLimit = 5000;
-        const double splitPct = .95;
-        const int maxEpochs = 50;
+        const double splitPct = .75;
+        const int maxEpochs = 30;
 
         var (normalizedInputs, indexedLabels) = await new Mnist(featureLimit).GetDataSet();
 
@@ -54,7 +57,7 @@ public class ConvNetMinst : IExample
 
         Console.WriteLine("\n\n");
         var progressBar = new ProgressBar(maxEpochs);
-        await optimizer.Train(trainFeatures, trainTargets, 20, (epochs) => 
+        await optimizer.Train(trainFeatures, trainTargets, 32, (epochs) => 
         {
             var currentEpoch = epochs.Last();
             var prevEpoch = epochs.Count > 1 ? epochs.ElementAt(epochs.Count - 2) : currentEpoch;
@@ -66,6 +69,9 @@ public class ConvNetMinst : IExample
             return maxEpochs == epochs.Count;
         });
 
+        var wrap = optimizer.Save();
+        await Save(wrap.MultiLayerPerceptronWrap);
+        
         var trainValidation = optimizer.Validate(trainFeatures, trainTargets);
         var testValidation = optimizer.Validate(testFeatures, testTargets);
         
@@ -73,5 +79,13 @@ public class ConvNetMinst : IExample
         var testValid = testValidation.ClassificationAccuracy;
         
         Console.WriteLine($"\nTrain accuracy: {trainValid} - Test accuracy: {testValid}");
+    }
+
+    private static async Task Save(MultiLayerPerceptronWrap wrap)
+    {
+        var path = $"C:\\Users\\peter\\Desktop\\Radiate.NET\\Radiate.Examples\\Saves\\convnet.json";
+        var content = JsonConvert.SerializeObject(wrap);
+
+        await File.WriteAllTextAsync(path, content);
     }
 }

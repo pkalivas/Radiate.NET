@@ -11,4 +11,8 @@
       <ProjectReference Include="..\Radiate\Radiate.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Saves" />
+    </ItemGroup>
+
 </Project>
