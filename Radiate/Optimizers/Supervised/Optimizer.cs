@@ -50,8 +50,9 @@ public class Optimizer
                 foreach (var (x, y) in inputs.Zip(answers))
                 {
                     var prediction = _optimizer.PassForward(x);
+                    var cost = _lossFunction.Calculate(prediction, y);
                     
-                    batchErrors.Add(_lossFunction.Calculate(prediction, y));
+                    batchErrors.Add(cost);
                     predictions.Add(prediction);
                 }
 
