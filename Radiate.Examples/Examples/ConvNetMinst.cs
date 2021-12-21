@@ -19,7 +19,7 @@ public class ConvNetMinst : IExample
     {
         const int featureLimit = 5000;
         const double splitPct = .75;
-        const int maxEpochs = 30;
+        const int maxEpochs = 2;
 
         var (normalizedInputs, indexedLabels) = await new Mnist(featureLimit).GetDataSet();
 
@@ -44,7 +44,7 @@ public class ConvNetMinst : IExample
         var imageShape = new Shape(28, 28, 1);
         var neuralNetwork = new MultiLayerPerceptron()
             .AddLayer(new ConvInfo(16, 3))
-            .AddLayer(new MaxPoolInfo(16, 3) { Stride = 2})
+            .AddLayer(new MaxPoolInfo(16, 3) { Stride = 2 })
             .AddLayer(new FlattenInfo())
             .AddLayer(new DenseInfo(64, Activation.Sigmoid))
             .AddLayer(new DenseInfo(outputSize, Activation.SoftMax));
