@@ -32,12 +32,10 @@ public class ProgressBar
         var bar = string.Join("", Enumerable.Range(0, _barSize).Select(val => val <= tickPct? "#" : " "));
         var timeSince = DateTime.Now - _startTime;
         var iterationTime = DateTime.Now - _previousTime;
-
-        var iterTime = GetIterTime(iterationTime);
         
         var display = $"[{_tick}] " +
             $"{timeSince.Hours}:{timeSince.Minutes}:{timeSince.Seconds}:{timeSince.Milliseconds} " +
-            $"{iterTime}/iter {percent}% [{bar}] - "+
+            $"{iterationTime.ToString()}/iter {percent}% [{bar}] - "+
             $"{displayString}";
         
         Console.Write($"\r{display}");
@@ -53,10 +51,4 @@ public class ProgressBar
         }
     }
 
-    private string GetIterTime(TimeSpan iterTime) => (iterTime.Minutes, iterTime.Seconds, iterTime.Milliseconds) switch
-    {
-        (> 0, _, _) => $"{iterTime.Minutes}:{iterTime.Seconds}:{iterTime.Milliseconds}m",
-        (<= 0, > 0, _) => $"{iterTime.Seconds}:{iterTime.Milliseconds}s",
-        (<= 0, <= 0, > 0) => $"{iterTime.Milliseconds}ms"
-    };
 }

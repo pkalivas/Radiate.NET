@@ -19,7 +19,7 @@ public class ConvNetMinst : IExample
     {
         const int featureLimit = 5000;
         const double splitPct = .75;
-        const int maxEpochs = 2;
+        const int maxEpochs = 10;
 
         var (normalizedInputs, indexedLabels) = await new Mnist(featureLimit).GetDataSet();
 
