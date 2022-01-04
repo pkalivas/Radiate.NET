@@ -4,9 +4,7 @@ using Radiate.Domain.Activation;
 using Radiate.Domain.Extensions;
 using Radiate.Domain.Loss;
 using Radiate.Domain.Models;
-using Radiate.Domain.Records;
 using Radiate.Optimizers;
-using Radiate.Optimizers.Supervised;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
 
@@ -22,7 +20,7 @@ public class BostonRegression : IExample
         var (features, targets) = await new BostonHousing().GetDataSet();
         
         var normalizedFeatures = features.Standardize();
-        var featureTargetPair = new FeatureTargetPair(normalizedFeatures, targets).Split();
+        var featureTargetPair = new TensorPair(normalizedFeatures, targets).Split();
 
         var trainData = featureTargetPair.TrainingInputs;
         var testData = featureTargetPair.TestingInputs;
@@ -39,9 +37,10 @@ public class BostonRegression : IExample
             progressBar.Tick(displayString);
             return maxEpochs == epoch.Index || Math.Abs(epoch.AverageLoss) < .1;
         });
-        
-        var trainValidation = optimizer.Validate(trainData);
-        var testValidation = optimizer.Validate(testData);
+
+        var validator = new Validator(Loss.MSE);
+        var trainValidation = validator.Validate(regressor, trainData);
+        var testValidation = validator.Validate(regressor, testData);
         
         var trainValid = trainValidation.RegressionAccuracy;
         var testValid = testValidation.RegressionAccuracy;

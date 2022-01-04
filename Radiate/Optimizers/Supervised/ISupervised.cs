@@ -1,9 +1,11 @@
 ﻿using Radiate.Domain.Loss;
 using Radiate.Domain.Records;
+using Radiate.Domain.Tensors;
 
 namespace Radiate.Optimizers.Supervised;
 
 public interface ISupervised
 {
-    Task Train<T>(List<Batch<T>> data, LossFunction lossFunction, Func<Epoch, bool> trainFunc);
+    Prediction Predict(Tensor input);
+    Task Train(List<Batch> data, LossFunction lossFunction, Func<Epoch, bool> trainFunc);
 }

@@ -14,6 +14,7 @@ class Program
                       "[5] Boston Housing Regression\n" +
                       "[6] Dense Neural Net Mnist\n" +
                       "[7] Conv Net Mnist\n" +
+                      "[8] Temp Time Series\n" + 
                       ":: ";
 
         while (true)
@@ -65,6 +66,11 @@ class Program
         if (choice == 7)
         {
             await new ConvNetMinst().Run();
+        }
+
+        if (choice == 8)
+        {
+            await new TempuratureTimeSeries().Run();
         }
     }
 }

@@ -3,7 +3,7 @@ using Radiate.Domain.Tensors;
 
 namespace Radiate.Domain.Models;
 
-public class FeatureTargetPair
+public class TensorPair
 {
     private IEnumerable<Tensor> TrainFeatures { get; set; }
     private IEnumerable<Tensor> TrainTargets { get; set; }
@@ -12,25 +12,47 @@ public class FeatureTargetPair
     private int BatchSize { get; set; } = 1;
     private int Padding { get; set; } = 0;
 
-    public FeatureTargetPair(IEnumerable<float[]> features, IEnumerable<float[]> targets)
+    public TensorPair(IEnumerable<float[]> features, IEnumerable<float[]> targets)
     {
         TrainFeatures = features.Select(row => row.ToTensor());
         TrainTargets = targets.Select(row => row.ToTensor());
     }
 
-    public List<Batch<Tensor>> TrainingInputs => GetBatches(TrainFeatures, TrainTargets, BatchSize, Padding);
+    public List<Batch> TrainingInputs => GetBatches(TrainFeatures, TrainTargets, BatchSize, Padding);
 
-    public List<Batch<Tensor>> TestingInputs => GetBatches(TestFeatures, TestTargets, 1, Padding);
+    public List<Batch> TestingInputs => GetBatches(TestFeatures, TestTargets, 1, Padding);
 
     public int OutputSize => TestTargets.First().Shape.Height;
 
-    public FeatureTargetPair Batch(int batchSize)
+    public TensorPair Batch(int batchSize)
     {
         BatchSize = batchSize;
         return this;
     }
+
+    public TensorPair Layer(int layer)
+    {
+        if (TestFeatures.Any())
+        {
+            throw new Exception("Cannot Layer after split. Split should be the last operation.");
+        }
+
+        var newFeatures = new List<Tensor>();
+        var newTargets = new List<Tensor>();
+
+        for (var i = 0; i < TrainFeatures.Count() - layer - 1; i++)
+        {
+            newFeatures.Add(TrainFeatures.Skip(i).Take(layer).SelectMany(val => val.Read1D()).ToTensor());
+            newTargets.Add(TrainTargets.Skip(i + layer).Take(1).SelectMany(val => val.Read1D()).ToTensor());
+        }
+
+        TrainFeatures = newFeatures;
+        TrainTargets = newTargets;
+
+        return this;
+    }
     
-    public FeatureTargetPair Split(float splitPct = .75f)
+    public TensorPair Split(float splitPct = .75f)
     {
         var splitIndex = (int) (TrainFeatures.Count() - (TrainFeatures.Count() * splitPct));
 
@@ -42,7 +64,7 @@ public class FeatureTargetPair
         return this;
     }
 
-    public FeatureTargetPair Transform(Shape shape)
+    public TensorPair Transform(Shape shape)
     {
         TrainFeatures = TrainFeatures.Select(row => row.Reshape(shape));
 
@@ -54,15 +76,15 @@ public class FeatureTargetPair
         return this;
     }
 
-    public FeatureTargetPair Pad(int padding)
+    public TensorPair Pad(int padding)
     {
         Padding = padding;
         return this;
     }
 
-    private static List<Batch<Tensor>> GetBatches(IEnumerable<Tensor> features, IEnumerable<Tensor> targets, int batchSize, int padding)
+    private static List<Batch> GetBatches(IEnumerable<Tensor> features, IEnumerable<Tensor> targets, int batchSize, int padding)
     {
-        var batches = new List<Batch<Tensor>>();
+        var batches = new List<Batch>();
         for (var i = 0; i < features.Count(); i += batchSize)
         {
             var batchFeatures = features
@@ -76,7 +98,7 @@ public class FeatureTargetPair
                 .Take(batchSize)
                 .ToList();
             
-            batches.Add(new Batch<Tensor>(batchFeatures, batchTargets));
+            batches.Add(new Batch(batchFeatures, batchTargets));
         }
 
         return batches;

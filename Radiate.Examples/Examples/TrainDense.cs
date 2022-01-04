@@ -17,7 +17,7 @@ public class TrainDense : IExample
         
         var (inputs, targets) = await new XOR().GetDataSet();
 
-        var pair = new FeatureTargetPair(inputs, targets);
+        var pair = new TensorPair(inputs, targets);
 
         var trainInputs = pair.TrainingInputs;
         

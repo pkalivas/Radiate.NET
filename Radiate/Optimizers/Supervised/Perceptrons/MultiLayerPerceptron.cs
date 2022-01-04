@@ -10,7 +10,7 @@ using Radiate.Optimizers.Supervised.Perceptrons.Layers;
 
 namespace Radiate.Optimizers.Supervised.Perceptrons;
 
-public class MultiLayerPerceptron : IPredictor, ISupervised
+public class MultiLayerPerceptron : ISupervised
 {
     private readonly List<LayerInfo> _layerInfo;
     private readonly List<Layer> _layers;
@@ -48,7 +48,7 @@ public class MultiLayerPerceptron : IPredictor, ISupervised
         return this;
     }
     
-    public async Task Train<T>(List<Batch<T>> batches, LossFunction lossFunction, Func<Epoch, bool> trainFunc)
+    public async Task Train(List<Batch> batches, LossFunction lossFunction, Func<Epoch, bool> trainFunc)
     {
         var epochCount = 1;
         while (true)
@@ -56,10 +56,10 @@ public class MultiLayerPerceptron : IPredictor, ISupervised
             var predictions = new List<(float[] output, float[] target)>();
             var epochErrors = new List<float>();
 
-            foreach (var batch in batches)
+            foreach (var (inputs, answers) in batches)
             {
                 var batchErrors = new List<Cost>();
-                foreach (var (x, y) in batch.ReadPairs<Tensor>())
+                foreach (var (x, y) in inputs.Zip(answers))
                 {
                     var prediction = PassForward(x);
                     var cost = lossFunction(prediction, y);
@@ -89,9 +89,9 @@ public class MultiLayerPerceptron : IPredictor, ISupervised
         }
     }
     
-    public OptimizerWrap Save() => new()
+    public SupervisedWrap Save() => new()
     {
-        OptimizerType = OptimizerType.MultiLayerPerceptron,
+        SupervisedType = SupervisedType.MultiLayerPerceptron,
         MultiLayerPerceptronWrap = new()
         {
             LayerWraps = _layers.Select(layer => layer.Save()).ToList()
@@ -105,7 +105,7 @@ public class MultiLayerPerceptron : IPredictor, ISupervised
 
         return new Prediction(output, maxIndex, output[maxIndex]);
     }
-
+    
     public Tensor PassForward(Tensor input)
     {
         if (_layers.Any())

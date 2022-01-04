@@ -1,6 +1,4 @@
-﻿using Radiate.Domain.Loss;
-using Radiate.Domain.Models;
-using Radiate.Domain.Records;
+﻿using Radiate.Domain.Records;
 using Radiate.Optimizers.Evolution.Population;
 using Radiate.Optimizers.Evolution.Population.Delegates;
 using Radiate.Optimizers.Evolution.Population.ParentalCriteria;
@@ -8,12 +6,12 @@ using Radiate.Optimizers.Evolution.Population.SurvivorCriteria;
 
 namespace Radiate.Optimizers.Evolution;
 
- public class Population<T, E> : IPopulation
+ public class Population<T, TE> : IPopulation
         where T: Genome
-        where E: EvolutionEnvironment
+        where TE: EvolutionEnvironment
 {
     private PopulationSettings Settings { get; set; }
-    private Generation<T, E> CurrentGeneration { get; set; }
+    private Generation<T, TE> CurrentGeneration { get; set; }
     private EvolutionEnvironment EvolutionEnvironment { get; set; }
     private Solve<T> Solver { get; set; }
 
@@ -27,7 +25,7 @@ namespace Radiate.Optimizers.Evolution;
     public Population(IEnumerable<T> genomes)
     {
         Settings = new PopulationSettings();
-        CurrentGeneration = new Generation<T, E>
+        CurrentGeneration = new Generation<T, TE>
         {
             Members = genomes
                 .Select(member => (
@@ -43,51 +41,50 @@ namespace Radiate.Optimizers.Evolution;
         };
     }
     
-    public async Task Evolve(Func<double, int, bool> trainFunc)
+    public async Task Evolve(Func<Epoch, bool> trainFunc)
     {
-        var epoch = 0;
+        var count = 0;
         while (true)
         {
             var topMember = await EvolveGeneration();
+            var epoch = new Epoch(count++, 0, topMember.Fitness, topMember.Fitness);
 
-            if (trainFunc(topMember.Fitness, epoch))
+            if (trainFunc(epoch))
             {
                 break;
             }
-
-            epoch++;
         }
     }
 
     public T Best => CurrentGeneration.GetBestMember().Model;
 
-    public Population<T, E> SetFitnessFunction(Solve<T> solver)
+    public Population<T, TE> SetFitnessFunction(Solve<T> solver)
     {
         Solver = solver;
         return this;
     }
 
-    public Population<T, E> Configure(Action<PopulationSettings> settings)
+    public Population<T, TE> Configure(Action<PopulationSettings> settings)
     {
         settings.Invoke(Settings);
         return this;
     }
 
-    public Population<T, E> SetSurvivorPicker(GetSurvivors<T> survivors)
+    public Population<T, TE> SetSurvivorPicker(GetSurvivors<T> survivors)
     {
         SurvivorPicker = survivors;
 
         return this;
     }
 
-    public Population<T, E> SetParentPicker(GetParents<T> parents)
+    public Population<T, TE> SetParentPicker(GetParents<T> parents)
     {
         ParentPicker = parents;
 
         return this;
     }
 
-    public Population<T, E> SetEnvironment(EvolutionEnvironment environment)
+    public Population<T, TE> SetEnvironment(EvolutionEnvironment environment)
     {
         EvolutionEnvironment = environment;
 

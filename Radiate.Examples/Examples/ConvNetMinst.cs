@@ -17,7 +17,7 @@ public class ConvNetMinst : IExample
 {
     public async Task Run()
     {
-        const int featureLimit = 5000;
+        const int featureLimit = 500;
         const int batchSize = 32;
         const int maxEpochs = 2;
         const int imagePadding = 1;
@@ -27,7 +27,7 @@ public class ConvNetMinst : IExample
         var normalizedInputs = rawInputs.Normalize();
         var oneHotEncode = rawLabels.OneHotEncode();
         
-        var featureTargetPair = new FeatureTargetPair(normalizedInputs, oneHotEncode)
+        var featureTargetPair = new TensorPair(normalizedInputs, oneHotEncode)
             .Transform(inputShape)
             .Batch(batchSize)
             .Pad(imagePadding)
@@ -57,8 +57,9 @@ public class ConvNetMinst : IExample
         var wrap = net.Save();
         await Save(wrap.MultiLayerPerceptronWrap);
         
-        var trainValidation = optimizer.Validate(trainData);
-        var testValidation = optimizer.Validate(testData);
+        var validator = new Validator();
+        var trainValidation = validator.Validate(net, trainData);
+        var testValidation = validator.Validate(net, testData);
         
         var trainValid = trainValidation.ClassificationAccuracy;
         var testValid = testValidation.ClassificationAccuracy;

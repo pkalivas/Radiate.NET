@@ -1,6 +1,5 @@
 ﻿using Radiate.Data;
 using Radiate.Domain.Activation;
-using Radiate.Domain.Records;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Evolution;
 using Radiate.Optimizers.Evolution.Neat;
@@ -53,21 +52,21 @@ public class EvolveNEAT : IExample
             })
             .SetFitnessFunction(member =>
             {
-                var total = 0.0;
+                var total = 0.0f;
                 foreach (var points in inputs.Zip(answers))
                 {
                     var output = member.Forward(points.First);
-                    total += Math.Pow((output[0] - points.Second[0]), 2);
+                    total += (float) Math.Pow((output[0] - points.Second[0]), 2);
                 }
             
-                return 4.0 - total;
+                return 4.0f - total;
             });
 
         var optimizer = new Optimizer<Population<Neat, NeatEnvironment>>(population);
-        var pop = await optimizer.Evolve((fitness, epoch) =>
+        var pop = await optimizer.Train(epoch =>
         {
-            Console.WriteLine($"{fitness}");
-            return epoch == maxEpochs;
+            Console.WriteLine($"{epoch.Fitness}");
+            return epoch.Index == maxEpochs;
         });
         
         var member = pop.Best;

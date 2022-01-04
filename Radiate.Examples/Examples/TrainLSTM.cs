@@ -22,7 +22,7 @@ public class TrainLSTM : IExample
 
         var (inputs, targets) = await new SimpleMemory().GetDataSet();
         
-        var pair = new FeatureTargetPair(inputs, targets).Batch(targets.Count());
+        var pair = new TensorPair(inputs, targets).Batch(targets.Count());
         
         var trainInputs = pair.TrainingInputs;
 

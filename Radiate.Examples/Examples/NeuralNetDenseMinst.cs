@@ -4,9 +4,7 @@ using Radiate.Domain.Activation;
 using Radiate.Domain.Extensions;
 using Radiate.Domain.Loss;
 using Radiate.Domain.Models;
-using Radiate.Domain.Records;
 using Radiate.Optimizers;
-using Radiate.Optimizers.Supervised;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
 
@@ -26,7 +24,7 @@ public class NeuralNetDenseMinst : IExample
         var normalizedInputs = rawInputs.Normalize();
         var oneHotEncode = rawLabels.OneHotEncode();
         
-        var featureTargetPair = new FeatureTargetPair(normalizedInputs, oneHotEncode)
+        var featureTargetPair = new TensorPair(normalizedInputs, oneHotEncode)
             .Batch(batchSize)
             .Split();
 
@@ -38,14 +36,15 @@ public class NeuralNetDenseMinst : IExample
             .AddLayer(new DenseInfo(featureTargetPair.OutputSize, Activation.SoftMax));
 
         var optimizer = new Optimizer<MultiLayerPerceptron>(neuralNetwork, Loss.CrossEntropy);
-        await optimizer.Train(trainData, (epoch) =>
+        var network = await optimizer.Train(trainData, (epoch) =>
         {
             progressBar.Tick($"Loss: {epoch.AverageLoss} Accuracy: {epoch.ClassificationAccuracy}");
             return maxEpochs == epoch.Index || Math.Abs(epoch.AverageLoss) < .1;
         });
         
-        var trainValidation = optimizer.Validate(trainData);
-        var testValidation = optimizer.Validate(testData);
+        var validator = new Validator(Loss.CrossEntropy);
+        var trainValidation = validator.Validate(network, trainData);
+        var testValidation = validator.Validate(network, testData);
         
         var trainValid = trainValidation.ClassificationAccuracy;
         var testValid = testValidation.ClassificationAccuracy;

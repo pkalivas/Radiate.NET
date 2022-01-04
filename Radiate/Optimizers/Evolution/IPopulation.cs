@@ -1,6 +1,8 @@
-﻿namespace Radiate.Optimizers.Evolution;
+﻿using Radiate.Domain.Records;
+
+namespace Radiate.Optimizers.Evolution;
 
 public interface IPopulation
 {
-    Task Evolve(Func<double, int, bool> trainFunc);
+    Task Evolve(Func<Epoch, bool> trainFunc);
 }

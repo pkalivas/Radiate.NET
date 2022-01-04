@@ -48,7 +48,7 @@ public class SequentialTests
         var filePath = $"{Environment.CurrentDirectory}\\Data\\saves\\convnet.json";
         var contents = await File.ReadAllTextAsync(filePath);
         
-        var wrap = JsonConvert.DeserializeObject<OptimizerWrap>(contents);
+        var wrap = JsonConvert.DeserializeObject<SupervisedWrap>(contents);
         var network = new Optimizers.Supervised.Perceptrons.MultiLayerPerceptron(wrap.MultiLayerPerceptronWrap);
 
         var forwardPass = network.PassForward(LayerUtils.NineNineThreeTensor);

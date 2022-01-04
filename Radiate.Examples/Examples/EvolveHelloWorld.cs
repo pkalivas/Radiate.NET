@@ -44,15 +44,15 @@ public class EvolveHelloWorld : IExample
             .SetFitnessFunction(member =>
             {
                 return member.Chars.Zip(target)
-                    .Sum(points => points.First == points.Second ? 1.0 : 0.0);
+                    .Sum(points => points.First == points.Second ? 1.0f : 0.0f);
             });
 
         var optimizer = new Optimizer<Population<HelloWorld, BaseEvolutionEnvironment>>(population);
-        var pop = await optimizer.Evolve((fitness, epoch) =>
+        var pop = await optimizer.Train(epoch =>
         {
-            var displayString = $"Fitness: {fitness}";
+            var displayString = $"Fitness: {epoch.Fitness}";
             progressBar.Tick(displayString);
-            return epoch == evolutionEpochs || fitness == 12;
+            return epoch.Index == evolutionEpochs || epoch.Fitness == 12;
         });
 
         var best = pop.Best;

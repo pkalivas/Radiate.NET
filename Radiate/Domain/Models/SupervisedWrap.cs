@@ -1,10 +1,10 @@
-﻿using Radiate.Optimizers;
+﻿using Radiate.Optimizers.Supervised;
 
 namespace Radiate.Domain.Models;
 
-public class OptimizerWrap
+public class SupervisedWrap
 {
-    public OptimizerType OptimizerType { get; set; }
+    public SupervisedType SupervisedType { get; set; }
     public MultiLayerPerceptronWrap MultiLayerPerceptronWrap { get; set; }
 }
 
