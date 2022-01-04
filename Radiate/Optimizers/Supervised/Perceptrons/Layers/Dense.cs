@@ -42,7 +42,7 @@ public class Dense : Layer
     {
         if (input.Shape.Height != Shape.Height)
         {
-            throw new Exception($"Input shape of {input} does not match Dense layer {Shape}");
+            throw new Exception($"Input shape of {input.Shape} does not match Dense layer {Shape}");
         }
         
         if (input.Shape.Width > 0)

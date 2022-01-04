@@ -41,6 +41,8 @@ public class MultiLayerPerceptron : ISupervised
             })
             .ToList();
     }
+
+    public Shape Shape => _layers.Any() ? _layers.First().Shape : new Shape(0);
     
     public MultiLayerPerceptron AddLayer(LayerInfo layerInfo)
     {

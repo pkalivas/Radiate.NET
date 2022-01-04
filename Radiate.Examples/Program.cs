@@ -12,9 +12,8 @@ class Program
                       "[3] Train MLP Dense\n" +
                       "[4] Train MLP LSTM\n" +
                       "[5] Boston Housing Regression\n" +
-                      "[6] Dense Neural Net Mnist\n" +
-                      "[7] Conv Net Mnist\n" +
-                      "[8] Temp Time Series\n" + 
+                      "[6] Conv Net Mnist\n" +
+                      "[7] KMeans Cluster\n" + 
                       ":: ";
 
         while (true)
@@ -60,17 +59,12 @@ class Program
 
         if (choice == 6)
         {
-            await new NeuralNetDenseMinst().Run();
+            await new ConvNetMinst().Run();
         }
 
         if (choice == 7)
         {
-            await new ConvNetMinst().Run();
-        }
-
-        if (choice == 8)
-        {
-            await new TempuratureTimeSeries().Run();
+            await new BlobMeans().Run();
         }
     }
 }

@@ -63,13 +63,13 @@ public class EvolveNEAT : IExample
             });
 
         var optimizer = new Optimizer<Population<Neat, NeatEnvironment>>(population);
-        var pop = await optimizer.Train(epoch =>
+        await optimizer.Train(epoch =>
         {
             Console.WriteLine($"{epoch.Fitness}");
             return epoch.Index == maxEpochs;
         });
         
-        var member = pop.Best;
+        var member = optimizer.Model.Best;
         member.ResetGenome();
         
         foreach (var (point, idx) in inputs.Select((val, idx) => (val, idx)))

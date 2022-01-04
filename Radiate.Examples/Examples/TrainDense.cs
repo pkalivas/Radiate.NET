@@ -2,7 +2,7 @@
 using Radiate.Domain.Activation;
 using Radiate.Domain.Gradients;
 using Radiate.Domain.Loss;
-using Radiate.Domain.Models;
+using Radiate.Domain.Tensors;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
@@ -17,7 +17,7 @@ public class TrainDense : IExample
         
         var (inputs, targets) = await new XOR().GetDataSet();
 
-        var pair = new TensorPair(inputs, targets);
+        var pair = new TensorTrainSet(inputs, targets).Batch(1);
 
         var trainInputs = pair.TrainingInputs;
         
@@ -25,12 +25,12 @@ public class TrainDense : IExample
             .AddLayer(new DenseInfo(32, Activation.ReLU))
             .AddLayer(new DenseInfo(1, Activation.Sigmoid));
 
-        var optimizer = new Optimizer<MultiLayerPerceptron>(mlp, Loss.MSE);
-        var net = await optimizer.Train(trainInputs, epoch => epoch.Index == maxEpoch);
+        var optimizer = new Optimizer<MultiLayerPerceptron>(mlp, pair, Loss.MSE);
+        await optimizer.Train(epoch => epoch.Index == maxEpoch);
         
         foreach (var (ins, outs) in trainInputs)
         {
-            var pred = net.Predict(ins.First());
+            var pred = optimizer.Model.Predict(ins.First());
             Console.WriteLine($"Answer {outs[0][0]} Confidence {pred.Confidence}");
         }
     }

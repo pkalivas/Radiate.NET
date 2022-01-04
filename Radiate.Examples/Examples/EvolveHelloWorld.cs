@@ -48,14 +48,14 @@ public class EvolveHelloWorld : IExample
             });
 
         var optimizer = new Optimizer<Population<HelloWorld, BaseEvolutionEnvironment>>(population);
-        var pop = await optimizer.Train(epoch =>
+        await optimizer.Train(epoch =>
         {
             var displayString = $"Fitness: {epoch.Fitness}";
             progressBar.Tick(displayString);
             return epoch.Index == evolutionEpochs || epoch.Fitness == 12;
         });
 
-        var best = pop.Best;
+        var best = optimizer.Model.Best;
         Console.WriteLine($"\nFinal Result: {best.Print()}");
     }
     

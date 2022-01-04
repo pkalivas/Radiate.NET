@@ -6,8 +6,8 @@ using Radiate.Domain.Activation;
 using Radiate.Domain.Extensions;
 using Radiate.Domain.Models;
 using Radiate.Domain.Records;
+using Radiate.Domain.Tensors;
 using Radiate.Optimizers;
-using Radiate.Optimizers.Supervised;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
 
@@ -17,9 +17,9 @@ public class ConvNetMinst : IExample
 {
     public async Task Run()
     {
-        const int featureLimit = 500;
+        const int featureLimit = 5000;
         const int batchSize = 32;
-        const int maxEpochs = 2;
+        const int maxEpochs = 25;
         const int imagePadding = 1;
         var inputShape = new Shape(28, 28, 1);
 
@@ -27,15 +27,12 @@ public class ConvNetMinst : IExample
         var normalizedInputs = rawInputs.Normalize();
         var oneHotEncode = rawLabels.OneHotEncode();
         
-        var featureTargetPair = new TensorPair(normalizedInputs, oneHotEncode)
+        var featureTargetPair = new TensorTrainSet(normalizedInputs, oneHotEncode)
             .Transform(inputShape)
             .Batch(batchSize)
             .Pad(imagePadding)
             .Split();
-
-        var trainData = featureTargetPair.TrainingInputs;
-        var testData = featureTargetPair.TestingInputs;
-
+        
         var neuralNetwork = new MultiLayerPerceptron()
             .AddLayer(new ConvInfo(16, 3))
             .AddLayer(new MaxPoolInfo(16, 3) { Stride = 2 })
@@ -43,10 +40,10 @@ public class ConvNetMinst : IExample
             .AddLayer(new DenseInfo(64, Activation.Sigmoid))
             .AddLayer(new DenseInfo(featureTargetPair.OutputSize, Activation.SoftMax));
 
-        var optimizer = new Optimizer<MultiLayerPerceptron>(neuralNetwork);
+        var optimizer = new Optimizer<MultiLayerPerceptron>(neuralNetwork, featureTargetPair);
         
         var progressBar = new ProgressBar(maxEpochs);
-        var net = await optimizer.Train(trainData, (epoch) => 
+        await optimizer.Train(epoch => 
         {
             var displayString = $"Loss: {epoch.AverageLoss} Accuracy: {epoch.ClassificationAccuracy}";
             
@@ -54,15 +51,13 @@ public class ConvNetMinst : IExample
             return maxEpochs == epoch.Index;
         });
         
-        var wrap = net.Save();
+        var wrap = optimizer.Model.Save();
         await Save(wrap.MultiLayerPerceptronWrap);
         
-        var validator = new Validator();
-        var trainValidation = validator.Validate(net, trainData);
-        var testValidation = validator.Validate(net, testData);
+        var (trainAcc, testAcc) = optimizer.Validate();
         
-        var trainValid = trainValidation.ClassificationAccuracy;
-        var testValid = testValidation.ClassificationAccuracy;
+        var trainValid = trainAcc.ClassificationAccuracy;
+        var testValid = testAcc.ClassificationAccuracy;
         
         Console.WriteLine($"\nTrain accuracy: {trainValid} - Test accuracy: {testValid}");
     }

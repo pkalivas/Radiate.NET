@@ -22,7 +22,7 @@ public class TrainLSTM : IExample
 
         var (inputs, targets) = await new SimpleMemory().GetDataSet();
         
-        var pair = new TensorPair(inputs, targets).Batch(targets.Count());
+        var pair = new TensorTrainSet(inputs, targets).Batch(targets.Count());
         
         var trainInputs = pair.TrainingInputs;
 
@@ -30,14 +30,15 @@ public class TrainLSTM : IExample
             .AddLayer(new LSTMInfo(16, 16))
             .AddLayer(new DenseInfo(1, Activation.Sigmoid));
 
-        var optimizer = new Optimizer<MultiLayerPerceptron>(mlp, Loss.MSE);
-        var lstm = await optimizer.Train(trainInputs, epoch =>
+        var optimizer = new Optimizer<MultiLayerPerceptron>(mlp, pair, Loss.MSE);
+        await optimizer.Train(epoch =>
         {
             var displayString = $"Loss: {epoch.AverageLoss} Accuracy: {epoch.RegressionAccuracy}";
             progressBar.Tick(displayString);
             return epoch.Index == trainEpochs;
         });
 
+        var lstm = optimizer.Model;
         Console.WriteLine();
         foreach (var (ins, outs) in trainInputs)
         {

@@ -5,10 +5,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Radiate.Domain.Activation;
 using Radiate.Domain.Models;
-using Radiate.Domain.Records;
-using Radiate.Domain.Tensors;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
-using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.UnitTests.Utils;
 
 namespace Radiate.UnitTests.MultiLayerPerceptron;

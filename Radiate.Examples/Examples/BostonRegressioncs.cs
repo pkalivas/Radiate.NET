@@ -4,6 +4,7 @@ using Radiate.Domain.Activation;
 using Radiate.Domain.Extensions;
 using Radiate.Domain.Loss;
 using Radiate.Domain.Models;
+using Radiate.Domain.Tensors;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
@@ -16,34 +17,32 @@ public class BostonRegression : IExample
     {
         const int outputSize = 1;
         const int maxEpochs = 200;
-
+        const int batchSize = 1;
+        
         var (features, targets) = await new BostonHousing().GetDataSet();
         
         var normalizedFeatures = features.Standardize();
-        var featureTargetPair = new TensorPair(normalizedFeatures, targets).Split();
-
-        var trainData = featureTargetPair.TrainingInputs;
-        var testData = featureTargetPair.TestingInputs;
+        var featureTargetPair = new TensorTrainSet(normalizedFeatures, targets)
+            .Batch(batchSize)
+            .Split();
         
         var linearRegressor = new MultiLayerPerceptron()
             .AddLayer(new DenseInfo(outputSize, Activation.Linear));
         
-        var optimizer = new Optimizer<MultiLayerPerceptron>(linearRegressor, Loss.MSE);
+        var optimizer = new Optimizer<MultiLayerPerceptron>(linearRegressor, featureTargetPair, Loss.MSE);
         
         var progressBar = new ProgressBar(maxEpochs);
-        var regressor = await optimizer.Train(trainData, (epoch) => 
+        await optimizer.Train(epoch => 
         {
             var displayString = $"Loss: {epoch.AverageLoss} Accuracy: {epoch.RegressionAccuracy}";
             progressBar.Tick(displayString);
             return maxEpochs == epoch.Index || Math.Abs(epoch.AverageLoss) < .1;
         });
 
-        var validator = new Validator(Loss.MSE);
-        var trainValidation = validator.Validate(regressor, trainData);
-        var testValidation = validator.Validate(regressor, testData);
-        
-        var trainValid = trainValidation.RegressionAccuracy;
-        var testValid = testValidation.RegressionAccuracy;
+        var (trainAcc, testAcc) = optimizer.Validate();
+
+        var trainValid = trainAcc.RegressionAccuracy;
+        var testValid = testAcc.RegressionAccuracy;
         
         Console.WriteLine($"Train accuracy: {trainValid} - Test accuracy: {testValid}");
     }

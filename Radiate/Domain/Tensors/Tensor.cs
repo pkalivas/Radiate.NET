@@ -238,16 +238,16 @@ public class Tensor
         return new Tensor(slice);
     }
 
-    public Tensor Pad(int height, int width)
+    public Tensor Pad(int pad)
     {
-        var result = new float[height * 2 + Shape.Height, width * 2 + Shape.Width, Shape.Depth].ToTensor();
+        var result = new float[pad * 2 + Shape.Height, pad * 2 + Shape.Width, Shape.Depth].ToTensor();
         
         result.Zero();
         
-        for (var i = height; i < result._shape.Height - height; i++)
-            for (var j = width; j < result._shape.Width - width; j++)
+        for (var i = pad; i < result._shape.Height - pad; i++)
+            for (var j = pad; j < result._shape.Width - pad; j++)
             for (var k = 0; k < result._shape.Depth; k++)
-                result[i, j, k] = this[i - height, j - width, k];
+                result[i, j, k] = this[i - pad, j - pad, k];
 
         return result;
     }
