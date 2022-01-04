@@ -13,7 +13,8 @@ public class Optimizer<T>
     private readonly LossFunction _lossFunction;
     private readonly TensorTrainSet _tensorTrainSet;
 
-    public Optimizer(T optimizer, Loss loss = new()) : this(optimizer, null, loss) { }
+    public Optimizer(T optimizer, Loss loss = new()) 
+        : this(optimizer, null, loss) { }
 
     public Optimizer(T optimizer, TensorTrainSet tensorTrainSet, Loss loss = Loss.Difference) 
         : this(optimizer, tensorTrainSet, LossFunctionResolver.Get(loss)) { }
