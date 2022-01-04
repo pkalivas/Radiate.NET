@@ -10,7 +10,6 @@ namespace Radiate.Optimizers;
 
 public class Optimizer<T>
 {
-    private readonly T _optimizer;
     private readonly LossFunction _lossFunction;
     private readonly TensorTrainSet _tensorTrainSet;
 
@@ -21,27 +20,27 @@ public class Optimizer<T>
 
     public Optimizer(T optimizer, TensorTrainSet tensorTrainSet, LossFunction lossFunction)
     {
-        _optimizer = optimizer;
+        Model = optimizer;
         _tensorTrainSet = tensorTrainSet;
         _lossFunction = lossFunction;
     }
 
-    public T Model => _optimizer;
-    
+    public T Model { get; }
+
     public async Task Train(Func<Epoch, bool> trainFunc)
     {
-        if (_optimizer is IPopulation population)
+        if (Model is IPopulation population)
         {
             await population.Evolve(trainFunc);
         }
         
-        if (_optimizer is IUnsupervised unsupervised)
+        if (Model is IUnsupervised unsupervised)
         {
             var batch = _tensorTrainSet.TrainingInputs.Single();
             await unsupervised.Train(batch, _lossFunction, trainFunc);
         }
         
-        if (_optimizer is ISupervised supervised)
+        if (Model is ISupervised supervised)
         {
             await supervised.Train(_tensorTrainSet.TrainingInputs, _lossFunction, trainFunc);
         }
@@ -51,7 +50,7 @@ public class Optimizer<T>
     {
         var validator = new Validator(_lossFunction);
 
-        switch (_optimizer)
+        switch (Model)
         {
             case IUnsupervised unsupervised:
             {
