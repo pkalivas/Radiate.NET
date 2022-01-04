@@ -10,7 +10,7 @@ public class BostonHousing : IDataSet
         var fileName = $"{Environment.CurrentDirectory}\\DataSets\\BostonHousing\\Boston.csv";
         var contents = await File.ReadAllTextAsync(fileName);
 
-        var features = new List<List<float>>();
+        var features = new List<float[]>();
         var labels = new List<float[]>();
         foreach (var row in contents.Split("\n").Skip(1))
         {
@@ -20,12 +20,10 @@ public class BostonHousing : IDataSet
                 .Select(Convert.ToSingle)
                 .ToList();
 
-            features.Add(columns.Take(columns.Count - 1).ToList());
+            features.Add(columns.Take(columns.Count - 1).ToArray());
             labels.Add(columns.Skip(columns.Count - 1).ToArray());
         }
-
-        var normalizedFeatures = FeatureService.Standardize(features);
-
-        return (normalizedFeatures, labels);
+        
+        return (features, labels);
     }
 }

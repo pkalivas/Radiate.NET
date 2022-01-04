@@ -1,5 +1,4 @@
-﻿using Radiate.Domain.Gradients;
-using Radiate.Domain.Loss;
+﻿using Radiate.Domain.Loss;
 using Radiate.Domain.Models;
 using Radiate.Domain.Records;
 using Radiate.Domain.Services;
@@ -7,121 +6,55 @@ using Radiate.Domain.Tensors;
 
 namespace Radiate.Optimizers.Supervised;
 
-public class Optimizer
+public class Optimizer : IOptimizer
 {
-    private const int DefaultBatchSize = 1;
-    
     private readonly IOptimizer _optimizer;
-    private readonly ILossFunction _lossFunction;
-    private readonly GradientInfo _gradientInfo;
-    private readonly Shape _shape;
+    private readonly LossFunction _lossFunction;
 
-    public Optimizer(IOptimizer optimizer, Loss lossFunction) : this(optimizer, lossFunction, new GradientInfo()) { }
-    
-    public Optimizer(IOptimizer optimizer, Loss lossFunction, GradientInfo gradient) : this(optimizer, lossFunction, new(0, 0, 0), gradient) { }
-    
-    public Optimizer(IOptimizer optimizer, Loss lossFunction, Shape shape) : this(optimizer, lossFunction, shape, new GradientInfo()) { }
-
-    public Optimizer(IOptimizer optimizer, Loss lossFunction, Shape shape, GradientInfo gradientInfo)
+    public Optimizer(IOptimizer optimizer, LossFunction lossFunction)
     {
         _optimizer = optimizer;
-        _gradientInfo = gradientInfo;
-        _shape = shape;
-        _lossFunction = LossFunctionFactory.Get(lossFunction);
+        _lossFunction = lossFunction;
     }
     
-    public async Task<List<Epoch>> Train(List<float[]> features, List<float[]> targets, Func<List<Epoch>, bool> trainFunc) =>
-        await Train(features, targets, DefaultBatchSize, trainFunc);
-    
-    public async Task<List<Epoch>> Train(List<float[]> features, List<float[]> targets, int batchSize, Func<List<Epoch>, bool> trainFunc)
+    public Optimizer(IOptimizer optimizer, Loss loss = Loss.Difference)
     {
-        var batches = BatchService.CreateBatches(features, targets, _shape, batchSize);
-
-        var epochs = new List<Epoch>();
-
-        while (true)
-        {
-            var predictions = new List<Tensor>();
-            var epochErrors = new List<Cost>();
-
-            foreach (var (inputs, answers) in batches)
-            {
-                var batchErrors = new List<Cost>();
-                foreach (var (x, y) in inputs.Zip(answers))
-                {
-                    var prediction = _optimizer.PassForward(x);
-                    var cost = _lossFunction.Calculate(prediction, y);
-                    
-                    batchErrors.Add(cost);
-                    predictions.Add(prediction);
-                }
-
-                foreach (var (passError, _) in batchErrors.Select(pair => pair).Reverse())
-                {
-                    _optimizer.PassBackward(passError, epochs.Count);
-                }
-
-                await _optimizer.Update(_gradientInfo, epochs.Count);
-                
-                epochErrors.AddRange(batchErrors);
-            }
-
-            var predictionsInner = predictions.Select(pred => pred.Read1D()).ToList();
-            epochs.Add(new Epoch
-            {
-                Predictions = predictionsInner,
-                Loss = epochErrors.Sum(err => err.loss) / epochErrors.Count,
-                IterationLoss = epochErrors.Select(err => err.loss).ToList(),
-                ClassificationAccuracy = ValidationService.ClassificationAccuracy(predictionsInner, targets),
-                RegressionAccuracy = ValidationService.RegressionAccuracy(predictionsInner, targets)
-            });
-            
-            if (trainFunc(epochs))
-            {
-                break;
-            }
-        }
-
-        return epochs;
+        _optimizer = optimizer;
+        _lossFunction = LossFunctionResolver.Get(loss);
     }
 
-    public Epoch Validate(List<float[]> features, List<float[]> targets)
+    public async Task Train(List<Batch> batches, Func<Epoch, bool> trainFunc) =>
+        await Train(batches, _lossFunction, trainFunc);
+    
+    public async Task Train(List<Batch> batches, LossFunction lossFunction, Func<Epoch, bool> trainFunc) => 
+        await _optimizer.Train(batches, lossFunction, trainFunc);
+
+    public Prediction Predict(Tensor input) =>
+        _optimizer.Predict(input);
+
+    public OptimizerWrap Save() => _optimizer.Save();
+    
+    public Epoch Validate(List<Batch> batches)
     {
         var iterationLoss = new List<float>();
-        var predictions = new List<float[]>();
-        var batches = BatchService.CreateBatches(features, targets, _shape, DefaultBatchSize);
+        var predictions = new List<(float[] output, float[] target)>();
+        
         foreach (var (input, answer) in batches)
         {
             foreach (var (feature, target) in input.Zip(answer))
             {
-                var prediction = _optimizer.Predict(feature);
-                var (_, loss) = _lossFunction.Calculate(prediction, target);
+                var (floats, _, _) = _optimizer.Predict(feature);
+                var (_, loss) = _lossFunction(floats.ToTensor(), target);
             
                 iterationLoss.Add(loss);
-                predictions.Add(prediction.Read1D());   
+                predictions.Add((floats, target.Read1D()));   
             }
         }
 
-        return new Epoch
-        {
-            Predictions = predictions,
-            Loss = iterationLoss.Sum(),
-            IterationLoss = iterationLoss,
-            ClassificationAccuracy = ValidationService.ClassificationAccuracy(predictions, targets),
-            RegressionAccuracy = ValidationService.RegressionAccuracy(predictions, targets)
-        };
+        var classAcc = ValidationService.ClassificationAccuracy(predictions);
+        var regAcc = ValidationService.RegressionAccuracy(predictions);
+
+        return new Epoch(0, iterationLoss.Average(), classAcc, regAcc);
     }
-
-    public Prediction Predict(float[] input)
-    {
-        var predIn = BatchService.Transform(input, _shape);
-        var passResult = _optimizer.Predict(predIn).Read1D();
-        var confidence = passResult.Max();
-        var classification = passResult.ToList().IndexOf(confidence);
-
-        return new Prediction(passResult, classification, confidence);
-    }
-
-    public OptimizerWrap Save() => _optimizer.Save();
 
 }

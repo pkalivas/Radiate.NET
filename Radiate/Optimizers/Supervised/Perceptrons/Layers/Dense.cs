@@ -84,7 +84,7 @@ public class Dense : Layer
         var grads = _activation.Deactivate(output);
         
         var resultError = new Tensor(Shape.Height);
-        for (var i = 0; i < Shape.Width; i++)
+        Parallel.For(0, Shape.Width, i =>
         {
             _biasGradients[i] += grads[i] * errors[i];
             
@@ -93,12 +93,12 @@ public class Dense : Layer
                 _weightGradients[i, j] += grads[i] * errors[i] * input[j];
                 resultError[j] += _weights[i, j] * errors[i];
             }
-        }
-        
+        });
+
         return resultError;
     }
 
-    public override Task UpdateWeights(GradientInfo info, int epoch)
+    public override void UpdateWeights(GradientInfo info, int epoch)
     {
         var gradient = GradientFactory.Get(info);
         
@@ -107,8 +107,6 @@ public class Dense : Layer
 
         _biasGradients.Zero();
         _weightGradients.Zero();
-        
-        return Task.CompletedTask;
     }
     
     public override LayerWrap Save() => new()

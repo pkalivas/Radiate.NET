@@ -80,7 +80,7 @@ public class MaxPool : Layer
         return output;
     }
 
-    public override Task UpdateWeights(GradientInfo gradient, int epoch) => Task.CompletedTask;
+    public override void UpdateWeights(GradientInfo gradient, int epoch) { }
     
     public override LayerWrap Save() => new()
     {

@@ -81,16 +81,18 @@ public class Conv : Layer
         var previousSlices = _slices.Pop();
 
         var output = Tensor.Like(prevInput.Shape);
-        foreach (var (prevInSlice, j, k, _) in previousSlices)
+        Parallel.ForEach(previousSlices, slice =>
         {
+            var (prevInSlice, j, k, _) = slice;
             for (var i = 0; i < _filters.Length; i++)
             {
                 _filterGradients[i] += errors[j, k, i] * prevInSlice * prevOut[j, k, i];
             }
-        }
-        
-        foreach (var (lossSlice, j, k, _) in _sliceGenerator.Slice(errors))
+        });
+
+        Parallel.ForEach(_sliceGenerator.Slice(errors), slice =>
         {
+            var (lossSlice, j, k, _) = slice;
             for (var i = 0; i < _filters.Length; i++)
             {
                 var kernel = _filters[i];
@@ -101,15 +103,14 @@ public class Conv : Layer
                 
                 _biasGradients[i] += errors[j, k, i] * prevOut[j, k, i];
             }
-        }
+        });
 
         return output;
     }
 
-    public override Task UpdateWeights(GradientInfo gradientInfo, int epoch)
+    public override void UpdateWeights(GradientInfo gradientInfo, int epoch)
     {
         var gradient = GradientFactory.Get(gradientInfo);
-        
         for (var i = 0; i < _filters.Length; i++)
         {
             _filters[i].Add(gradient.Calculate(_filterGradients[i], epoch));
@@ -120,8 +121,6 @@ public class Conv : Layer
         _bias.Zero();
         _bias.Add(deltas);
         _biasGradients.Zero();
-        
-        return Task.CompletedTask;
     }
 
     public override LayerWrap Save() => new()
@@ -145,7 +144,7 @@ public class Conv : Layer
     {
         var output = new Tensor(Shape.Height, Shape.Width, _kernel.Count);
 
-        for (var i = 0; i < _kernel.Count; i++)
+        Parallel.For(0, _kernel.Count, i =>
         {
             var currentKernel = _filters[i];
             var currentBias = _bias[i];
@@ -154,8 +153,8 @@ public class Conv : Layer
             {
                 output[sHeight, sWidth, i] += Tensor.Sum(slice, currentKernel) + currentBias;
             }
-        }
-        
+        });
+
         return _activation.Activate(output);
     }
     

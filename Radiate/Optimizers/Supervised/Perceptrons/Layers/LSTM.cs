@@ -85,7 +85,7 @@ public class LSTM : Layer
         return current.HiddenGradient;
     }
 
-    public override Task UpdateWeights(GradientInfo info, int epoch)
+    public override void UpdateWeights(GradientInfo info, int epoch)
     {
         _inputGate.UpdateWeights(info, epoch);
         _forgetGate.UpdateWeights(info, epoch);
@@ -97,8 +97,6 @@ public class LSTM : Layer
         
         _forwardTrack.Push(new LSTMCell(Shape.Width));
         _backwardTrack.Push(new LSTMCell(Shape.Width));
-
-        return Task.CompletedTask;
     }
     
     public override LayerWrap Save() => new()

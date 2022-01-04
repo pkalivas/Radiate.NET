@@ -1,13 +1,18 @@
 ﻿
+using Radiate.Domain.Records;
+using Radiate.Domain.Tensors;
+
 namespace Radiate.Domain.Loss;
 
-public static class LossFunctionFactory
+public delegate Cost LossFunction(Tensor output, Tensor target);
+
+public static class LossFunctionResolver
 {
-    public static ILossFunction Get(Loss loss) => loss switch
+    public static LossFunction Get(Loss loss) => loss switch
     {
-        Loss.Difference => new Difference(),
-        Loss.MSE => new MeanSquaredError(),
-        Loss.CrossEntropy => new CrossEntropy(),
+        Loss.Difference => new Difference().Calculate,
+        Loss.MSE => new MeanSquaredError().Calculate,
+        Loss.CrossEntropy => new CrossEntropy().Calculate,
         _ => throw new Exception($"Loss {loss} is not implemented.")
     };
 }

@@ -21,15 +21,12 @@ public class Mnist : IDataSet
             .ToList();
         
         var rawInputs = features
-            .Select(diget => diget.Image.Select(point => (float)point).ToList())
+            .Select(diget => diget.Image.Select(point => (float)point).ToArray())
             .ToList();
         var rawLabels = features
-            .Select(diget => diget.Label)
+            .Select(diget => new List<float> { diget.Label }.ToArray())
             .ToList();
 
-        var normalizedInputs = FeatureService.Normalize(rawInputs);
-        var oneHotEncode = FeatureService.OneHotEncode(rawLabels);
-        
-        return (normalizedInputs, oneHotEncode);
+        return (rawInputs, rawLabels);
     }
 }

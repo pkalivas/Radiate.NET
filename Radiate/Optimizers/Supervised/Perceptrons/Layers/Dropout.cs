@@ -31,7 +31,7 @@ public class Dropout : Layer
 
     public override Tensor PassBackward(Tensor errors) => errors;
 
-    public override Task UpdateWeights(GradientInfo info, int epoch) => Task.CompletedTask;
+    public override void UpdateWeights(GradientInfo info, int epoch) { }
 
     public override LayerWrap Save() => new()
     {

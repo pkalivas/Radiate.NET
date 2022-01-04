@@ -1,7 +1,9 @@
 ﻿using Radiate.Data;
 using Radiate.Data.Utils;
 using Radiate.Domain.Activation;
+using Radiate.Domain.Extensions;
 using Radiate.Domain.Loss;
+using Radiate.Domain.Models;
 using Radiate.Domain.Records;
 using Radiate.Optimizers.Supervised;
 using Radiate.Optimizers.Supervised.Perceptrons;
@@ -14,38 +16,35 @@ public class NeuralNetDenseMinst : IExample
     public async Task Run()
     {
         const int featureLimit = 500;
-        const double splitPct = .75;
         const int hiddenLayerSize = 256;
         const int maxEpochs = 50;
         const int batchSize = 50;
+        var progressBar = new ProgressBar(maxEpochs);
 
-        var (normalizedInputs, indexedLabels) = await new Mnist(featureLimit).GetDataSet();
+        var (rawInputs, rawLabels) = await new Mnist(featureLimit).GetDataSet();
+        var normalizedInputs = rawInputs.Normalize();
+        var oneHotEncode = rawLabels.OneHotEncode();
+        
+        var featureTargetPair = new FeatureTargetPair(normalizedInputs, oneHotEncode)
+            .Batch(batchSize)
+            .Split();
 
-        var inputSize = normalizedInputs.Select(input => input.Length).Distinct().Single();
-        var outputSize = indexedLabels.Select(target => target.Length).Distinct().Single();
-
-        var splitIndex = (int) (normalizedInputs.Count - (normalizedInputs.Count * splitPct));
-        var trainFeatures = normalizedInputs.Skip(splitIndex).ToList();
-        var trainTargets = indexedLabels.Skip(splitIndex).ToList();
-        var testFeatures = normalizedInputs.Take(splitIndex).ToList();
-        var testTargets = indexedLabels.Take(splitIndex).ToList();
-
+        var trainData = featureTargetPair.TrainingInputs;
+        var testData = featureTargetPair.TestingInputs;
+        
         var neuralNetwork = new MultiLayerPerceptron()
             .AddLayer(new DenseInfo(hiddenLayerSize, Activation.Sigmoid))
-            .AddLayer(new DenseInfo(outputSize, Activation.SoftMax));
+            .AddLayer(new DenseInfo(featureTargetPair.OutputSize, Activation.SoftMax));
 
-        var optimizer = new Optimizer(neuralNetwork, Loss.CrossEntropy, new Shape(inputSize));
-
-        var progressBar = new ProgressBar(maxEpochs);
-        await optimizer.Train(trainFeatures, trainTargets, batchSize, (epochs) => 
+        var optimizer = new Optimizer(neuralNetwork, Loss.CrossEntropy);
+        await optimizer.Train(trainData, (epoch) =>
         {
-            var currentEpoch = epochs.Last();
-            progressBar.Tick($"Loss: {currentEpoch.Loss} Accuracy: {currentEpoch.ClassificationAccuracy}");
-            return maxEpochs == epochs.Count || Math.Abs(currentEpoch.Loss) < .1;
+            progressBar.Tick($"Loss: {epoch.AverageLoss} Accuracy: {epoch.ClassificationAccuracy}");
+            return maxEpochs == epoch.Index || Math.Abs(epoch.AverageLoss) < .1;
         });
-
-        var trainValidation = optimizer.Validate(trainFeatures, trainTargets);
-        var testValidation = optimizer.Validate(testFeatures, testTargets);
+        
+        var trainValidation = optimizer.Validate(trainData);
+        var testValidation = optimizer.Validate(testData);
         
         var trainValid = trainValidation.ClassificationAccuracy;
         var testValid = testValidation.ClassificationAccuracy;

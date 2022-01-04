@@ -1,7 +1,9 @@
 ﻿using Radiate.Domain.Activation;
 using Radiate.Domain.Gradients;
+using Radiate.Domain.Loss;
 using Radiate.Domain.Models;
 using Radiate.Domain.Records;
+using Radiate.Domain.Services;
 using Radiate.Domain.Tensors;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
 using Radiate.Optimizers.Supervised.Perceptrons.Layers;
@@ -12,9 +14,13 @@ public class MultiLayerPerceptron : IOptimizer
 {
     private readonly List<LayerInfo> _layerInfo;
     private readonly List<Layer> _layers;
+    private readonly GradientInfo _gradientInfo;
 
-    public MultiLayerPerceptron()
+    public MultiLayerPerceptron() : this(new GradientInfo()) { }
+
+    public MultiLayerPerceptron(GradientInfo info)
     {
+        _gradientInfo = info;
         _layerInfo = new List<LayerInfo>();
         _layers = new List<Layer>();
     }
@@ -36,20 +42,69 @@ public class MultiLayerPerceptron : IOptimizer
             .ToList();
     }
     
-    public MultiLayerPerceptron(Shape inputShape)
-    {
-        _layerInfo = new List<LayerInfo>();
-        _layers = new List<Layer>();
-    }
-
     public MultiLayerPerceptron AddLayer(LayerInfo layerInfo)
     {
         _layerInfo.Add(layerInfo);
         return this;
     }
 
-    public Tensor Predict(Tensor inputs) =>
-        _layers.Aggregate(inputs, (current, layer) => layer.Predict(current));
+    public Prediction Predict(Tensor inputs)
+    {
+        var output = _layers.Aggregate(inputs, (current, layer) => layer.Predict(current)).Read1D();
+        var maxIndex = output.ToList().IndexOf(output.Max());
+
+        return new Prediction(output, maxIndex, output[maxIndex]);
+    }
+    
+    public async Task Train(List<Batch> batches, LossFunction lossFunction, Func<Epoch, bool> trainFunc)
+    {
+        var epochCount = 1;
+        while (true)
+        {
+            var predictions = new List<(float[] output, float[] target)>();
+            var epochErrors = new List<float>();
+
+            foreach (var (inputs, answers) in batches)
+            {
+                var batchErrors = new List<Cost>();
+                foreach (var (x, y) in inputs.Zip(answers))
+                {
+                    var prediction = PassForward(x);
+                    var cost = lossFunction(prediction, y);
+                    
+                    batchErrors.Add(cost);
+                    predictions.Add((prediction.Read1D(), y.Read1D()));
+                }
+
+                foreach (var (passError, _) in batchErrors.Select(pair => pair).Reverse())
+                {
+                    PassBackward(passError);
+                }
+
+                await Update(epochCount);
+                
+                epochErrors.AddRange(batchErrors.Select(err => err.loss));
+            }
+            
+            var classAccuracy = ValidationService.ClassificationAccuracy(predictions);
+            var regAccuracy = ValidationService.RegressionAccuracy(predictions);
+            var epoch = new Epoch(epochCount++, epochErrors.Average(), classAccuracy, regAccuracy);
+            
+            if (trainFunc(epoch))
+            {
+                break;
+            }
+        }
+    }
+    
+    public OptimizerWrap Save() => new()
+    {
+        OptimizerType = OptimizerType.MultiLayerPerceptron,
+        MultiLayerPerceptronWrap = new()
+        {
+            LayerWraps = _layers.Select(layer => layer.Save()).ToList()
+        }
+    };
 
     public Tensor PassForward(Tensor input)
     {
@@ -69,7 +124,7 @@ public class MultiLayerPerceptron : IOptimizer
         return input;
     }
     
-    public void PassBackward(Tensor errors, int epoch)
+    private void PassBackward(Tensor errors)
     {
         for (var i = _layers.Count - 1; i >= 0; i--)
         {
@@ -77,22 +132,12 @@ public class MultiLayerPerceptron : IOptimizer
         }
     }
 
-    public async Task Update(GradientInfo gradientInfo, int epoch) =>
-        await Task.WhenAll(_layers
-            .Select(async layer => await layer.UpdateWeights(gradientInfo, epoch)));
-
-    public OptimizerWrap Save() => new()
-    {
-        OptimizerType = OptimizerType.MultiLayerPerceptron,
-        MultiLayerPerceptronWrap = new()
-        {
-            LayerWraps = _layers.Select(layer => layer.Save()).ToList()
-        }
-    };
+    private async Task Update(int epoch) =>
+        await Task.WhenAll(_layers.Select(layer => Task.Run(() => layer.UpdateWeights(_gradientInfo, epoch))));
 
     private static Layer GetLayer(LayerInfo info, Shape shape)
     {
-        var (height, width, depth) = shape;
+        var (height, _, _) = shape;
 
         if (info is DenseInfo denseInfo)
         {

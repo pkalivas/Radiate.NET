@@ -1,17 +1,16 @@
-﻿
-namespace Radiate.Domain.Services;
+﻿namespace Radiate.Domain.Extensions;
 
-public static class FeatureService
+public static class ListExtensions
 {
     private const float Tolerance = 0.001f;
-
-    public static List<float[]> Normalize(List<List<float>> data)
+    
+    public static List<float[]> Normalize(this List<float[]> data)
     {
         var minLookup = new Dictionary<int, float>();
         var maxLookup = new Dictionary<int, float>();
         
         var featureLength = data
-            .Select(row => row.Count)
+            .Select(row => row.Length)
             .Distinct()
             .Single();
         
@@ -36,13 +35,13 @@ public static class FeatureService
             .ToList();
     }
     
-    public static List<float[]> Standardize(List<List<float>> data)
+    public static List<float[]> Standardize(this List<float[]> data)
     {
         var meanLookup = new Dictionary<int, float>();
         var stdLookup = new Dictionary<int, float>();
         
         var featureLength = data
-            .Select(row => row.Count)
+            .Select(row => row.Length)
             .Distinct()
             .Single();
         
@@ -63,14 +62,15 @@ public static class FeatureService
             .ToList();
     }
     
-    public static List<float[]> OneHotEncode(List<int> targets)
+    public static List<float[]> OneHotEncode(this List<float[]> targets)
     {
-        var targetCount = targets.Distinct().Count();
+        var targetCount = targets.SelectMany(row => row).Distinct().Count();
         return targets
             .Select(tar => Enumerable
                 .Range(0, targetCount)
-                .Select((_, index) => index == tar ? 1f : 0.0f)
+                .Select((_, index) => Math.Abs(index - tar.First()) < Tolerance ? 1f : 0.0f)
                 .ToArray())
             .ToList();
     }
+
 }

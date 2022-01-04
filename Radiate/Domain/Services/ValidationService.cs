@@ -3,26 +3,27 @@ namespace Radiate.Domain.Services;
 
 public static class ValidationService
 {
-    public static float ClassificationAccuracy(List<float[]> predictions, List<float[]> targets)
+    public static float ClassificationAccuracy(List<(float[] predictions, float[] targets)> outs)
     {
-        var correctClasses = predictions.Zip(targets)
+        var correctClasses = outs
             .Select(pair =>
             {
-                var firstMax = pair.First.ToList().IndexOf(pair.First.Max());
-                var secondMax = pair.Second.ToList().IndexOf(pair.Second.Max());
+                var (first, second) = pair;
+                var firstMax = first.ToList().IndexOf(first.Max());
+                var secondMax = second.ToList().IndexOf(second.Max());
 
                 return firstMax == secondMax ? 1f : 0f;
             })
             .Sum();
 
-        return correctClasses / predictions.Count;
+        return correctClasses / outs.Count;
     }
 
-    public static float RegressionAccuracy(List<float[]> predictions, List<float[]> targets)
+    public static float RegressionAccuracy(List<(float[] predictions, float[] targets)> outs)
     {
-        var targetTotal = targets.Sum(tar => tar.First());
-        var absoluteDifference = predictions.Zip(targets)
-            .Select(pair => Math.Abs(pair.Second.First() - pair.First.First()))
+        var targetTotal = outs.Sum(tar => tar.targets.Sum());
+        var absoluteDifference = outs
+            .Select(pair => Math.Abs(pair.targets.First() - pair.predictions.First()))
             .Sum();
 
         return (targetTotal - absoluteDifference) / targetTotal;

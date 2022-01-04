@@ -1,7 +1,9 @@
 ﻿using Radiate.Data;
 using Radiate.Data.Utils;
 using Radiate.Domain.Activation;
+using Radiate.Domain.Extensions;
 using Radiate.Domain.Loss;
+using Radiate.Domain.Models;
 using Radiate.Domain.Records;
 using Radiate.Optimizers.Supervised;
 using Radiate.Optimizers.Supervised.Perceptrons;
@@ -13,37 +15,32 @@ public class BostonRegression : IExample
 {
     public async Task Run()
     {
-        const double splitPct = .75;
         const int outputSize = 1;
         const int maxEpochs = 200;
 
-        var (normalizedInputs, labels) = await new BostonHousing().GetDataSet();
+        var (features, targets) = await new BostonHousing().GetDataSet();
         
-        var splitIndex = (int) (normalizedInputs.Count - (normalizedInputs.Count * splitPct));
-        var rawLabels = labels.Select(lab => lab.ToArray()).ToList();
-        var inputSize = normalizedInputs.Select(input => input.Length).Distinct().Single();
+        var normalizedFeatures = features.Standardize();
+        var featureTargetPair = new FeatureTargetPair(normalizedFeatures, targets).Split();
 
-        var trainFeatures = normalizedInputs.Skip(splitIndex).ToList();
-        var trainTargets = rawLabels.Skip(splitIndex).ToList();
-        var testFeatures = normalizedInputs.Take(splitIndex).ToList();
-        var testTargets = rawLabels.Take(splitIndex).ToList();
-
+        var trainData = featureTargetPair.TrainingInputs;
+        var testData = featureTargetPair.TestingInputs;
+        
         var linearRegressor = new MultiLayerPerceptron()
             .AddLayer(new DenseInfo(outputSize, Activation.Linear));
         
-        var optimizer = new Optimizer(linearRegressor, Loss.MSE, new Shape(inputSize));
-
+        var optimizer = new Optimizer(linearRegressor, Loss.MSE);
+        
         var progressBar = new ProgressBar(maxEpochs);
-        await optimizer.Train(trainFeatures, trainTargets, (epochs) => 
+        await optimizer.Train(trainData, (epoch) => 
         {
-            var currentEpoch = epochs.Last();
-            var displayString = $"Loss: {currentEpoch.Loss} Accuracy: {currentEpoch.RegressionAccuracy}";
+            var displayString = $"Loss: {epoch.AverageLoss} Accuracy: {epoch.RegressionAccuracy}";
             progressBar.Tick(displayString);
-            return maxEpochs == epochs.Count || Math.Abs(currentEpoch.Loss) < .1;
+            return maxEpochs == epoch.Index || Math.Abs(epoch.AverageLoss) < .1;
         });
         
-        var trainValidation = optimizer.Validate(trainFeatures, trainTargets);
-        var testValidation = optimizer.Validate(testFeatures, testTargets);
+        var trainValidation = optimizer.Validate(trainData);
+        var testValidation = optimizer.Validate(testData);
         
         var trainValid = trainValidation.RegressionAccuracy;
         var testValid = testValidation.RegressionAccuracy;
