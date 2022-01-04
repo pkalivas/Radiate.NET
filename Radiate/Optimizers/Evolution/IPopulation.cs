@@ -1,9 +1,6 @@
-﻿using Radiate.Optimizers.Evolution.Engine;
-using Radiate.Optimizers.Evolution.Engine.Delegates;
-
-namespace Radiate.Optimizers.Evolution;
+﻿namespace Radiate.Optimizers.Evolution;
 
 public interface IPopulation
 {
-    Task<Member<Genome>> Evolve(Genome genome, Run runFunction);
+    Task Evolve(Func<double, int, bool> trainFunc);
 }

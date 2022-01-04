@@ -1,9 +1,9 @@
 ﻿
-namespace Radiate.Optimizers.Evolution.Engine.ParentalCriteria;
+namespace Radiate.Optimizers.Evolution.Population.ParentalCriteria;
 
 public class BiasedRandom : IParentPicker
 {
-    public (Guid parentOne, Guid parentTwo) Pick(double inbreedRate, List<Niche> species)
+    public (Guid parentOne, Guid parentTwo) Pick<T>(double inbreedRate, List<Niche> species)
     {
         var random = new Random();
 

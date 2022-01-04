@@ -18,9 +18,9 @@ public class FeatureTargetPair
         TrainTargets = targets.Select(row => row.ToTensor());
     }
 
-    public List<Batch> TrainingInputs => GetBatches(TrainFeatures, TrainTargets, BatchSize, Padding);
+    public List<Batch<Tensor>> TrainingInputs => GetBatches(TrainFeatures, TrainTargets, BatchSize, Padding);
 
-    public List<Batch> TestingInputs => GetBatches(TestFeatures, TestTargets, 1, Padding);
+    public List<Batch<Tensor>> TestingInputs => GetBatches(TestFeatures, TestTargets, 1, Padding);
 
     public int OutputSize => TestTargets.First().Shape.Height;
 
@@ -60,15 +60,15 @@ public class FeatureTargetPair
         return this;
     }
 
-    private static List<Batch> GetBatches(IEnumerable<Tensor> features, IEnumerable<Tensor> targets, int batchSize, int padding)
+    private static List<Batch<Tensor>> GetBatches(IEnumerable<Tensor> features, IEnumerable<Tensor> targets, int batchSize, int padding)
     {
-        var batches = new List<Batch>();
+        var batches = new List<Batch<Tensor>>();
         for (var i = 0; i < features.Count(); i += batchSize)
         {
             var batchFeatures = features
                 .Skip(i)
                 .Take(batchSize)
-                .Select(row => row.Pad(padding, padding))
+                .Select(row => padding > 0 ? row.Pad(padding, padding) : row)
                 .ToList();
             
             var batchTargets = targets
@@ -76,7 +76,7 @@ public class FeatureTargetPair
                 .Take(batchSize)
                 .ToList();
             
-            batches.Add(new(batchFeatures, batchTargets));
+            batches.Add(new Batch<Tensor>(batchFeatures, batchTargets));
         }
 
         return batches;

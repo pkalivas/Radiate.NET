@@ -5,6 +5,7 @@ using Radiate.Domain.Extensions;
 using Radiate.Domain.Loss;
 using Radiate.Domain.Models;
 using Radiate.Domain.Records;
+using Radiate.Optimizers;
 using Radiate.Optimizers.Supervised;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
@@ -36,7 +37,7 @@ public class NeuralNetDenseMinst : IExample
             .AddLayer(new DenseInfo(hiddenLayerSize, Activation.Sigmoid))
             .AddLayer(new DenseInfo(featureTargetPair.OutputSize, Activation.SoftMax));
 
-        var optimizer = new Optimizer(neuralNetwork, Loss.CrossEntropy);
+        var optimizer = new Optimizer<MultiLayerPerceptron>(neuralNetwork, Loss.CrossEntropy);
         await optimizer.Train(trainData, (epoch) =>
         {
             progressBar.Tick($"Loss: {epoch.AverageLoss} Accuracy: {epoch.ClassificationAccuracy}");

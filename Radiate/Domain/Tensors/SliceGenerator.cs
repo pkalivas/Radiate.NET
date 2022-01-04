@@ -19,11 +19,8 @@ public class SliceGenerator
 
     public IEnumerable<Slice> Slice(Tensor volume)
     {
-        var (vHeight, _, _) = volume.Shape;
         var (_, _, kDepth) = _kernelShape;
-
         var (hStride, wStride) = CalcStride(volume);
-        var samePadding = (vHeight - hStride) / 2;
         
         for (var i = 0; i < hStride; i++)
         {

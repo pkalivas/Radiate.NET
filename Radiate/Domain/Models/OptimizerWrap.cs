@@ -1,5 +1,4 @@
-﻿using Radiate.Domain.Records;
-using Radiate.Optimizers.Supervised;
+﻿using Radiate.Optimizers;
 
 namespace Radiate.Domain.Models;
 

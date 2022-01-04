@@ -6,6 +6,7 @@ using Radiate.Domain.Loss;
 using Radiate.Domain.Models;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
+using Radiate.Optimizers;
 using Radiate.Optimizers.Supervised;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
@@ -29,8 +30,8 @@ public class TrainLSTM : IExample
             .AddLayer(new LSTMInfo(16, 16))
             .AddLayer(new DenseInfo(1, Activation.Sigmoid));
 
-        var optimizer = new Optimizer(mlp, Loss.MSE);
-        await optimizer.Train(trainInputs, epoch =>
+        var optimizer = new Optimizer<MultiLayerPerceptron>(mlp, Loss.MSE);
+        var lstm = await optimizer.Train(trainInputs, epoch =>
         {
             var displayString = $"Loss: {epoch.AverageLoss} Accuracy: {epoch.RegressionAccuracy}";
             progressBar.Tick(displayString);
@@ -42,15 +43,15 @@ public class TrainLSTM : IExample
         {
             foreach (var (i, j) in ins.Zip(outs))
             {
-                var pred = optimizer.Predict(i);
+                var pred = lstm.Predict(i);
                 Console.WriteLine($"Input {i.Read1D()[0]} Expecting {j.Read1D()[0]} Guess {pred.Confidence}");    
             }
         }
         
         Console.WriteLine("\nTesting Memory...");
-        Console.WriteLine($"Input {1f} Expecting {0f} Guess {optimizer.Predict(new float[1] { 1 }.ToTensor()).Confidence}");
-        Console.WriteLine($"Input {0f} Expecting {0f} Guess {optimizer.Predict(new float[1] { 0 }.ToTensor()).Confidence}");
-        Console.WriteLine($"Input {0f} Expecting {0f} Guess {optimizer.Predict(new float[1] { 0 }.ToTensor()).Confidence}");
-        Console.WriteLine($"Input {0f} Expecting {1f} Guess {optimizer.Predict(new float[1] { 0 }.ToTensor()).Confidence}");
+        Console.WriteLine($"Input {1f} Expecting {0f} Guess {lstm.Predict(new float[1] { 1 }.ToTensor()).Confidence}");
+        Console.WriteLine($"Input {0f} Expecting {0f} Guess {lstm.Predict(new float[1] { 0 }.ToTensor()).Confidence}");
+        Console.WriteLine($"Input {0f} Expecting {0f} Guess {lstm.Predict(new float[1] { 0 }.ToTensor()).Confidence}");
+        Console.WriteLine($"Input {0f} Expecting {1f} Guess {lstm.Predict(new float[1] { 0 }.ToTensor()).Confidence}");
     }
 }

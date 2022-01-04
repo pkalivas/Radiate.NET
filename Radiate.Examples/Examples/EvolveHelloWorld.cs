@@ -1,6 +1,7 @@
 ﻿using Radiate.Data.Utils;
+using Radiate.Optimizers;
 using Radiate.Optimizers.Evolution;
-using Radiate.Optimizers.Evolution.Engine;
+using Radiate.Optimizers.Evolution.Population;
 
 namespace Radiate.Examples.Examples;
 
@@ -18,35 +19,50 @@ public class EvolveHelloWorld : IExample
     public async Task Run()
     {
         const int evolutionEpochs = 500;
-        var helloWorld = new HelloWorld();
+        const int populationSize = 100;
+        var progressBar = new ProgressBar(evolutionEpochs);
         var target = new char[12] { 'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '!'};
 
-        var fitnessFunction = new Func<Genome, double>((Genome member) =>
+        var worlds = new List<HelloWorld>();
+        foreach (var _ in Enumerable.Range(0, populationSize))
         {
-            var casted = member as HelloWorld;
-            var total = casted.Chars.Zip(target).Sum(points => points.First == points.Second ? 1.0 : 0.0);
-            return total;
-        });
+            worlds.Add(new HelloWorld());
+        }
 
-        var population = new Population(fitnessFunction);
+        var population = new Population<HelloWorld, BaseEvolutionEnvironment>(worlds)
+            .Configure(settings =>
+            {
+                settings.Size = populationSize;
+                settings.DynamicDistance = true;
+                settings.SpeciesTarget = 5;
+                settings.SpeciesDistance = .5;
+                settings.InbreedRate = .001;
+                settings.CrossoverRate = .5;
+                settings.CleanPct = .9;
+                settings.StagnationLimit = 15;
+            })
+            .SetFitnessFunction(member =>
+            {
+                return member.Chars.Zip(target)
+                    .Sum(points => points.First == points.Second ? 1.0 : 0.0);
+            });
 
-        var progressBar = new ProgressBar(evolutionEpochs);
-        var bestMember = await population.Evolve(helloWorld, (member, epoch) =>
+        var optimizer = new Optimizer<Population<HelloWorld, BaseEvolutionEnvironment>>(population);
+        var pop = await optimizer.Evolve((fitness, epoch) =>
         {
-            var world = member.Model as HelloWorld;
-            var displayString = $"Genome: {world.Print()} Fitness: {member.Fitness}";
+            var displayString = $"Fitness: {fitness}";
             progressBar.Tick(displayString);
-            return epoch == evolutionEpochs || member.Fitness == 12;
+            return epoch == evolutionEpochs || fitness == 12;
         });
 
-        Console.WriteLine($"\nFinal Result: {(bestMember.Model as HelloWorld).Print()} - Fitness: {bestMember.Fitness}");
+        var best = pop.Best;
+        Console.WriteLine($"\nFinal Result: {best.Print()}");
     }
-
-
+    
     private class HelloWorld : Genome
     {
         public char[] Chars { get; set; }
-
+    
         public HelloWorld()
         {
             var r = new Random();
@@ -57,15 +73,15 @@ public class EvolveHelloWorld : IExample
                 })
                 .ToArray();
         }
-
+    
         public string Print() => String.Join("", Chars);
-
-        public override Task<Genome> Crossover(Genome other, EvolutionEnvironment environment, double crossoverRate)
+    
+        public override async Task<T> Crossover<T, TE>(T other, TE environment, double crossoverRate)        
         {
             var child = new HelloWorld();
             var secondParent = other as HelloWorld;
             var r = new Random();
-
+    
             if (r.NextDouble() < crossoverRate)
             {
                 var childAlph = new List<char>();
@@ -73,7 +89,7 @@ public class EvolveHelloWorld : IExample
                 {
                     childAlph.Add(pOne != pTwo ? pOne : pTwo);
                 }
-
+    
                 child.Chars = childAlph.ToArray();
             }
             else
@@ -82,14 +98,14 @@ public class EvolveHelloWorld : IExample
                 var swapIndex = r.Next(0, newData.Length);
                 var newCharIndex = r.Next(0, Alphabet.Length);
                 newData[swapIndex] = Alphabet[newCharIndex];
-
+    
                 child.Chars = newData;
             }
 
-            return Task.Run(() => child as Genome);
+            return child as T;
         }
-
-        public override Task<double> Distance(Genome other, EvolutionEnvironment environment)
+    
+        public override async Task<double> Distance<T, TE>(T other, TE environment)
         {
             var secondParent = other as HelloWorld;
             var total = 0.0;
@@ -98,19 +114,14 @@ public class EvolveHelloWorld : IExample
                 total += pOne == pTwo ? 1 : 0;
             }
 
-            return Task.Run(() => Chars.Length / total);
+            return Chars.Length / total;
         }
-
-        public override float[] Forward(float[] data)
+        
+        public override T CloneGenome<T>()
         {
-            throw new System.NotImplementedException();
+            return new HelloWorld { Chars = Chars.Select(c => c).ToArray() } as T;
         }
-
-        public override Genome CloneGenome()
-        {
-            return new HelloWorld { Chars = Chars.Select(c => c).ToArray() };
-        }
-
+    
         public override void ResetGenome() { }
     }
 }

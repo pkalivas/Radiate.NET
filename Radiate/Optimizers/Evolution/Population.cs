@@ -1,73 +1,100 @@
-﻿using Radiate.Optimizers.Evolution.Engine;
-using Radiate.Optimizers.Evolution.Engine.Delegates;
-using Radiate.Optimizers.Evolution.Engine.ParentalCriteria;
-using Radiate.Optimizers.Evolution.Engine.SurvivorCriteria;
+﻿using Radiate.Domain.Loss;
+using Radiate.Domain.Models;
+using Radiate.Domain.Records;
+using Radiate.Optimizers.Evolution.Population;
+using Radiate.Optimizers.Evolution.Population.Delegates;
+using Radiate.Optimizers.Evolution.Population.ParentalCriteria;
+using Radiate.Optimizers.Evolution.Population.SurvivorCriteria;
 
 namespace Radiate.Optimizers.Evolution;
 
-public class Population : IPopulation
+ public class Population<T, E> : IPopulation
+        where T: Genome
+        where E: EvolutionEnvironment
 {
     private PopulationSettings Settings { get; set; }
-    private Generation CurrentGeneration { get; set; }
+    private Generation<T, E> CurrentGeneration { get; set; }
     private EvolutionEnvironment EvolutionEnvironment { get; set; }
-    private Func<Genome, double> Solver { get; set; }
-    private GetSurvivors SurvivorPicker { get; set; }
-    private GetParents ParentPicker { get; set; }
+    private Solve<T> Solver { get; set; }
+
+    private GetSurvivors<T> SurvivorPicker { get; set; } = new Fittest().Pick<T>;
+    private GetParents<T> ParentPicker { get; set; } = new BiasedRandom().Pick<T>;
     private int GenerationsUnchanged { get; set; }
     private double PreviousFitness { get; set; }
     private const double Tolerance = 0.0000001;
 
-    public Population(Func<Genome, double> fitnessFunction) : this(new PopulationSettings(), new BaseEvolutionEnvironment(), fitnessFunction) { } 
-    
-    public Population(PopulationSettings settings, EvolutionEnvironment env, Func<Genome, double> solve) : this(settings, env, solve, new Fittest().Pick, new BiasedRandom().Pick) { }
 
-    public Population(PopulationSettings settings, EvolutionEnvironment env, Func<Genome, double> solve, GetSurvivors survivorPicker, GetParents parentPicker)
+    public Population(IEnumerable<T> genomes)
     {
-        Settings = settings;
-        EvolutionEnvironment = env;
-        Solver = solve;
-        SurvivorPicker = survivorPicker;
-        ParentPicker = parentPicker;
-        
+        Settings = new PopulationSettings();
+        CurrentGeneration = new Generation<T, E>
+        {
+            Members = genomes
+                .Select(member => (
+                    Id: Guid.NewGuid(),
+                    Member: new Member<T>
+                    {
+                        Fitness = 0,
+                        Model = member
+                    }
+                ))
+                .ToDictionary(key => key.Id, val => val.Member),
+            Species = new List<Niche>()
+        };
     }
     
-    public async Task<Member<Genome>> Evolve(Genome genome, Run runFunction)
+    public async Task Evolve(Func<double, int, bool> trainFunc)
     {
-        PopulateClone(genome);
-        
         var epoch = 0;
         while (true)
         {
             var topMember = await EvolveGeneration();
 
-            if (runFunction(topMember, epoch))
+            if (trainFunc(topMember.Fitness, epoch))
             {
-                return topMember;
+                break;
             }
 
             epoch++;
         }
     }
 
-    private void PopulateClone(Genome baseGenome)
+    public T Best => CurrentGeneration.GetBestMember().Model;
+
+    public Population<T, E> SetFitnessFunction(Solve<T> solver)
     {
-        CurrentGeneration = new Generation
-        {
-            Members = Enumerable.Range(0, Settings.Size)
-                .Select(_ => (
-                    Id: Guid.NewGuid(), 
-                    Member: new Member<Genome>
-                    {
-                        Fitness = 0,
-                        Model = baseGenome.CloneGenome()
-                    }
-                 ))
-                .ToDictionary(key => key.Id, val => val.Member),
-            Species = new List<Niche>()
-        };
+        Solver = solver;
+        return this;
     }
-    
-    private async Task<Member<Genome>> EvolveGeneration()
+
+    public Population<T, E> Configure(Action<PopulationSettings> settings)
+    {
+        settings.Invoke(Settings);
+        return this;
+    }
+
+    public Population<T, E> SetSurvivorPicker(GetSurvivors<T> survivors)
+    {
+        SurvivorPicker = survivors;
+
+        return this;
+    }
+
+    public Population<T, E> SetParentPicker(GetParents<T> parents)
+    {
+        ParentPicker = parents;
+
+        return this;
+    }
+
+    public Population<T, E> SetEnvironment(EvolutionEnvironment environment)
+    {
+        EvolutionEnvironment = environment;
+
+        return this;
+    }
+
+    private async Task<Member<T>> EvolveGeneration()
     {
         await CurrentGeneration.Optimize(Solver);
 
@@ -112,4 +139,5 @@ public class Population : IPopulation
 
         return topMember;
     }
+    
 }

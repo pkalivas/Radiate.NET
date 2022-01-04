@@ -1,4 +1,4 @@
-﻿namespace Radiate.Optimizers.Evolution.Engine.Enums;
+﻿namespace Radiate.Optimizers.Evolution.Population.Enums;
 
 public enum ParentPicker
 {

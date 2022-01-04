@@ -1,18 +1,19 @@
-﻿using Radiate.Optimizers.Evolution.Engine.Delegates;
+﻿using Radiate.Optimizers.Evolution.Population.Delegates;
 
-namespace Radiate.Optimizers.Evolution.Engine;
-
-public class Generation 
+namespace Radiate.Optimizers.Evolution.Population;
+public class Generation<T, TE> 
+    where T : Genome
+    where TE: EvolutionEnvironment
 {
-    public Dictionary<Guid, Member<Genome>> Members { get; set; }
-    public Dictionary<Guid, Member<Genome>> MascotMembers { get; set; }
+    public Dictionary<Guid, Member<T>> Members { get; set; }
+    public Dictionary<Guid, Member<T>> MascotMembers { get; set; }
     public List<Niche> Species { get; set; }
 
 
     public Generation()
     {
-        Members = new Dictionary<Guid, Member<Genome>>();
-        MascotMembers = new Dictionary<Guid, Member<Genome>>();
+        Members = new Dictionary<Guid, Member<T>>();
+        MascotMembers = new Dictionary<Guid, Member<T>>();
         Species = new List<Niche>();
     }
 
@@ -61,18 +62,18 @@ public class Generation
     }
 
 
-    public async Task<Generation> CreateNextGeneration(
+    public async Task<Generation<T, TE>> CreateNextGeneration(
         PopulationSettings popSettings,
         EvolutionEnvironment envSettings, 
-        GetSurvivors survivorPicker, 
-        GetParents parentPicker)
+        GetSurvivors<T> survivorPicker, 
+        GetParents<T> parentPicker)
     {
         var newMembers = survivorPicker(Members, Species)
             .Select(pair =>
             {
                 var model = pair.member.Model;
                 model.ResetGenome();
-                return (pair.memberId, member: new Member<Genome> { Fitness = 0, Model = model });
+                return (pair.memberId, member: new Member<T> { Fitness = 0, Model = model });
             })
             .ToDictionary(key => key.memberId, val => val.member);
 
@@ -91,13 +92,13 @@ public class Generation
 
             foreach (var newMember in await Task.WhenAll(childTasks))
             {
-                newMembers[Guid.NewGuid()] = new Member<Genome> {Fitness = 0, Model = newMember};
+                newMembers[Guid.NewGuid()] = new Member<T> {Fitness = 0, Model = newMember};
             }
         }
 
         Species = Species.Select(niche => niche.Reset()).ToList();
 
-        return new Generation
+        return new Generation<T, TE>
         {
             Members = newMembers,
             Species = Species,
@@ -108,7 +109,7 @@ public class Generation
     }
 
 
-    public async Task Optimize(Func<Genome, double> problem)
+    public async Task Optimize(Solve<T> problem)
     {
         foreach (var batch in BatchMembers(Members.Keys.ToList()))
         {
@@ -145,7 +146,7 @@ public class Generation
     }
 
 
-    public Member<Genome> GetBestMember() => 
+    public Member<T> GetBestMember() => 
         Members.Values
             .Aggregate(Members.Values.First(), (best, current) => current.Fitness > best.Fitness ? current : best);
     

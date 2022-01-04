@@ -5,6 +5,7 @@ using Radiate.Domain.Extensions;
 using Radiate.Domain.Loss;
 using Radiate.Domain.Models;
 using Radiate.Domain.Records;
+using Radiate.Optimizers;
 using Radiate.Optimizers.Supervised;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
@@ -29,10 +30,10 @@ public class BostonRegression : IExample
         var linearRegressor = new MultiLayerPerceptron()
             .AddLayer(new DenseInfo(outputSize, Activation.Linear));
         
-        var optimizer = new Optimizer(linearRegressor, Loss.MSE);
+        var optimizer = new Optimizer<MultiLayerPerceptron>(linearRegressor, Loss.MSE);
         
         var progressBar = new ProgressBar(maxEpochs);
-        await optimizer.Train(trainData, (epoch) => 
+        var regressor = await optimizer.Train(trainData, (epoch) => 
         {
             var displayString = $"Loss: {epoch.AverageLoss} Accuracy: {epoch.RegressionAccuracy}";
             progressBar.Tick(displayString);

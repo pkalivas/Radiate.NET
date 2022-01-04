@@ -10,7 +10,7 @@ using Radiate.Optimizers.Supervised.Perceptrons.Layers;
 
 namespace Radiate.Optimizers.Supervised.Perceptrons;
 
-public class MultiLayerPerceptron : IOptimizer
+public class MultiLayerPerceptron : IPredictor, ISupervised
 {
     private readonly List<LayerInfo> _layerInfo;
     private readonly List<Layer> _layers;
@@ -47,16 +47,8 @@ public class MultiLayerPerceptron : IOptimizer
         _layerInfo.Add(layerInfo);
         return this;
     }
-
-    public Prediction Predict(Tensor inputs)
-    {
-        var output = _layers.Aggregate(inputs, (current, layer) => layer.Predict(current)).Read1D();
-        var maxIndex = output.ToList().IndexOf(output.Max());
-
-        return new Prediction(output, maxIndex, output[maxIndex]);
-    }
     
-    public async Task Train(List<Batch> batches, LossFunction lossFunction, Func<Epoch, bool> trainFunc)
+    public async Task Train<T>(List<Batch<T>> batches, LossFunction lossFunction, Func<Epoch, bool> trainFunc)
     {
         var epochCount = 1;
         while (true)
@@ -64,10 +56,10 @@ public class MultiLayerPerceptron : IOptimizer
             var predictions = new List<(float[] output, float[] target)>();
             var epochErrors = new List<float>();
 
-            foreach (var (inputs, answers) in batches)
+            foreach (var batch in batches)
             {
                 var batchErrors = new List<Cost>();
-                foreach (var (x, y) in inputs.Zip(answers))
+                foreach (var (x, y) in batch.ReadPairs<Tensor>())
                 {
                     var prediction = PassForward(x);
                     var cost = lossFunction(prediction, y);
@@ -105,6 +97,14 @@ public class MultiLayerPerceptron : IOptimizer
             LayerWraps = _layers.Select(layer => layer.Save()).ToList()
         }
     };
+
+    public Prediction Predict(Tensor inputs)
+    {
+        var output = _layers.Aggregate(inputs, (current, layer) => layer.Predict(current)).Read1D();
+        var maxIndex = output.ToList().IndexOf(output.Max());
+
+        return new Prediction(output, maxIndex, output[maxIndex]);
+    }
 
     public Tensor PassForward(Tensor input)
     {

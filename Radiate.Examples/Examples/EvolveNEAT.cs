@@ -1,8 +1,12 @@
 ﻿using Radiate.Data;
 using Radiate.Domain.Activation;
+using Radiate.Domain.Records;
+using Radiate.Optimizers;
 using Radiate.Optimizers.Evolution;
-using Radiate.Optimizers.Evolution.Engine;
 using Radiate.Optimizers.Evolution.Neat;
+using Radiate.Optimizers.Evolution.Population.Enums;
+using Radiate.Optimizers.Evolution.Population.ParentalCriteria;
+using Radiate.Optimizers.Evolution.Population.SurvivorCriteria;
 
 namespace Radiate.Examples.Examples;
 
@@ -10,53 +14,63 @@ public class EvolveNEAT : IExample
 {
     public async Task Run()
     {
+        var maxEpochs = 500;
         var (inputs, answers) = await new XOR().GetDataSet();
 
-        var neat = new Neat(2, 1, Activation.ExpSigmoid);
-        var popSettings = new PopulationSettings
+        var networks = new List<Neat>();
+        foreach (var _ in Enumerable.Range(0, 100))
         {
-            Size = 100,
-            DynamicDistance = true,
-            SpeciesTarget = 5,
-            SpeciesDistance = .5,
-            InbreedRate = .001,
-            CrossoverRate = .5,
-            CleanPct = .9,
-            StagnationLimit = 15,
-        };
+            networks.Add(new Neat(2, 1, Activation.ExpSigmoid));
+        }
 
-        var neatEnvironment = new NeatEnvironment
-        {
-            ReactivateRate = .2f,
-            WeightMutateRate = .8f,
-            NewEdgeRate = .14f,
-            NewNodeRate = .14f,
-            EditWeights = .1f,
-            WeightPerturb = 1.5f,
-            ActivationFunctions = new List<Activation>
+        var population = new Population<Neat, NeatEnvironment>(networks)
+            .Configure(settings =>
             {
-                Activation.ExpSigmoid,
-                Activation.ReLU
-            }
-        };
-
-        var fitnessFunction = new Func<Genome, double>((Genome member) =>
-        {
-            var total = 0.0;
-            foreach (var points in inputs.Zip(answers))
+                settings.Size = 100;
+                settings.DynamicDistance = true;
+                settings.SpeciesTarget = 5;
+                settings.SpeciesDistance = .5;
+                settings.InbreedRate = .001;
+                settings.CrossoverRate = .5;
+                settings.CleanPct = .9;
+                settings.StagnationLimit = 15;
+            })
+            .SetParentPicker(ParentPickerResolver.Get<Neat>(ParentPicker.BiasedRandom))
+            .SetSurvivorPicker(SurvivorPickerResolver.Get<Neat>(SurvivorPicker.Fittest))
+            .SetEnvironment(new NeatEnvironment
             {
-                var output = member.Forward(points.First);
-                total += Math.Pow((output[0] - points.Second[0]), 2);
-            }
+                ReactivateRate = .2f,
+                WeightMutateRate = .8f,
+                NewEdgeRate = .14f,
+                NewNodeRate = .14f,
+                EditWeights = .1f,
+                WeightPerturb = 1.5f,
+                ActivationFunctions = new List<Activation>
+                {
+                    Activation.ExpSigmoid,
+                    Activation.ReLU
+                }
+            })
+            .SetFitnessFunction(member =>
+            {
+                var total = 0.0;
+                foreach (var points in inputs.Zip(answers))
+                {
+                    var output = member.Forward(points.First);
+                    total += Math.Pow((output[0] - points.Second[0]), 2);
+                }
+            
+                return 4.0 - total;
+            });
 
-            return 4.0 - total;
+        var optimizer = new Optimizer<Population<Neat, NeatEnvironment>>(population);
+        var pop = await optimizer.Evolve((fitness, epoch) =>
+        {
+            Console.WriteLine($"{fitness}");
+            return epoch == maxEpochs;
         });
         
-        var population = new Population(popSettings, neatEnvironment, fitnessFunction);
-
-        var best = await population.Evolve(neat, ((_, epoch) => epoch == 500));
-
-        var member = best.Model;
+        var member = pop.Best;
         member.ResetGenome();
         
         foreach (var (point, idx) in inputs.Select((val, idx) => (val, idx)))

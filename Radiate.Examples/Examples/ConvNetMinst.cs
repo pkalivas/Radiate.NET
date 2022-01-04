@@ -4,10 +4,9 @@ using Radiate.Data;
 using Radiate.Data.Utils;
 using Radiate.Domain.Activation;
 using Radiate.Domain.Extensions;
-using Radiate.Domain.Gradients;
-using Radiate.Domain.Loss;
 using Radiate.Domain.Models;
 using Radiate.Domain.Records;
+using Radiate.Optimizers;
 using Radiate.Optimizers.Supervised;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
@@ -44,10 +43,10 @@ public class ConvNetMinst : IExample
             .AddLayer(new DenseInfo(64, Activation.Sigmoid))
             .AddLayer(new DenseInfo(featureTargetPair.OutputSize, Activation.SoftMax));
 
-        var optimizer = new Optimizer(neuralNetwork);
+        var optimizer = new Optimizer<MultiLayerPerceptron>(neuralNetwork);
         
         var progressBar = new ProgressBar(maxEpochs);
-        await optimizer.Train(trainData, (epoch) => 
+        var net = await optimizer.Train(trainData, (epoch) => 
         {
             var displayString = $"Loss: {epoch.AverageLoss} Accuracy: {epoch.ClassificationAccuracy}";
             
@@ -55,7 +54,7 @@ public class ConvNetMinst : IExample
             return maxEpochs == epoch.Index;
         });
         
-        var wrap = optimizer.Save();
+        var wrap = net.Save();
         await Save(wrap.MultiLayerPerceptronWrap);
         
         var trainValidation = optimizer.Validate(trainData);

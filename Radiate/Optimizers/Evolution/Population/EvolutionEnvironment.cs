@@ -1,5 +1,5 @@
 ﻿
-namespace Radiate.Optimizers.Evolution.Engine;
+namespace Radiate.Optimizers.Evolution.Population;
 
 public abstract class EvolutionEnvironment
 {

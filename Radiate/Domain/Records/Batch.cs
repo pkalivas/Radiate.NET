@@ -2,4 +2,10 @@
 
 namespace Radiate.Domain.Records;
 
-public record Batch(List<Tensor> Features, List<Tensor> Targets);
+public record Batch<T>(List<T> Features = null, List<T> Targets = null)
+{
+    public List<(TE, TE)> ReadPairs<TE>()
+        where TE : class => Features.Zip(Targets)
+            .Select(pair => (pair.First as TE, pair.Second as TE))
+            .ToList();
+}

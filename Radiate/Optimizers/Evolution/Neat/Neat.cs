@@ -1,5 +1,5 @@
 ﻿using Radiate.Domain.Activation;
-using Radiate.Optimizers.Evolution.Engine;
+using Radiate.Optimizers.Evolution.Population;
 
 namespace Radiate.Optimizers.Evolution.Neat;
 
@@ -227,7 +227,7 @@ public class Neat : Genome
     }
     
     
-    public override float[] Forward(float[] data)
+    public float[] Forward(float[] data)
     {
         if (Inputs.Length != data.Length)
         {
@@ -349,13 +349,12 @@ public class Neat : Genome
 
         return outputs.ToArray();
     }
-
-
-    public override async Task<Genome> Crossover(Genome other, EvolutionEnvironment environment, double crossoverRate)
+    
+    public override async Task<T> Crossover<T, TE>(T other, TE environment, double crossoverRate)
     {
         var random = new Random();
 
-        var child = CloneGenome() as Neat;
+        var child = CloneGenome<Neat>();
         var parentTwo = other as Neat;
         var neatEnv = environment as NeatEnvironment;
 
@@ -398,10 +397,11 @@ public class Neat : Genome
             }
         }
 
-        return child;
+        return child as T;
     }
 
-    public override async Task<double> Distance(Genome other, EvolutionEnvironment environment)
+
+    public override async Task<double> Distance<T, TE>(T other, TE environment)
     {
         var parentTwo = other as Neat;
 
@@ -413,7 +413,7 @@ public class Neat : Genome
         return 2 - (oneScore + twoScore);
     }
 
-    public override Genome CloneGenome() => new Neat
+    public override T CloneGenome<T>() => new Neat
     {
         Inputs = Inputs
             .Select(input => new NeuronId { Index = input.Index })
@@ -440,7 +440,7 @@ public class Neat : Genome
             .Select(pair => (Id: pair.Key, edge: new EdgeId { Index = pair.Value.Index }))
             .ToDictionary(key => key.Id, val => val.edge),
         FastMode = Nodes.Count == Inputs.Length + Outputs.Length,
-    };
+    } as T;
 
     public override void ResetGenome()
     {

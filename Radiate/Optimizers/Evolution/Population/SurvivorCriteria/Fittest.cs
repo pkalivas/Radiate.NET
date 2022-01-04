@@ -1,5 +1,5 @@
 ﻿
-namespace Radiate.Optimizers.Evolution.Engine.SurvivorCriteria;
+namespace Radiate.Optimizers.Evolution.Population.SurvivorCriteria;
 
 public class Fittest : ISurvivorPicker
 {
