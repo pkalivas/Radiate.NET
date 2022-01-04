@@ -7,6 +7,8 @@ namespace Radiate.Optimizers.Unsupervised.Clustering;
 
 public class KMeans : IUnsupervised
 {
+    private readonly Random _random = new();
+
     private readonly int _kClusters;
     private readonly List<int>[] _clusters;
     private readonly Tensor[] _centroids;
@@ -21,15 +23,15 @@ public class KMeans : IUnsupervised
     public async Task Train(Batch batches, LossFunction lossFunction, Func<Epoch, bool> trainFunc)
     {
         var (inputs, answers) = batches;
-
+        
         foreach (var group in answers.GroupBy(val => Convert.ToInt32(val.Max())))
         {
-            var idx = new Random().Next(0, inputs.Count);
+            var idx = _random.Next(0, inputs.Count);
             _centroids[group.Key] = inputs[idx];
             _clusters[group.Key] = new List<int>();
         }
         
-        var epochCount = 0;
+        var epochCount = 1;
         while (true)
         {
             var predictions = CreateClusters(inputs, answers, lossFunction);
@@ -57,7 +59,7 @@ public class KMeans : IUnsupervised
     {
         var label = ClosestCenter(input, lossFunction);
 
-        return new Prediction(new float[] { label }, label, 0f);
+        return new Prediction(new float[] { label }, label);
     }
 
     private List<(float[] output, float[] target)> CreateClusters(
@@ -115,29 +117,5 @@ public class KMeans : IUnsupervised
         (await Task.WhenAll(_centroids.Zip(newCentroids)
             .Select(pair => Task.Run(() => lossFunction(pair.First, pair.Second).loss))))
         .Sum();
-
-    private void Bootstrap(IReadOnlyList<Tensor> inputs, IReadOnlyList<Tensor> answers)
-    {
-        var rand = new Random();
-
-        var classLookup = new HashSet<float>();
-        while (classLookup.Count < _kClusters)
-        {
-            var idx = rand.Next(0, inputs.Count);
-            var target = answers[idx].Max();
-
-            if (!classLookup.Contains(target))
-            {
-                _centroids[classLookup.Count] = inputs[idx];
-                _clusters[classLookup.Count] = new List<int>();
-                classLookup.Add(target);
-            }
-        }
-    }
-
-    private float EuclideanDistance(Tensor one, Tensor two)
-    {
-        var diff = (float) Math.Pow((one - two).Sum(), 2);
-        return (float) Math.Sqrt(diff);
-    }
+    
 }
