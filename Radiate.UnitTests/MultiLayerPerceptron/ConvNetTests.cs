@@ -32,7 +32,7 @@ public class ConvNetTests
         var denseLayer = await LayerUtils.LoadDenseFromFiles(Activation.SoftMax);
         var denseOut = denseLayer.FeedForward(flattenOut);
         
-        foreach (var (aOut, lOut) in convTrueOutput.Flatten().Read1D().Zip(convOut.Flatten().Read1D()))
+        foreach (var (aOut, lOut) in convTrueOutput.Flatten().ToArray().Zip(convOut.Flatten().ToArray()))
         {
             var roundAOut = Math.Round(aOut, 5);
             var roundLOut = Math.Round(lOut, 5);
@@ -40,7 +40,7 @@ public class ConvNetTests
             roundAOut.Should().Be(roundLOut);
         }
         
-        foreach (var (aOut, mOut) in maxPoolTrueOutput.Flatten().Read1D().Zip(maxPoolOut.Flatten().Read1D()))
+        foreach (var (aOut, mOut) in maxPoolTrueOutput.Flatten().ToArray().Zip(maxPoolOut.Flatten().ToArray()))
         {
             var roundAOut = Math.Round(aOut, 5);
             var roundMOut = Math.Round(mOut, 5);
@@ -48,7 +48,7 @@ public class ConvNetTests
             roundAOut.Should().Be(roundMOut);
         }
         
-        foreach (var (aOut, lOut) in denseSoftMaxTrueIn.Flatten().Read1D().Zip(flattenOut.Read1D()))
+        foreach (var (aOut, lOut) in denseSoftMaxTrueIn.Flatten().ToArray().Zip(flattenOut.ToArray()))
         {
             var roundAOut = Math.Round(aOut, 5);
             var roundLOut = Math.Round(lOut, 5);
@@ -56,7 +56,7 @@ public class ConvNetTests
             roundAOut.Should().Be(roundLOut);
         }
         
-        foreach (var (aOut, lOut) in denseSoftMaxTrueOut.Flatten().Read1D().Zip(denseOut.Read1D()))
+        foreach (var (aOut, lOut) in denseSoftMaxTrueOut.Flatten().ToArray().Zip(denseOut.ToArray()))
         {
             var roundAOut = Math.Round(aOut, 5);
             var roundLOut = Math.Round(lOut, 5);

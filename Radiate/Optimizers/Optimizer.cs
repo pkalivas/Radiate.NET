@@ -29,22 +29,24 @@ public class Optimizer<T>
 
     public T Model => _optimizer;
 
+    public async Task Train() => await Train(_ => true);
+
     public async Task Train(Func<Epoch, bool> trainFunc)
     {
-        if (Model is IPopulation population)
+        if (_optimizer is IPopulation population)
         {
             await population.Evolve(trainFunc);
         }
         
-        if (Model is IUnsupervised unsupervised)
+        if (_optimizer is IUnsupervised unsupervised)
         {
             var batch = _tensorTrainSet.TrainingInputs.Single();
-            await unsupervised.Train(batch, trainFunc);
+            unsupervised.Train(batch, trainFunc);
         }
         
-        if (Model is ISupervised supervised)
+        if (_optimizer is ISupervised supervised)
         {
-            await supervised.Train(_tensorTrainSet.TrainingInputs, _lossFunction, trainFunc);
+            supervised.Train(_tensorTrainSet.TrainingInputs, _lossFunction, trainFunc);
         }
     }
 
@@ -52,7 +54,7 @@ public class Optimizer<T>
     {
         var validator = new Validator(_lossFunction);
 
-        switch (Model)
+        switch (_optimizer)
         {
             case IUnsupervised unsupervised:
             {

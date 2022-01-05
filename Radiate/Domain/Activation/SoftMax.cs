@@ -1,4 +1,5 @@
-﻿using Radiate.Domain.Tensors;
+﻿using Radiate.Domain.Extensions;
+using Radiate.Domain.Tensors;
 
 namespace Radiate.Domain.Activation;
 
@@ -9,44 +10,43 @@ public class SoftMax : IActivationFunction
     
     public Tensor Activate(Tensor values)
     {
-        var expSum = values.Read1D().Sum(val => (float)Math.Exp(val));
-        return values.Read1D()
+        var expSum = values.Sum(val => (float)Math.Exp(val));
+        return values
             .Select(val => (float)Math.Exp(val) / expSum)
-            .ToArray()
             .ToTensor();
     }
 
     public Tensor Deactivate(Tensor values)
     {
-        var diagMatrix = values.Read1D()
+        var diagMatrix = values
             .Select((val, idx) => Enumerable
-                .Range(0, values.Read1D().Length)
+                .Range(0, values.Count())
                 .Select(num => num == idx ? val : 0)
                 .ToArray())
             .ToArray();
         
-        var tiledMatrix = values.Read1D()
+        var tiledMatrix = values
             .Select(val => Enumerable
-                .Range(0, values.Read1D().Length)
+                .Range(0, values.Count())
                 .Select(_ => val)
                 .ToArray())
             .ToArray();
         
-        var transposedMatrix = values.Read1D()
-            .Select(_ => values.Read1D().Select(val => val).ToArray())
+        var transposedMatrix = values
+            .Select(_ => values.Select(val => val).ToArray())
             .ToArray();
         
-        var result = new float[values.Read1D().Length];
-        for (var i = 0; i < values.Read1D().Length; i++)
+        var result = new float[values.Count()];
+        for (var i = 0; i < values.Count(); i++)
         {
-            for (var j = 0; j < values.Read1D().Length; j++)
+            for (var j = 0; j < values.Count(); j++)
             {
                 result[i] += diagMatrix[j][i] - (tiledMatrix[j][i] * transposedMatrix[j][i]);
             }
         }
         
         
-        return values.Read1D().Select(val => val switch
+        return values.Select(val => val switch
         {
             > MaxClipValue => MaxClipValue,
             < MinClipValue => MinClipValue,

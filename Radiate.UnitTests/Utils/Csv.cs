@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Radiate.Domain.Extensions;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
 
@@ -10,7 +11,7 @@ namespace Radiate.UnitTests.Utils;
 
 public static class Csv
 {
-    public static async Task<Tensor> LoadTensor(string fileName)
+    private static async Task<Tensor> LoadTensor(string fileName)
     {
         var contents = await File.ReadAllTextAsync(fileName);
 

@@ -49,12 +49,12 @@ public class MultiLayerPerceptron : ISupervised
         return this;
     }
     
-    public async Task Train(List<Batch> batches, LossFunction lossFunction, Func<Epoch, bool> trainFunc)
+    public void Train(List<Batch> batches, LossFunction lossFunction, Func<Epoch, bool> trainFunc)
     {
         var epochCount = 1;
         while (true)
         {
-            var predictions = new List<(float[] output, float[] target)>();
+            var predictions = new List<(Tensor, Tensor)>();
             var epochErrors = new List<float>();
 
             foreach (var (inputs, answers) in batches)
@@ -66,7 +66,7 @@ public class MultiLayerPerceptron : ISupervised
                     var cost = lossFunction(prediction, y);
                     
                     batchErrors.Add(cost);
-                    predictions.Add((prediction.Read1D(), y.Read1D()));
+                    predictions.Add((prediction, y));
                 }
 
                 foreach (var (passError, _) in batchErrors.Select(pair => pair).Reverse())
@@ -74,7 +74,10 @@ public class MultiLayerPerceptron : ISupervised
                     PassBackward(passError);
                 }
 
-                await Update(epochCount);
+                foreach (var layer in _layers)
+                {
+                    layer.UpdateWeights(_gradientInfo, epochCount);
+                }
                 
                 epochErrors.AddRange(batchErrors.Select(err => err.Loss));
             }
@@ -99,7 +102,7 @@ public class MultiLayerPerceptron : ISupervised
 
     public Prediction Predict(Tensor inputs)
     {
-        var output = _layers.Aggregate(inputs, (current, layer) => layer.Predict(current)).Read1D();
+        var output = _layers.Aggregate(inputs, (current, layer) => layer.Predict(current));
         var maxIndex = output.ToList().IndexOf(output.Max());
 
         return new Prediction(output, maxIndex, output[maxIndex]);
@@ -130,10 +133,7 @@ public class MultiLayerPerceptron : ISupervised
             errors = _layers[i].PassBackward(errors);
         }
     }
-
-    private async Task Update(int epoch) =>
-        await Task.WhenAll(_layers.Select(layer => Task.Run(() => layer.UpdateWeights(_gradientInfo, epoch))));
-
+    
     private static Layer GetLayer(LayerInfo info, Shape shape)
     {
         var (height, _, _) = shape;

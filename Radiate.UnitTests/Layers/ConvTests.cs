@@ -29,7 +29,7 @@ public class ConvTests
         var layer = await LayerUtils.LoadConvFromFiles();
         var layerOut = layer.FeedForward(input);
         
-        foreach (var (aOut, lOut) in output.Flatten().Read1D().Zip(layerOut.Flatten().Read1D()))
+        foreach (var (aOut, lOut) in output.Flatten().Zip(layerOut.Flatten()))
         {
             var roundAOut = Math.Round(aOut, 5);
             var roundLOut = Math.Round(lOut, 5);

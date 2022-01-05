@@ -80,7 +80,7 @@ public class MaxPoolTests
         var convLayer = await LayerUtils.LoadConvFromFiles();
         var convOut = convLayer.FeedForward(input);
         
-        foreach (var (aOut, lOut) in convTrueOutput.Flatten().Read1D().Zip(convOut.Flatten().Read1D()))
+        foreach (var (aOut, lOut) in convTrueOutput.Flatten().Zip(convOut.Flatten()))
         {
             var roundAOut = Math.Round(aOut, 5);
             var roundLOut = Math.Round(lOut, 5);
@@ -91,7 +91,7 @@ public class MaxPoolTests
         var maxPoolLayer = await LayerUtils.LoadMaxPoolFromFiles();
         var maxPoolOut = maxPoolLayer.FeedForward(convOut);
 
-        foreach (var (aOut, mOut) in maxPoolTrueOutput.Flatten().Read1D().Zip(maxPoolOut.Flatten().Read1D()))
+        foreach (var (aOut, mOut) in maxPoolTrueOutput.Flatten().Zip(maxPoolOut.Flatten()))
         {
             var roundAOut = Math.Round(aOut, 5);
             var roundMOut = Math.Round(mOut, 5);

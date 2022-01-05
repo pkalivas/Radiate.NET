@@ -98,7 +98,7 @@ public class Conv : Layer
                 var kernel = _filters[i];
                 for (var l = 0; l < output.Shape.Depth; l++)
                 {
-                    output[j, k, l] += Tensor.Sum(lossSlice, kernel);
+                    output[j, k, l] += Tensor.Dot(lossSlice, kernel);
                 }
                 
                 _biasGradients[i] += errors[j, k, i] * prevOut[j, k, i];
@@ -151,7 +151,7 @@ public class Conv : Layer
             
             foreach (var (slice, sHeight, sWidth, _) in slices)
             {
-                output[sHeight, sWidth, i] += Tensor.Sum(slice, currentKernel) + currentBias;
+                output[sHeight, sWidth, i] += Tensor.Dot(slice, currentKernel) + currentBias;
             }
         });
 

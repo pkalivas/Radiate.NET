@@ -53,7 +53,7 @@ public class Dense : Layer
         var result = new Tensor(Shape.Width);
         for (var i = 0; i < Shape.Width; i++)
         {
-            result[i] = _bias[i] + input.Read1D()
+            result[i] = _bias[i] + input
                 .Select((inVal, idx) => _weights[i, idx] * inVal)
                 .Sum();
         }
@@ -73,7 +73,7 @@ public class Dense : Layer
 
     public override Tensor PassBackward(Tensor pass)
     {
-        var errors = pass.Read1D();
+        var errors = pass.ToArray();
         if (errors.Length != Shape.Width)
         {
             throw new Exception($"Error shape of {errors.Length} does not match Dense layer {Shape}.");

@@ -1,4 +1,5 @@
-﻿using Radiate.Domain.Gradients;
+﻿using Radiate.Domain.Extensions;
+using Radiate.Domain.Gradients;
 using Radiate.Domain.Models;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
@@ -25,7 +26,7 @@ public class Dropout : Layer
     public override Tensor Predict(Tensor input) => input;
 
     public override Tensor FeedForward(Tensor input) =>
-        input.Read1D()
+        input
             .Select(ins => _random.NextDouble() < _dropoutRate ? 0 : ins)
             .ToTensor();
 

@@ -1,4 +1,5 @@
-﻿using Radiate.Domain.Records;
+﻿using Radiate.Domain.Extensions;
+using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
 
 namespace Radiate.Domain.Loss;
@@ -7,7 +8,7 @@ public class Difference : ILossFunction
 {
     public Cost Calculate(Tensor output, Tensor target)
     {
-        var result = output.Read1D().Zip(target.Read1D())
+        var result = output.Zip(target)
             .Select(pair => pair.Second - pair.First)
             .ToTensor();
         

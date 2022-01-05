@@ -17,7 +17,7 @@ public class ConvNetMinst : IExample
 {
     public async Task Run()
     {
-        const int featureLimit = 5000;
+        const int featureLimit = 500;
         const int batchSize = 32;
         const int maxEpochs = 25;
         const int imagePadding = 1;

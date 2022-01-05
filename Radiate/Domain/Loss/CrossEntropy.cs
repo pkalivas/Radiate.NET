@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+﻿using Radiate.Domain.Extensions;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
 
@@ -8,7 +8,7 @@ public class CrossEntropy : ILossFunction
 {
     public Cost Calculate(Tensor output, Tensor target)
     {
-        var errors = output.Read1D().Zip(target.Read1D())
+        var errors = output.Zip(target)
             .Select(pair => -pair.Second * (float)Math.Log(pair.First))
             .ToTensor();
         

@@ -1,4 +1,5 @@
 ﻿using Radiate.Domain.Activation;
+using Radiate.Domain.Extensions;
 using Radiate.Domain.Gradients;
 using Radiate.Domain.Models;
 using Radiate.Domain.Records;
@@ -72,7 +73,7 @@ public class LSTM : Layer
         var oE = _outputGate.PassBackward(dOutput);
         var gE = _gateGate.PassBackward(dGate);
 
-        var dx = (iE + fE + oE + gE).Read1D();
+        var dx = (iE + fE + oE + gE).ToArray();
 
         var cellGrad = dS * current.ForgetOut;
         var hiddenGrad = dx.Skip(Shape.Height).Take(Shape.Width);
@@ -118,7 +119,7 @@ public class LSTM : Layer
 
     private Tensor OperateGates(Tensor input, LSTMCell prevCell)
     {
-        var cellInput = input.Read1D().Concat(prevCell.Hidden.Read1D()).ToTensor();
+        var cellInput = input.Concat(prevCell.Hidden).ToTensor();
 
         var gOut = _gateGate.FeedForward(cellInput);
         var iOut = _inputGate.FeedForward(cellInput);

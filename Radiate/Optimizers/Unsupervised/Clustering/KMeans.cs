@@ -1,4 +1,5 @@
-﻿using Radiate.Domain.Models;
+﻿using Radiate.Domain.Extensions;
+using Radiate.Domain.Models;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
 
@@ -19,7 +20,7 @@ public class KMeans : IUnsupervised
         _centroids = new Tensor[kClusters];
     }
     
-    public async Task Train(Batch batches, Func<Epoch, bool> trainFunc)
+    public void Train(Batch batches, Func<Epoch, bool> trainFunc)
     {
         var (inputs, answers) = batches;
         
@@ -41,7 +42,7 @@ public class KMeans : IUnsupervised
                 _centroids[i] = newCentroids[i];
             }
 
-            var loss = await CalcLoss(newCentroids);
+            var loss = CalcLoss(newCentroids);
             
             var classAcc = Validator.ClassificationAccuracy(predictions);
             var regAcc = Validator.RegressionAccuracy(predictions);
@@ -57,18 +58,19 @@ public class KMeans : IUnsupervised
     public Prediction Predict(Tensor input)
     {
         var label = ClosestCenter(input);
+        var result = new float[] { label }.ToTensor();
 
-        return new Prediction(new float[] { label }, label);
+        return new Prediction(result, label);
     }
 
-    private List<(float[] output, float[] target)> CreateClusters(IReadOnlyList<Tensor> inputs, IReadOnlyList<Tensor> answers)
+    private List<(Tensor output, Tensor target)> CreateClusters(IReadOnlyList<Tensor> inputs, IReadOnlyList<Tensor> answers)
     {
         foreach (var cluster in _clusters)
         {
             cluster.Clear();
         }
 
-        var predictions = new List<(float[] output, float[] target)>();
+        var predictions = new List<(Tensor output, Tensor target)>();
         for (var i = 0; i < inputs.Count; i++)
         {
             var input = inputs[i];
@@ -76,7 +78,7 @@ public class KMeans : IUnsupervised
             var centerIdx = ClosestCenter(input);
             _clusters[centerIdx].Add(i);
                 
-            predictions.Add((new float[]{ centerIdx }, target.Read1D()));
+            predictions.Add((new float[]{ centerIdx }.ToTensor(), target));
         }
 
         return predictions;
@@ -109,10 +111,10 @@ public class KMeans : IUnsupervised
        return distances.IndexOf(distances.Min());
     }
 
-    private async Task<float> CalcLoss(Tensor[] newCentroids) =>
-        (await Task.WhenAll(_centroids.Zip(newCentroids)
-            .Select(pair => Task.Run(() => EuclideanDistance(pair.First, pair.Second)))))
-        .Sum();
+    private float CalcLoss(Tensor[] newCentroids) =>
+        _centroids.Zip(newCentroids)
+            .Select(pair => EuclideanDistance(pair.First, pair.Second))
+            .Sum();
     
     private static float EuclideanDistance(Tensor one, Tensor other)
     {

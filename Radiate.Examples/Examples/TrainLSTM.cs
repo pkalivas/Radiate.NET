@@ -1,6 +1,7 @@
 ﻿using Radiate.Data;
 using Radiate.Data.Utils;
 using Radiate.Domain.Activation;
+using Radiate.Domain.Extensions;
 using Radiate.Domain.Gradients;
 using Radiate.Domain.Loss;
 using Radiate.Domain.Tensors;
@@ -39,7 +40,7 @@ public class TrainLSTM : IExample
             foreach (var (i, j) in ins.Zip(outs))
             {
                 var pred = lstm.Predict(i);
-                Console.WriteLine($"Input {i.Read1D()[0]} Expecting {j.Read1D()[0]} Guess {pred.Confidence}");    
+                Console.WriteLine($"Input {i.ToArray()[0]} Expecting {j.ToArray()[0]} Guess {pred.Confidence}");    
             }
         }
         

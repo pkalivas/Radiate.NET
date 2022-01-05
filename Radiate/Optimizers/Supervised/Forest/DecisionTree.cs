@@ -1,4 +1,5 @@
-﻿using Radiate.Domain.Records;
+﻿using Radiate.Domain.Extensions;
+using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
 
 namespace Radiate.Optimizers.Supervised.Forest;
@@ -10,106 +11,41 @@ public class DecisionTree
     private readonly ForestInfo _info;
     private readonly TreeNode _root;
     
-    public DecisionTree(ForestInfo forestInfo, Batch data)
+    public DecisionTree(ForestInfo forestInfo, Tensor features, Tensor targets)
     {
-        _info = forestInfo;
-        _root = GrowTree(data);
+        var info = forestInfo with { NFeatures = Math.Min(features.Shape.Width, forestInfo.NFeatures) };
+        
+        _info = info;
+        _root = GrowTree(features, targets);
     }
 
-    private TreeNode GrowTree(Batch data, int depth = 0)
+    public Prediction Predict(Tensor input) => Traverse(input, _root);
+
+    private TreeNode GrowTree(Tensor features, Tensor targets, int depth = 0)
     {
         var (minSplit, maxDepth, nFeatures) = _info;
-        var (featureShape, targetShape) = data.InnerShapes;
-        var nLabels = data.Targets.SelectMany(row => row.Read1D()).Distinct().Count();
-
-        if (depth >= maxDepth || nLabels == 1 || data.Size < minSplit)
-        {
-            var leafLabel = data.Targets
-                .Select(row => row.Max())
-                .OrderByDescending(val => val)
-                .First();
-
-            return new TreeNode(null, null, leafLabel);
-        }
-
-        var featureIndexes = GetFeatureIndexes(featureShape.Height);
-
-        var bestGain = -1f;
-        var splitIdx = -1;
-        var splitThreshold = -1f;
-        foreach (var index in featureIndexes)
-        {
-            var column = data.Features.Select(row => row[index]).ToTensor();
-            var unique = column.Unique();
-
-            for (var i = 0; i < unique.Shape.Height; i++)
-            {
-                var threshold = unique[i]; 
-                var gain = InfoGain(data.Targets, column, threshold);
-
-                if (gain > bestGain)
-                {
-                    bestGain = gain;
-                    splitIdx = index;
-                    splitThreshold = threshold;
-                }
-            }
-        }
+        var (_, fWidth, _) = features.Shape;
         
-        return new TreeNode();
-    }
+        var labels = targets.Unique();
 
-    private float InfoGain(Tensor[] targets, Tensor column, float threshold)
-    {
-        var (cHeight, _, _) = column.Shape;
-        var parentEntropy = Entropy(targets);
-        
-        var leftVals = new List<float>();
-        var rightVals = new List<float>();
-
-        for (var i = 0; i < cHeight; i++)
+        if (depth >= maxDepth || labels.Count() == 1 || fWidth < minSplit)
         {
-            if (column[i] <= threshold)
-            {
-                leftVals.Add(column[i]);
-            }
-            else
-            {
-                rightVals.Add(column[i]);
-            }
+            return new TreeNode(targets);
         }
 
-        if (!leftVals.Any() || !rightVals.Any())
-        {
-            return 0;
-        }
-
-        var numLeft = Convert.ToSingle(leftVals.Count);
-        var entropyLeft = Entropy(leftVals.Select(val => new Tensor(new[] { val })).ToArray());
+        var featureIndexes = GetFeatureIndexes(nFeatures);
+        var (splitIndex, splitThreshold) = FindSplit(features, targets, featureIndexes);
         
-        var numRight = Convert.ToSingle(rightVals.Count);
-        var entropyRight = Entropy(rightVals.Select(val => new Tensor(new[] { val })).ToArray());
+        var (leftIndexes, rightIndexes) = SplitIndexes(features.Column(splitIndex), splitThreshold);
+        var (leftFeatures, leftTargets) = SplitTensors(features, targets, leftIndexes);
+        var (rightFeatures, rightTargets) = SplitTensors(features, targets, rightIndexes);
 
-        var cNum = Convert.ToSingle(cHeight);
-        var childEntropy = (numLeft / cNum) * entropyLeft + (numRight / cNum) * entropyRight;
+        var leftNode = GrowTree(leftFeatures, leftTargets, depth + 1);
+        var rightNode = GrowTree(rightFeatures, rightTargets, depth + 1);
 
-        return parentEntropy - childEntropy;
+        return new TreeNode(leftNode, rightNode, splitIndex, splitThreshold);
     }
-
-    private static float Entropy(Tensor[] targets)
-    {
-        var bins = targets
-            .Select(ten => ten.Max())
-            .GroupBy(val => val)
-            .OrderBy(val => val.Key)
-            .Select(group => Convert.ToSingle(group.Count()))
-            .ToTensor();
-
-        var psVal = (bins / targets.Length).Read1D();
-
-        return -psVal.Where(val => val > 0).Sum(val => val * (float)Math.Log10(val));
-    }
-
+    
     private int[] GetFeatureIndexes(int featureNum)
     {
         var indexLookup = new HashSet<int>();
@@ -125,4 +61,102 @@ public class DecisionTree
 
         return indexLookup.ToArray();
     }
+    
+    private static Prediction Traverse(Tensor input, TreeNode node)
+    {
+        while (true)
+        {
+            if (node.IsLeaf)
+            {
+                return node.GetPrediction();
+            }
+
+            node = node.GetChild(input);
+        }
+    }
+
+    private static (int splitIndex, float splitThreshold) FindSplit(Tensor features, Tensor targets, int[] featureIndexes)
+    {
+        var bestGain = float.MinValue;
+        var splitIdx = -1;
+        var splitThreshold = float.MinValue;
+        
+        foreach (var index in featureIndexes)
+        {
+            var column = features.Column(index);
+            var unique = column.Unique();
+            var (uHeight, _, _) = unique.Shape;
+
+            for (var i = 0; i < uHeight; i++)
+            {
+                var threshold = unique[i]; 
+                var gain = InfoGain(targets, column, threshold);
+
+                if (gain > bestGain)
+                {
+                    bestGain = gain;
+                    splitIdx = index;
+                    splitThreshold = threshold;
+                }
+            }
+        }
+
+        return (splitIdx, splitThreshold);
+    }
+
+    private static float InfoGain(Tensor targets, Tensor column, float threshold)
+    {
+        var parentEntropy = targets.HistEntropy();
+
+        var (leftIndexes, rightIndexes) = SplitIndexes(column, threshold);
+        var leftThresholds = leftIndexes.Select(idx => targets[idx]).ToArray();
+        var rightThresholds = rightIndexes.Select(idx => targets[idx]).ToArray();
+
+        var leftCount = leftThresholds.Length;
+        var rightCount = rightThresholds.Length;
+        
+        if (leftCount == 0 || rightCount == 0)
+        {
+            return 0;
+        }
+
+        var numLeft = Convert.ToSingle(leftCount);
+        var entropyLeft = leftThresholds.ToTensor().HistEntropy();
+        
+        var numRight = Convert.ToSingle(rightCount);
+        var entropyRight = rightThresholds.ToTensor().HistEntropy();
+
+        var cNum = Convert.ToSingle(targets.Count());
+        var childEntropy = (numLeft / cNum) * entropyLeft + (numRight / cNum) * entropyRight;
+
+        return parentEntropy - childEntropy;
+    }
+
+    private static (int[] leftIndexes, int[] rightIndexes) SplitIndexes(Tensor column, float threshold)
+    {
+        var leftThresholds = column
+            .Select((val, idx) => (val, idx))
+            .Where(pair => pair.val <= threshold)
+            .Select(pair => pair.idx)
+            .ToArray();
+
+        var rightThresholds = column
+            .Select((val, idx) => (val, idx))
+            .Where(pair => pair.val > threshold)
+            .Select(pair => pair.idx)
+            .ToArray();
+
+        return (leftThresholds, rightThresholds);
+    }
+
+    private static (Tensor features, Tensor targets) SplitTensors(Tensor features, Tensor targets, int[] indexes)
+    {
+        var featureRows = indexes.Select(features.Row).ToArray();
+
+        var newFeatures = Tensor.Stack(featureRows, Axis.Zero);
+        var newTargets = indexes.Select(idx => targets[idx]).ToTensor();
+        
+        return (newFeatures, newTargets);
+    }
+    
 }

@@ -2,9 +2,4 @@
 
 namespace Radiate.Domain.Records;
 
-public record Batch(Tensor[] Features, Tensor[] Targets)
-{
-    public (Shape featureShape, Shape targetShape) InnerShapes => (Features.First().Shape, Targets.First().Shape);
-
-    public int Size => Features.Length;
-};
+public record Batch(Tensor[] Features, Tensor[] Targets);

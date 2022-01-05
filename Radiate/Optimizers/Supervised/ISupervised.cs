@@ -7,5 +7,5 @@ namespace Radiate.Optimizers.Supervised;
 public interface ISupervised
 {
     Prediction Predict(Tensor input);
-    Task Train(List<Batch> data, LossFunction lossFunction, Func<Epoch, bool> trainFunc);
+    void Train(List<Batch> data, LossFunction lossFunction, Func<Epoch, bool> trainFunc);
 }

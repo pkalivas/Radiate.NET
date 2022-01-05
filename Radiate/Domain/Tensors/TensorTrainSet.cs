@@ -1,4 +1,5 @@
-﻿using Radiate.Domain.Records;
+﻿using Radiate.Domain.Extensions;
+using Radiate.Domain.Records;
 
 namespace Radiate.Domain.Tensors;
 
@@ -23,7 +24,7 @@ public class TensorTrainSet
     public int OutputSize => TrainTest.TrainTargets.First().Shape.Height;
 
     public int OutputCategories => TrainTest.TrainTargets.Concat(TrainTest.TestTargets)
-        .SelectMany(val => val.Read1D())
+        .SelectMany(val => val)
         .Distinct()
         .Count();
 
@@ -143,8 +144,8 @@ public class TensorTrainSet
         
         for (var i = 0; i < trainFeatures.Count - layer - 1; i++)
         {
-            newFeatures.Add(trainFeatures.Skip(i).Take(layer).SelectMany(val => val.Read1D()).ToTensor());
-            newTargets.Add(trainTargets.Skip(i + layer).Take(1).SelectMany(val => val.Read1D()).ToTensor());
+            newFeatures.Add(trainFeatures.Skip(i).Take(layer).SelectMany(val => val).ToTensor());
+            newTargets.Add(trainTargets.Skip(i + layer).Take(1).SelectMany(val => val).ToTensor());
         }
 
         return new TrainTestSplit(newFeatures, newTargets, testFeatures, testTargets);
