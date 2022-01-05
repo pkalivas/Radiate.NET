@@ -18,8 +18,6 @@ public class TrainDense : IExample
         var (inputs, targets) = await new XOR().GetDataSet();
 
         var pair = new TensorTrainSet(inputs, targets).Batch(1);
-
-        var trainInputs = pair.TrainingInputs;
         
         var mlp = new MultiLayerPerceptron(new GradientInfo { Gradient = Gradient.SGD })
             .AddLayer(new DenseInfo(32, Activation.ReLU))
@@ -28,7 +26,7 @@ public class TrainDense : IExample
         var optimizer = new Optimizer<MultiLayerPerceptron>(mlp, pair, Loss.MSE);
         await optimizer.Train(epoch => epoch.Index == maxEpoch);
         
-        foreach (var (ins, outs) in trainInputs)
+        foreach (var (ins, outs) in pair.TrainingInputs)
         {
             var pred = optimizer.Model.Predict(ins.First());
             Console.WriteLine($"Answer {outs[0][0]} Confidence {pred.Confidence}");

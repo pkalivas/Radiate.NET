@@ -41,11 +41,8 @@ public class EvolveHelloWorld : IExample
                 settings.CleanPct = .9;
                 settings.StagnationLimit = 15;
             })
-            .SetFitnessFunction(member =>
-            {
-                return member.Chars.Zip(target)
-                    .Sum(points => points.First == points.Second ? 1.0f : 0.0f);
-            });
+            .SetFitnessFunction(member => member.Chars.Zip(target)
+                    .Sum(points => points.First == points.Second ? 1.0f : 0.0f));
 
         var optimizer = new Optimizer<Population<HelloWorld, BaseEvolutionEnvironment>>(population);
         await optimizer.Train(epoch =>

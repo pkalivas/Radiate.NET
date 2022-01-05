@@ -13,11 +13,13 @@ public class EvolveNEAT : IExample
 {
     public async Task Run()
     {
-        var maxEpochs = 500;
+        const int maxEpochs = 500;
+        const int populationSize = 100;
+        
         var (inputs, answers) = await new XOR().GetDataSet();
 
         var networks = new List<Neat>();
-        foreach (var _ in Enumerable.Range(0, 100))
+        foreach (var _ in Enumerable.Range(0, populationSize))
         {
             networks.Add(new Neat(2, 1, Activation.ExpSigmoid));
         }
@@ -25,7 +27,7 @@ public class EvolveNEAT : IExample
         var population = new Population<Neat, NeatEnvironment>(networks)
             .Configure(settings =>
             {
-                settings.Size = 100;
+                settings.Size = populationSize;
                 settings.DynamicDistance = true;
                 settings.SpeciesTarget = 5;
                 settings.SpeciesDistance = .5;

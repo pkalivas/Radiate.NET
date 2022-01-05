@@ -1,6 +1,5 @@
 ﻿using Radiate.Domain.Loss;
 using Radiate.Domain.Records;
-using Radiate.Domain.Services;
 using Radiate.Domain.Tensors;
 using Radiate.Optimizers.Supervised;
 using Radiate.Optimizers.Unsupervised;
@@ -38,8 +37,8 @@ public class Validator
             }
         }
         
-        var classAcc = ValidationService.ClassificationAccuracy(predictions);
-        var regAcc = ValidationService.RegressionAccuracy(predictions);
+        var classAcc = ClassificationAccuracy(predictions);
+        var regAcc = RegressionAccuracy(predictions);
 
         return new Validation(iterationLoss.Average(), classAcc, regAcc);
     }
@@ -61,9 +60,43 @@ public class Validator
             }
         }
         
-        var classAcc = ValidationService.ClassificationAccuracy(predictions);
-        var regAcc = ValidationService.RegressionAccuracy(predictions);
+        var classAcc = ClassificationAccuracy(predictions);
+        var regAcc = RegressionAccuracy(predictions);
 
         return new Validation(iterationLoss.Average(), classAcc, regAcc);
+    }
+
+    public static Validation ValidateEpoch(List<float> errors, List<(float[] outputs, float[] targets)> predictions)
+    {
+        var classAccuracy = ClassificationAccuracy(predictions);
+        var regressionAccuracy = RegressionAccuracy(predictions);
+
+        return new Validation(errors.Average(), classAccuracy, regressionAccuracy);
+    }
+    
+    public static float ClassificationAccuracy(List<(float[] predictions, float[] targets)> outs)
+    {
+        var correctClasses = outs
+            .Select(pair =>
+            {
+                var (first, second) = pair;
+                var firstMax = first.ToList().IndexOf(first.Max());
+                var secondMax = second.ToList().IndexOf(second.Max());
+
+                return firstMax == secondMax ? 1f : 0f;
+            })
+            .Sum();
+
+        return correctClasses / outs.Count;
+    }
+    
+    public static float RegressionAccuracy(List<(float[] predictions, float[] targets)> outs)
+    {
+        var targetTotal = outs.Sum(tar => tar.targets.Sum());
+        var absoluteDifference = outs
+            .Select(pair => Math.Abs(pair.targets.First() - pair.predictions.First()))
+            .Sum();
+
+        return (targetTotal - absoluteDifference) / targetTotal;
     }
 }

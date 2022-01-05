@@ -3,11 +3,8 @@ using Radiate.Data.Utils;
 using Radiate.Domain.Activation;
 using Radiate.Domain.Gradients;
 using Radiate.Domain.Loss;
-using Radiate.Domain.Models;
-using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
 using Radiate.Optimizers;
-using Radiate.Optimizers.Supervised;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
 
@@ -24,8 +21,6 @@ public class TrainLSTM : IExample
         
         var pair = new TensorTrainSet(inputs, targets).Batch(targets.Count());
         
-        var trainInputs = pair.TrainingInputs;
-
         var mlp = new MultiLayerPerceptron(new GradientInfo() { Gradient = Gradient.Adam })
             .AddLayer(new LSTMInfo(16, 16))
             .AddLayer(new DenseInfo(1, Activation.Sigmoid));
@@ -33,14 +28,13 @@ public class TrainLSTM : IExample
         var optimizer = new Optimizer<MultiLayerPerceptron>(mlp, pair, Loss.MSE);
         await optimizer.Train(epoch =>
         {
-            var displayString = $"Loss: {epoch.AverageLoss} Accuracy: {epoch.RegressionAccuracy}";
-            progressBar.Tick(displayString);
+            progressBar.Tick($"Loss: {epoch.AverageLoss} Accuracy: {epoch.RegressionAccuracy}");
             return epoch.Index == trainEpochs;
         });
 
         var lstm = optimizer.Model;
         Console.WriteLine();
-        foreach (var (ins, outs) in trainInputs)
+        foreach (var (ins, outs) in pair.TrainingInputs)
         {
             foreach (var (i, j) in ins.Zip(outs))
             {

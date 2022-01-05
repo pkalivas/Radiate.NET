@@ -1,7 +1,4 @@
-﻿using System.IO;
-using Radiate.Domain.Services;
-
-namespace Radiate.Data;
+﻿namespace Radiate.Data;
 
 public class BostonHousing : IDataSet
 {

@@ -3,7 +3,6 @@ using Radiate.Domain.Gradients;
 using Radiate.Domain.Loss;
 using Radiate.Domain.Models;
 using Radiate.Domain.Records;
-using Radiate.Domain.Services;
 using Radiate.Domain.Tensors;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
 using Radiate.Optimizers.Supervised.Perceptrons.Layers;
@@ -77,12 +76,11 @@ public class MultiLayerPerceptron : ISupervised
 
                 await Update(epochCount);
                 
-                epochErrors.AddRange(batchErrors.Select(err => err.loss));
+                epochErrors.AddRange(batchErrors.Select(err => err.Loss));
             }
-            
-            var classAccuracy = ValidationService.ClassificationAccuracy(predictions);
-            var regAccuracy = ValidationService.RegressionAccuracy(predictions);
-            var epoch = new Epoch(epochCount++, epochErrors.Average(), classAccuracy, regAccuracy);
+
+            var (avgLoss, classAcc, regAcc) = Validator.ValidateEpoch(epochErrors, predictions);
+            var epoch = new Epoch(epochCount++, avgLoss, classAcc, regAcc);
             
             if (trainFunc(epoch))
             {

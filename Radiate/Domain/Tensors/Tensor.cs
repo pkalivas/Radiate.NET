@@ -80,13 +80,12 @@ public class Tensor
         set => ElementsThreeD[i, j, k] = value;
     }
     
-    private Shape SetShape() => (ElementsOneD is null, ElementsTwoD is null, ElementsThreeD is null) switch
+    private Shape SetShape() => GetDimension() switch
     {
-        (false, true, true) => new (ElementsOneD.Length, 0, 0),
-        (true, false, true) => new (ElementsTwoD.GetLength(0), ElementsTwoD.GetLength(1), 0),
-        (true, true, false) => new (ElementsThreeD.GetLength(0), ElementsThreeD.GetLength(1), ElementsThreeD.GetLength(2)),
-        (true, true, true) => new(0, 0, 0),
-        _ => throw new Exception($"Cannot get Tensor shape.")
+        1 => new Shape(ElementsOneD.Length, 0, 0),
+        2 => new Shape(ElementsTwoD.GetLength(0), ElementsTwoD.GetLength(1), 0),
+        3 => new Shape(ElementsThreeD.GetLength(0), ElementsThreeD.GetLength(1), ElementsThreeD.GetLength(2)),
+        _ => new Shape(0, 0, 0),
     };
 
     public float[] Read1D() => ElementsOneD;

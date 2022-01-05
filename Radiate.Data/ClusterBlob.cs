@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace Radiate.Data;
+﻿namespace Radiate.Data;
 
 public class ClusterBlob : IDataSet
 {

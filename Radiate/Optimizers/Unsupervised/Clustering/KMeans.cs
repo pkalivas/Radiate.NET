@@ -1,6 +1,6 @@
 ﻿using Radiate.Domain.Loss;
+using Radiate.Domain.Models;
 using Radiate.Domain.Records;
-using Radiate.Domain.Services;
 using Radiate.Domain.Tensors;
 
 namespace Radiate.Optimizers.Unsupervised.Clustering;
@@ -44,8 +44,7 @@ public class KMeans : IUnsupervised
 
             var loss = await CalcLoss(newCentroids, lossFunction);
             
-            var classAcc = ValidationService.ClassificationAccuracy(predictions);
-            var regAcc = ValidationService.RegressionAccuracy(predictions);
+            var (_, classAcc, regAcc) = Validator.ValidateEpoch(new List<float>(), predictions);
             var epoch = new Epoch(epochCount++, loss, classAcc, regAcc);
             
             if (trainFunc(epoch))
@@ -107,7 +106,7 @@ public class KMeans : IUnsupervised
     private int ClosestCenter(Tensor row, LossFunction lossFunction)
     {
         var distances = _centroids
-            .Select(point => lossFunction(row, point).loss)
+            .Select(point => lossFunction(row, point).Loss)
             .ToList();
 
        return distances.IndexOf(distances.Min());
@@ -115,7 +114,7 @@ public class KMeans : IUnsupervised
 
     private async Task<float> CalcLoss(Tensor[] newCentroids, LossFunction lossFunction) =>
         (await Task.WhenAll(_centroids.Zip(newCentroids)
-            .Select(pair => Task.Run(() => lossFunction(pair.First, pair.Second).loss))))
+            .Select(pair => Task.Run(() => lossFunction(pair.First, pair.Second).Loss))))
         .Sum();
     
 }
