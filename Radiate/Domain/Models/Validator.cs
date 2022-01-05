@@ -52,7 +52,7 @@ public class Validator
         {
             foreach (var (feature, target) in inputs.Zip(answers))
             {
-                var (floats, _, _) = unsupervised.Predict(feature, _lossFunction);
+                var (floats, _, _) = unsupervised.Predict(feature);
                 var (_, loss) = _lossFunction(floats.ToTensor(), target);
             
                 iterationLoss.Add(loss);
@@ -66,12 +66,12 @@ public class Validator
         return new Validation(iterationLoss.Average(), classAcc, regAcc);
     }
 
-    public static Validation ValidateEpoch(List<float> errors, List<(float[] outputs, float[] targets)> predictions)
+    public static Epoch ValidateEpoch(List<float> errors, List<(float[] outputs, float[] targets)> predictions)
     {
         var classAccuracy = ClassificationAccuracy(predictions);
         var regressionAccuracy = RegressionAccuracy(predictions);
 
-        return new Validation(errors.Average(), classAccuracy, regressionAccuracy);
+        return new Epoch(0, errors.Average(), classAccuracy, regressionAccuracy);
     }
     
     public static float ClassificationAccuracy(List<(float[] predictions, float[] targets)> outs)

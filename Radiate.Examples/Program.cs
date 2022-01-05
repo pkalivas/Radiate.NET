@@ -14,6 +14,7 @@ class Program
                       "[5] Boston Housing Regression\n" +
                       "[6] Conv Net Mnist\n" +
                       "[7] KMeans Cluster\n" + 
+                      "[8] RandomForest Cancer Classifier\n" + 
                       ":: ";
 
         while (true)
@@ -65,6 +66,11 @@ class Program
         if (choice == 7)
         {
             await new BlobMeans().Run();
+        }
+
+        if (choice == 8)
+        {
+            await new RandomForestClassifier().Run();
         }
     }
 }

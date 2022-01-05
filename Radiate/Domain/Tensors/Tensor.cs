@@ -296,6 +296,12 @@ public class Tensor
 
         return bestVal > float.MinValue ? bestVal : 0;
     }
+
+    public Tensor Unique()
+    {
+        var flat = Flatten();
+        return flat.Read1D().Distinct().ToTensor();
+    }
     
     
     public static Tensor Like(Shape shape) => shape switch

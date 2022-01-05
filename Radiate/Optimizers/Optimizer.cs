@@ -39,7 +39,7 @@ public class Optimizer<T>
         if (Model is IUnsupervised unsupervised)
         {
             var batch = _tensorTrainSet.TrainingInputs.Single();
-            await unsupervised.Train(batch, _lossFunction, trainFunc);
+            await unsupervised.Train(batch, trainFunc);
         }
         
         if (Model is ISupervised supervised)

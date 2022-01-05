@@ -70,12 +70,12 @@ public class TensorTrainSet
             var batchFeatures = data.TrainFeatures
                 .Skip(i)
                 .Take(batchSize)
-                .ToList();
+                .ToArray();
             
             var batchTargets = data.TrainTargets
                 .Skip(i)
                 .Take(batchSize)
-                .ToList();
+                .ToArray();
             
             batches.Add(new Batch(batchFeatures, batchTargets));
         }
@@ -93,12 +93,12 @@ public class TensorTrainSet
             var batchFeatures = data.TestFeatures
                 .Skip(i)
                 .Take(1)
-                .ToList();
+                .ToArray();
             
             var batchTargets = data.TestTargets
                 .Skip(i)
                 .Take(1)
-                .ToList();
+                .ToArray();
             
             batches.Add(new Batch(batchFeatures, batchTargets));
         }

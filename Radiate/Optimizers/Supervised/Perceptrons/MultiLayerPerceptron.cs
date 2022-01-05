@@ -79,10 +79,9 @@ public class MultiLayerPerceptron : ISupervised
                 epochErrors.AddRange(batchErrors.Select(err => err.Loss));
             }
 
-            var (avgLoss, classAcc, regAcc) = Validator.ValidateEpoch(epochErrors, predictions);
-            var epoch = new Epoch(epochCount++, avgLoss, classAcc, regAcc);
+            var epoch = Validator.ValidateEpoch(epochErrors, predictions);
             
-            if (trainFunc(epoch))
+            if (trainFunc(epoch with { Index = epochCount++ }))
             {
                 break;
             }

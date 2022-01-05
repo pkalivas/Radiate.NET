@@ -1,6 +1,6 @@
 ﻿using Radiate.Data;
 using Radiate.Data.Utils;
-using Radiate.Domain.Loss;
+using Radiate.Domain.Models;
 using Radiate.Domain.Tensors;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Unsupervised.Clustering;
@@ -15,20 +15,21 @@ public class BlobMeans : IExample
         var progressBar = new ProgressBar(maxEpoch);
 
         var (rawInputs, rawLabels) = await new ClusterBlob().GetDataSet();
-        var pair = new TensorTrainSet(rawInputs, rawLabels).Split(.9f);
+        var pair = new TensorTrainSet(rawInputs, rawLabels);
 
         var kMeans = new KMeans(pair.OutputCategories);
-        var lossFunction = LossFunctionResolver.Get(Loss.Euclidean);
-        var optimizer = new Optimizer<KMeans>(kMeans, pair, lossFunction);
-        
+        var optimizer = new Optimizer<KMeans>(kMeans, pair);
+
         await optimizer.Train(epoch =>
         {
             var displayString = $"Loss: {epoch.AverageLoss} Class Acc: {epoch.ClassificationAccuracy} Reg Acc: {epoch.RegressionAccuracy}";
             progressBar.Tick(displayString);
             return epoch.Index == maxEpoch || epoch.AverageLoss == 0 && epoch.RegressionAccuracy > 0;
         });
-        
-        var (trainAcc, testAcc) = optimizer.Validate();
-        Console.WriteLine($"\nTrain Accuracy: {trainAcc.RegressionAccuracy} Test Accuracy {testAcc.RegressionAccuracy}");
+
+        var validator = new Validator();
+        var acc = validator.Validate(optimizer.Model, pair.TrainingInputs);
+
+        Console.WriteLine($"\nLoss: {acc.AverageLoss} Accuracy {acc.RegressionAccuracy}");
     }
 }

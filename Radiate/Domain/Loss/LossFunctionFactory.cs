@@ -13,7 +13,6 @@ public static class LossFunctionResolver
         Loss.Difference => new Difference().Calculate,
         Loss.MSE => new MeanSquaredError().Calculate,
         Loss.CrossEntropy => new CrossEntropy().Calculate,
-        Loss.Euclidean => new EuclideanDistance().Calculate,
         _ => throw new Exception($"Loss {loss} is not implemented.")
     };
 }

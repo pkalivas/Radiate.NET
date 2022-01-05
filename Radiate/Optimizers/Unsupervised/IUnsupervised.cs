@@ -6,6 +6,6 @@ namespace Radiate.Optimizers.Unsupervised;
 
 public interface IUnsupervised
 {
-    Prediction Predict(Tensor tensor, LossFunction lossFunction);
-    Task Train(Batch batch, LossFunction lossFunction, Func<Epoch, bool> trainFunc);
+    Prediction Predict(Tensor tensor);
+    Task Train(Batch batch, Func<Epoch, bool> trainFunc);
 }
