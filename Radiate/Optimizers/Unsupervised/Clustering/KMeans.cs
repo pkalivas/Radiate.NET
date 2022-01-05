@@ -44,7 +44,8 @@ public class KMeans : IUnsupervised
 
             var loss = await CalcLoss(newCentroids, lossFunction);
             
-            var (_, classAcc, regAcc) = Validator.ValidateEpoch(new List<float>(), predictions);
+            var classAcc = Validator.ClassificationAccuracy(predictions);
+            var regAcc = Validator.RegressionAccuracy(predictions);
             var epoch = new Epoch(epochCount++, loss, classAcc, regAcc);
             
             if (trainFunc(epoch))
