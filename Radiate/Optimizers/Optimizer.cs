@@ -10,6 +10,7 @@ namespace Radiate.Optimizers;
 
 public class Optimizer<T>
 {
+    private readonly T _optimizer;
     private readonly LossFunction _lossFunction;
     private readonly TensorTrainSet _tensorTrainSet;
 
@@ -21,12 +22,12 @@ public class Optimizer<T>
 
     public Optimizer(T optimizer, TensorTrainSet tensorTrainSet, LossFunction lossFunction)
     {
-        Model = optimizer;
+        _optimizer = optimizer;
         _tensorTrainSet = tensorTrainSet;
         _lossFunction = lossFunction;
     }
 
-    public T Model { get; }
+    public T Model => _optimizer;
 
     public async Task Train(Func<Epoch, bool> trainFunc)
     {
