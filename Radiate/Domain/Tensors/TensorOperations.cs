@@ -5,6 +5,69 @@ namespace Radiate.Domain.Tensors;
 
 public static class TensorOperations
 {
+    public static Tensor Diagonal(Tensor values)
+    {
+        var result = new Tensor(values.Count(), values.Count());
+        for (var i = 0; i < result.Shape.Height; i++)
+        {
+            for (var j = 0; j < result.Shape.Width; j++)
+            {
+                result[i, j] = j == i ? values[i] : 0;
+            }
+        }
+
+        return result;
+    }
+
+    public static Tensor Tile(Tensor values)
+    {
+        var result = new Tensor(values.Count(), values.Count());
+        for (var i = 0; i < result.Shape.Height; i++)
+        {
+            for (var j = 0; j < result.Shape.Width; j++)
+            {
+                result[i, j] = values[i];
+            }
+        }
+
+        return result;
+    }
+
+    public static Tensor Transpose(Tensor values)
+    {
+        var dim = values.GetDimension();
+        var result = new Tensor(values.Shape.Height, values.Shape.Height);
+        
+        if (dim == 1)
+        {
+            for (var i = 0; i < result.Shape.Height; i++)
+            {
+                for (var j = 0; j < result.Shape.Width; j++)
+                {
+                    result[i, j] = values[j];
+                }
+            }
+        }
+
+        if (dim == 2)
+        {
+            for (var i = 0; i < result.Shape.Height; i++)
+            {
+                for (var j = 0; j < result.Shape.Width; j++)
+                {
+                    result[i, j] = values[j, i];
+                }
+            }
+        }
+
+        if (dim == 3)
+        {
+            throw new Exception("Cannot transpose 3D Tensor");
+        }
+
+        return result;
+    }
+    
     public static Tensor Random(int height, int width = 0, int depth = 0)
     {
         var rand = new Random();
@@ -37,33 +100,51 @@ public static class TensorOperations
     
     public static Tensor Reshape(Tensor one, Shape otherShape)
     {
-        var currentFlat = one.Flatten();
         var ten = Tensor.Like(otherShape);
-        var count = 0;
-        for (var j = 0; j < otherShape.Height; j++)
-            if (otherShape.Width > 0)
-                for (var k = 0; k < otherShape.Width; k++)
-                    if (otherShape.Depth > 0)
-                        for (var l = 0; l < otherShape.Depth; l++)
-                            ten[j, k, l] = currentFlat[count++];
-                    else
-                        ten[j, k] = currentFlat[count++];
-            else
-                ten[j] = currentFlat[count++];
+        var tDim = ten.GetDimension();
 
+        if (tDim == 1)
+        {
+            return one.Flatten();
+        }
+
+        if (tDim == 2)
+        {
+            using var oneEnumerator = one.GetEnumerator();
+            for (var i = 0; i < otherShape.Height; i++)
+            {
+                for (var j = 0; j < otherShape.Width; j++)
+                {
+                    oneEnumerator.MoveNext(); 
+
+                    ten[i, j] = oneEnumerator.Current;
+                }
+            }
+        }
+
+        if (tDim == 3)
+        {
+            using var oneEnumerator = one.GetEnumerator();
+            for (var i = 0; i < otherShape.Height; i++)
+            {
+                for (var j = 0; j < otherShape.Width; j++)
+                {
+                    for (var k = 0; k < otherShape.Depth; k++)
+                    {
+                        oneEnumerator.MoveNext();   
+
+                        ten[i, j, k] = oneEnumerator.Current;
+                    }
+                }
+            }
+        }
+        
         return ten;
     }
     
     public static Tensor Fill(Shape shape, float value)
     {
-        var result = shape switch
-        {
-            (> 0, <= 0, <= 0) => new float[shape.Height].ToTensor(),
-            (> 0, > 0, <= 0) => new float[shape.Height, shape.Width].ToTensor(),
-            (> 0, > 0, > 0) => new float[shape.Height, shape.Width, shape.Depth].ToTensor(),
-            _ => throw new Exception($"Shape not supported")
-        };
-        
+        var result = Tensor.Like(shape);
         
         for (var j = 0; j < shape.Height; j++)
             if (shape.Width > 0)

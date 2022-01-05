@@ -14,7 +14,7 @@ public class Mnist : IDataSet
     
     public async Task<(List<float[]> inputs, List<float[]> targets)> GetDataSet()
     {
-        var testFeaturesLocation = $"{Environment.CurrentDirectory}\\DataSets\\Minst\\test.gz";
+        var testFeaturesLocation = Path.Combine(Environment.CurrentDirectory, "DataSets", "Minst", "test.gz");
         var features = (await Utilities.UnzipGZAndLoad<List<MinstImage>>(testFeaturesLocation))
             .Take(_featureLimit)
             .ToList();

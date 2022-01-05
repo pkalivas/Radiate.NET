@@ -5,6 +5,7 @@ using Radiate.Domain.Records;
 
 namespace Radiate.Domain.Tensors;
 
+[JsonObject]
 public class Tensor : IEnumerable<float>
 {
     [JsonProperty]
@@ -133,6 +134,15 @@ public class Tensor : IEnumerable<float>
 
     public Tensor Pad(int pad) =>
         TensorOperations.Pad(this, pad);
+
+    public Tensor Diag() =>
+        TensorOperations.Diagonal(this);
+
+    public Tensor Tile() =>
+        TensorOperations.Tile(this);
+
+    public Tensor T() =>
+        TensorOperations.Transpose(this);
     
     public Tensor Unique() => this.Distinct().ToTensor();
 

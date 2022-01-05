@@ -46,7 +46,7 @@ public class SequentialTests
         var contents = await File.ReadAllTextAsync(filePath);
         
         var wrap = JsonConvert.DeserializeObject<SupervisedWrap>(contents);
-        var network = new Optimizers.Supervised.Perceptrons.MultiLayerPerceptron(wrap.MultiLayerPerceptronWrap);
+        var network = new Optimizers.Supervised.Perceptrons.MultiLayerPerceptron(wrap);
 
         var forwardPass = network.PassForward(LayerUtils.NineNineThreeTensor);
 

@@ -6,14 +6,19 @@ namespace Radiate.Optimizers.Supervised.Forest;
 
 public class DecisionTree
 {
+    private const int MinSampleSplit = 2;
+    
     private readonly Random _random = new();
-
     private readonly ForestInfo _info;
     private readonly TreeNode _root;
     
     public DecisionTree(ForestInfo forestInfo, Tensor features, Tensor targets)
     {
-        var info = forestInfo with { NFeatures = Math.Min(features.Shape.Width, forestInfo.NFeatures) };
+        var info = forestInfo with
+        {
+            NFeatures = Math.Min(features.Shape.Width, forestInfo.NFeatures),
+            MinSampleSplit = Math.Max(MinSampleSplit, forestInfo.MinSampleSplit)
+        };
         
         _info = info;
         _root = GrowTree(features, targets);

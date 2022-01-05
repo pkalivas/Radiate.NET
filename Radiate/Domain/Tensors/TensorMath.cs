@@ -47,22 +47,41 @@ public static class TensorMath
         }
 
         var result = 0.0f;
-        
         if (oDim == 1 && tDim == 1)
         {
-            Tensor.TensorLoop(i => result += one[i] * two[i], oHeight);
+            for (var i = 0; i < oHeight; i++)
+            {
+                result += one[i] * two[i];
+            }
             return result;
         }
-
+        
         if (oDim == 2 && tDim == 2)
         {
-            Tensor.TensorLoop((i, j) => result += one[i, j] * two[i, j], oHeight, oWidth);
+            for (var i = 0; i < oHeight; i++)
+            {
+                for (var j = 0; j < oWidth; j++)
+                {
+                    result += one[i, j] * two[i, j];
+                }
+            }
+            
             return result;
         }
-
+        
         if (oDim == 3 && tDim == 3)
         {
-            Tensor.TensorLoop((i, j, k) => result += one[i, j, k] * two[i, j, k], oHeight, oWidth, oDepth);
+            for (var i = 0; i < oHeight; i++)
+            {
+                for (var j = 0; j < oWidth; j++)
+                {
+                    for (var k = 0; k < oDepth; k++)
+                    {
+                        result += one[i, j, k] * two[i, j, k];
+                    }
+                }
+            }
+
             return result;
         }
 
@@ -77,35 +96,45 @@ public static class TensorMath
         
         if (dim == 1)
         {
-            Tensor.TensorLoop(i =>
+            for (var i = 0; i < height; i++)
             {
                 if (one[i] > bestVal)
                 {
                     bestVal = one[i];
                 }
-            }, height);
+            }
         }
 
         if (dim == 2)
         {
-            Tensor.TensorLoop((i, j) =>
+            for (var i = 0; i < height; i++)
             {
-                if (one[i, j] > bestVal)
+                for (var j = 0; j < width; j++)
                 {
-                    bestVal = one[i, j];
+                    if (one[i, j] > bestVal)
+                    {
+                        bestVal = one[i, j];
+                    }
                 }
-            }, height, width);
+            }
+
         }
 
         if (dim == 3)
         {
-            Tensor.TensorLoop((i, j, k) =>
+            for (var i = 0; i < height; i++)
             {
-                if (one[i, j, k] > bestVal)
+                for (var j = 0; j < width; j++)
                 {
-                    bestVal = one[i, j, k];
+                    for (var k = 0; k < depth; k++)
+                    {
+                        if (one[i, j, k] > bestVal)
+                        {
+                            bestVal = one[i, j, k];
+                        }
+                    }
                 }
-            }, height, width, depth);
+            }
         }
 
         return bestVal > float.MinValue ? bestVal : 0;

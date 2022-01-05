@@ -9,12 +9,12 @@ public class RandomForestClassifier : IExample
 {
     public async Task Run()
     {
-        const int numTrees = 3;
-        const int maxDepth = 10;
+        const int numTrees = 5;
+        const int maxDepth = 15;
         const int minSampleSplit = 2;
         const int nFeatures = 30;
         
-        var (rawFeatures, rawLabels) = await new BreastCancer().GetDataSet();
+        var (rawFeatures, rawLabels) = await new BostonHousing().GetDataSet();
         var pair = new TensorTrainSet(rawFeatures, rawLabels).Split();
         
         var forest = new RandomForest(numTrees, new ForestInfo(minSampleSplit, maxDepth, nFeatures));

@@ -52,7 +52,7 @@ public class ConvNetMinst : IExample
         });
         
         var wrap = optimizer.Model.Save();
-        await Save(wrap.MultiLayerPerceptronWrap);
+        await Save(wrap);
         
         var (trainAcc, testAcc) = optimizer.Validate();
         
@@ -62,7 +62,7 @@ public class ConvNetMinst : IExample
         Console.WriteLine($"\nTrain accuracy: {trainValid} - Test accuracy: {testValid}");
     }
 
-    private static async Task Save(MultiLayerPerceptronWrap wrap)
+    private static async Task Save(SupervisedWrap wrap)
     {
         var path = $"C:\\Users\\peter\\Desktop\\Radiate.NET\\Radiate.Examples\\Saves\\convnet.json";
         var content = JsonConvert.SerializeObject(wrap);

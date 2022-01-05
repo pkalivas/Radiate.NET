@@ -24,10 +24,10 @@ public class MultiLayerPerceptron : ISupervised
         _layers = new List<Layer>();
     }
     
-    public MultiLayerPerceptron(MultiLayerPerceptronWrap wrap)
+    public MultiLayerPerceptron(SupervisedWrap wrap)
     {
         _layerInfo = new List<LayerInfo>();
-        _layers = wrap.LayerWraps
+        _layers = wrap.MultiLayerPerceptronWrap.LayerWraps
             .Select(layerWrap => layerWrap.LayerType switch
             {
                 LayerType.Conv => (Layer) new Conv(layerWrap.Conv),
@@ -73,7 +73,7 @@ public class MultiLayerPerceptron : ISupervised
                 {
                     PassBackward(passError);
                 }
-
+                
                 foreach (var layer in _layers)
                 {
                     layer.UpdateWeights(_gradientInfo, epochCount);

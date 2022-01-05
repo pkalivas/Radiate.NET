@@ -54,11 +54,12 @@ public class MaxPool : Layer
         var output = Tensor.Fill(prevInput.Shape, 0f);
         var previousSlices = _slices.Pop();
 
-        foreach (var (slice, sHeight, sWidth, sDepth) in previousSlices)
+        Parallel.ForEach(previousSlices, pSlice =>
         {
+            var (slice, sHeight, sWidth, sDepth) = pSlice;
             var (height, width, depth) = slice.Shape;
             var sliceMax = slice.Max();
-            
+
             for (var i = 0; i < height; i++)
             {
                 for (var j = 0; j < width; j++)
@@ -75,8 +76,8 @@ public class MaxPool : Layer
                     }
                 }
             }
-        }
-        
+        });
+
         return output;
     }
 
