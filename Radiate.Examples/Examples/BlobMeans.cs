@@ -23,9 +23,9 @@ public class BlobMeans : IExample
 
         var model = await optimizer.Train(epoch =>
         {
-            var displayString = $"Loss: {epoch.AverageLoss}";
+            var displayString = $"Loss: {epoch.Loss}";
             progressBar.Tick(displayString);
-            return epoch.Index == maxEpoch || epoch.AverageLoss == 0 && epoch.RegressionAccuracy > 0;
+            return epoch.Index == maxEpoch || epoch.Loss == 0;
         });
 
         await ModelWriter.Write(model);
@@ -33,6 +33,6 @@ public class BlobMeans : IExample
         var validator = new Validator();
         var acc = validator.Validate(optimizer.Model, pair.TrainingInputs);
 
-        Console.WriteLine($"\nLoss: {acc.AverageLoss} Accuracy {acc.RegressionAccuracy}");
+        Console.WriteLine($"\nLoss: {acc.Loss} Accuracy {acc.Accuracy}");
     }
 }

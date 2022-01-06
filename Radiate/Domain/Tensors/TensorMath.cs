@@ -88,6 +88,28 @@ public static class TensorMath
         throw new Exception("Failed to calc Dot product");
     }
 
+    public static float PlaneDot(Tensor volume, Tensor matrix, int index)
+    {
+        var result = 0f;
+        var (vHeight, vWidth, _) = volume.Shape;
+        var (_, mWidth, _) = matrix.Shape;
+
+        if (vWidth == 0 || mWidth == 0)
+        {
+            throw new Exception("PlaneDot cannot calc on 1D Tensors.");
+        }
+        
+        for (var i = 0; i < vHeight; i++)
+        {
+            for (var j = 0; j < vWidth; j++)
+            {
+                result += volume[i, j, index] * matrix[i, j, 0];
+            }
+        }
+
+        return result;
+    }
+
     public static float Max(Tensor one)
     {
         var (height, width, depth) = one.Shape;

@@ -2,6 +2,7 @@
 using Radiate.Data.Utils;
 using Radiate.Domain.Activation;
 using Radiate.Domain.Extensions;
+using Radiate.Domain.Loss;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
 using Radiate.Examples.Description;
@@ -17,8 +18,8 @@ public class ConvNetMinst : IExample
     public async Task Run()
     {
         const int featureLimit = 5000;
-        const int batchSize = 32;
-        const int maxEpochs = 5;
+        const int batchSize = 128;
+        const int maxEpochs = 15;
         const int imagePadding = 1;
         var inputShape = new Shape(28, 28, 1);
 
@@ -34,7 +35,9 @@ public class ConvNetMinst : IExample
         
         var neuralNetwork = new MultiLayerPerceptron()
             .AddLayer(new ConvInfo(16, 3))
-            .AddLayer(new MaxPoolInfo(16, 3) { Stride = 2 })
+            .AddLayer(new MaxPoolInfo(2))
+            .AddLayer(new ConvInfo(16, 3) { Stride = 4 })
+            .AddLayer(new MaxPoolInfo(2))
             .AddLayer(new FlattenInfo())
             .AddLayer(new DenseInfo(64, Activation.Sigmoid))
             .AddLayer(new DenseInfo(featureTargetPair.OutputSize, Activation.SoftMax));
@@ -44,7 +47,7 @@ public class ConvNetMinst : IExample
         var progressBar = new ProgressBar(maxEpochs);
         var model = await optimizer.Train(epoch => 
         {
-            var displayString = $"Loss: {epoch.AverageLoss} Accuracy: {epoch.ClassificationAccuracy}";
+            var displayString = $"Loss: {epoch.Loss} Accuracy: {epoch.CategoricalAccuracy}";
             
             progressBar.Tick(displayString);
             return maxEpochs == epoch.Index;

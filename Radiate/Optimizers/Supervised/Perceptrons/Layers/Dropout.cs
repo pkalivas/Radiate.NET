@@ -32,7 +32,7 @@ public class Dropout : Layer
 
     public override Tensor PassBackward(Tensor errors) => errors;
 
-    public override void UpdateWeights(GradientInfo info, int epoch) { }
+    public override void UpdateWeights(GradientInfo info, int epoch, int batchSize) { }
 
     public override LayerWrap Save() => new()
     {

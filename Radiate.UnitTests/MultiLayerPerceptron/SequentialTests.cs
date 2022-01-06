@@ -23,7 +23,7 @@ public class SequentialTests
             .AddLayer(new DenseInfo(64, Activation.Sigmoid))
             .AddLayer(new DenseInfo(outputSize, Activation.SoftMax));
 
-        neuralNetwork.PassForward(LayerUtils.NineNineThreeTensor);
+        neuralNetwork.PassForward(LayerUtils.NineNineThreeTensor, LayerUtils.NineNineThreeTensor);
         
         var baseDir = $"{Environment.CurrentDirectory}\\Data\\saves";
         var savedFileName = $"{baseDir}\\convnet.json";
@@ -48,8 +48,8 @@ public class SequentialTests
         var wrap = JsonConvert.DeserializeObject<SupervisedWrap>(contents);
         var network = new Optimizers.Supervised.Perceptrons.MultiLayerPerceptron(wrap);
 
-        var forwardPass = network.PassForward(LayerUtils.NineNineThreeTensor);
+        var forwardPass = network.PassForward(LayerUtils.NineNineThreeTensor, LayerUtils.NineNineThreeTensor);
 
-        forwardPass.Shape.Should().NotBe(null);
+        forwardPass.Result.Shape.Should().NotBe(null);
     }
 }

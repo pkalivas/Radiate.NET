@@ -81,7 +81,7 @@ public class MaxPool : Layer
         return output;
     }
 
-    public override void UpdateWeights(GradientInfo gradient, int epoch) { }
+    public override void UpdateWeights(GradientInfo gradient, int epoch, int batchSize) { }
     
     public override LayerWrap Save() => new()
     {

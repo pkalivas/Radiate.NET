@@ -9,6 +9,8 @@ namespace Radiate.Domain.Models;
 
 public class Validator
 {
+    private const float Tolerance = 0.0001f;
+    
     private readonly LossFunction _lossFunction;
 
     public Validator(LossFunction lossFunction)
@@ -24,80 +26,90 @@ public class Validator
     public Validation Validate(ISupervised supervised, List<Batch> data)
     {
         var iterationLoss = new List<float>();
-        var predictions = new List<(Tensor, Tensor)>();
+        var predictions = new List<(Prediction, Tensor)>();
         
         foreach (var (inputs, answers) in data)
         {
             foreach (var (feature, target) in inputs.Zip(answers))
             {
-                var (floats, _, _) = supervised.Predict(feature);
-                var (_, loss) = _lossFunction(floats.ToTensor(), target);
+                var prediction = supervised.Predict(feature);
+                var (_, loss) = _lossFunction(prediction.Result, target);
             
                 iterationLoss.Add(loss);
-                predictions.Add((floats, target));   
+                predictions.Add((prediction, target));   
             }
         }
-        
+
+        var acc = Accuracy(predictions);
         var classAcc = ClassificationAccuracy(predictions);
         var regAcc = RegressionAccuracy(predictions);
 
-        return new Validation(iterationLoss.Average(), classAcc, regAcc);
+        return new Validation(iterationLoss.Sum(), classAcc, regAcc, acc);
     }
 
     public Validation Validate(IUnsupervised unsupervised, List<Batch> data)
     {
         var iterationLoss = new List<float>();
-        var predictions = new List<(Tensor output, Tensor target)>();
+        var predictions = new List<(Prediction output, Tensor target)>();
         
         foreach (var (inputs, answers) in data)
         {
             foreach (var (feature, target) in inputs.Zip(answers))
             {
-                var (floats, _, _) = unsupervised.Predict(feature);
-                var (_, loss) = _lossFunction(floats.ToTensor(), target);
+                var prediction = unsupervised.Predict(feature);
+                var (_, loss) = _lossFunction(prediction.Result, target);
             
                 iterationLoss.Add(loss);
-                predictions.Add((floats, target));   
+                predictions.Add((prediction, target));   
             }
         }
-        
+
+        var acc = Accuracy(predictions);
         var classAcc = ClassificationAccuracy(predictions);
         var regAcc = RegressionAccuracy(predictions);
 
-        return new Validation(iterationLoss.Average(), classAcc, regAcc);
+        return new Validation(iterationLoss.Sum(), classAcc, regAcc, acc);
     }
 
-    public static Epoch ValidateEpoch(List<float> errors, List<(Tensor outputs, Tensor targets)> predictions)
+    public static Epoch ValidateEpoch(List<float> errors, List<(Prediction outputs, Tensor targets)> predictions)
     {
+        var acc = Accuracy(predictions);
         var classAccuracy = ClassificationAccuracy(predictions);
         var regressionAccuracy = RegressionAccuracy(predictions);
 
-        return new Epoch(0, errors.Average(), classAccuracy, regressionAccuracy);
+        return new Epoch(0, errors.Sum(), classAccuracy, regressionAccuracy, acc);
     }
     
-    public static float ClassificationAccuracy(List<(Tensor predictions, Tensor targets)> outs)
+    private static float ClassificationAccuracy(List<(Prediction predictions, Tensor targets)> outs)
     {
         var correctClasses = outs
             .Select(pair =>
             {
                 var (first, second) = pair;
-                var firstMax = first.ToList().IndexOf(first.Max());
                 var secondMax = second.ToList().IndexOf(second.Max());
-
-                return firstMax == secondMax ? 1f : 0f;
+                
+                return first.Classification == secondMax ? 1f : 0f;
             })
             .Sum();
 
         return correctClasses / outs.Count;
     }
     
-    public static float RegressionAccuracy(List<(Tensor predictions, Tensor targets)> outs)
+    private static float RegressionAccuracy(List<(Prediction predictions, Tensor targets)> outs)
     {
         var targetTotal = outs.Sum(tar => tar.targets.Sum());
         var absoluteDifference = outs
-            .Select(pair => Math.Abs(pair.targets.First() - pair.predictions.First()))
+            .Select(pair => Math.Abs(pair.targets.First() - pair.predictions.Confidence))
             .Sum();
 
         return (targetTotal - absoluteDifference) / targetTotal;
+    }
+
+    private static float Accuracy(List<(Prediction prediction, Tensor targets)> predictions)
+    {
+        var correctClasses = predictions
+            .Sum(pair => Math.Abs(pair.targets.Max() - pair.prediction.Classification) < Tolerance ? 1f : 0f);
+
+        return correctClasses / predictions.Count;
     }
 }

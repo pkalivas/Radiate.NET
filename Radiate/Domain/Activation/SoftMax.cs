@@ -18,21 +18,21 @@ public class SoftMax : IActivationFunction
 
     public Tensor Deactivate(Tensor values)
     {
-        var diagMatrix = values.Diag();
-        var tiledMatrix = values.Tile();
-        var transposedMatrix = values.T();
-        
-        var result = new float[values.Count()];
-        for (var i = 0; i < values.Count(); i++)
-        {
-            for (var j = 0; j < values.Count(); j++)
-            {
-                result[i] += diagMatrix[j, i] - (tiledMatrix[j, i] * transposedMatrix[j, i]);
-            }
-        }
-        
-        
-        return result.Select(val => val switch
+        // var diagMatrix = values.Diag();
+        // var tiledMatrix = values.Tile();
+        // var transposedMatrix = values.T();
+        //
+        // var result = new float[values.Count()];
+        // for (var i = 0; i < values.Count(); i++)
+        // {
+        //     for (var j = 0; j < values.Count(); j++)
+        //     {
+        //         result[i] += diagMatrix[j, i] - (tiledMatrix[j, i] * transposedMatrix[j, i]);
+        //     }
+        // }
+        //
+        //
+        return values.Select(val => val switch
         {
             > MaxClipValue => MaxClipValue,
             < MinClipValue => MinClipValue,

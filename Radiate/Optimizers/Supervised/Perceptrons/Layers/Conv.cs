@@ -1,4 +1,5 @@
-﻿using Radiate.Domain.Activation;
+﻿using System.Diagnostics;
+using Radiate.Domain.Activation;
 using Radiate.Domain.Gradients;
 using Radiate.Domain.Models;
 using Radiate.Domain.Records;
@@ -76,11 +77,9 @@ public class Conv : Layer
 
     public override Tensor PassBackward(Tensor errors)
     {
-        var prevInput = _inputs.Pop();
         var prevOut = _activation.Deactivate(_outputs.Pop());
         var previousSlices = _slices.Pop();
 
-        var output = Tensor.Like(prevInput.Shape);
         Parallel.ForEach(previousSlices, slice =>
         {
             var (prevInSlice, j, k, _) = slice;
@@ -89,35 +88,20 @@ public class Conv : Layer
                 _filterGradients[i] += errors[j, k, i] * prevInSlice * prevOut[j, k, i];
             }
         });
-
-        Parallel.ForEach(_sliceGenerator.Slice(errors), slice =>
-        {
-            var (lossSlice, j, k, _) = slice;
-            for (var i = 0; i < _filters.Length; i++)
-            {
-                var kernel = _filters[i];
-                for (var l = 0; l < output.Shape.Depth; l++)
-                {
-                    output[j, k, l] += Tensor.Dot(lossSlice, kernel);
-                }
-                
-                _biasGradients[i] += errors[j, k, i] * prevOut[j, k, i];
-            }
-        });
-
-        return output;
+        
+        return CalculateError(errors, prevOut);
     }
 
-    public override void UpdateWeights(GradientInfo gradientInfo, int epoch)
+    public override void UpdateWeights(GradientInfo gradientInfo, int epoch, int batchSize)
     {
         var gradient = GradientFactory.Get(gradientInfo);
         for (var i = 0; i < _filters.Length; i++)
         {
-            _filters[i].Add(gradient.Calculate(_filterGradients[i], epoch));
+            _filters[i].Add(gradient.Calculate(_filterGradients[i] / batchSize, epoch));
             _filterGradients[i].Zero();
         }
         
-        var deltas = gradient.Calculate(_biasGradients, epoch);
+        var deltas = gradient.Calculate(_biasGradients / batchSize, epoch);
         _bias.Zero();
         _bias.Add(deltas);
         _biasGradients.Zero();
@@ -156,6 +140,85 @@ public class Conv : Layer
         });
 
         return _activation.Activate(output);
+    }
+
+    private Tensor CalculateError(Tensor errors, Tensor prevOut)
+    {
+        var prevInput = _inputs.Pop();
+        var kernelPlanes = GetKernelPlanes();
+        var output = Tensor.Like(prevInput.Shape);
+
+        Parallel.ForEach(_sliceGenerator.Slice(errors), slice =>
+        {
+            var (lossSlice, j, k, _) = slice;
+            for (var i = 0; i < _filters.Length; i++)
+            {
+                for (var l = 0; l < output.Shape.Depth; l++)
+                {
+                    foreach (var kPlane in kernelPlanes[i])
+                    {
+                        output[j, k, l] += lossSlice.PlaneDot(kPlane, l);
+                    }    
+                }
+                
+                _biasGradients[i] += errors[j, k, i] * prevOut[j, k, i];
+            }
+        });
+
+        // Parallel.ForEach(errorPlanes, ePlane =>
+        // {
+        //     foreach (var slice in _sliceGenerator.Slice(ePlane))
+        //     {
+        //         var (lossSlice, j, k, _) = slice;
+        //
+        //         for (var i = 0; i < _filters.Length; i++)
+        //         {
+        //             var kPlane = kernelPlanes[i];
+        //             for (var l = 0; l < output.Shape.Depth; l++)
+        //             {
+        //                 foreach (var currKernelPlane in kPlane)
+        //                 {
+        //                     output[j, k, l] += Tensor.Dot(lossSlice, currKernelPlane);
+        //                 }
+        //             }
+        //
+        //             _biasGradients[i] += errors[j, k, i] * prevOut[j, k, i];
+        //         }
+        //     }
+        // });
+        
+        return output;
+    }
+
+    private Tensor[][] GetKernelPlanes()
+    {
+        var (_, _, depth) = Shape;
+        var kernelPlanes = new Tensor[_kernel.Count][];
+
+        for (var i = 0; i < _kernel.Count; i++)
+        {
+            var planes = new Tensor[depth];
+            for (var l = 0; l < depth; l++)
+            {
+                planes[l] = _filters[i].Plane(l);
+            }   
+            kernelPlanes[i] = planes;
+        }
+
+        return kernelPlanes;
+    }
+
+    private static Tensor[] GetErrorPlanes(Tensor errors)
+    {
+        var (_, _, depth) = errors.Shape;
+        var result = new Tensor[depth];
+
+        for (var i = 0; i < depth; i++)
+        {
+            result[i] = errors.Plane(i);
+        }
+
+        return result;
     }
     
 

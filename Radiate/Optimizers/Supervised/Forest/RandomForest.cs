@@ -34,10 +34,11 @@ public class RandomForest : ISupervised
 
         Parallel.For(0, _nTrees, i =>
         {
-            _trees[i] = new DecisionTree(_info, features, targets);
+            var (featureInputs, targetInputs) = BootstrapData(features, targets);
+            _trees[i] = new DecisionTree(_info, featureInputs, targetInputs);
         });
 
-        var predictions = new List<(Tensor, Tensor)>();
+        var predictions = new List<(Prediction, Tensor)>();
         var epochErrors = new List<float>();
         foreach (var (batchFeature, batchTarget) in data)
         {
@@ -49,7 +50,7 @@ public class RandomForest : ISupervised
                     var cost = lossFunction(prediction.Result, y);
                     
                     epochErrors.Add(cost.Loss);
-                    predictions.Add((prediction.Result, y));
+                    predictions.Add((prediction, y));
                 }
             }
         }
@@ -92,5 +93,25 @@ public class RandomForest : ISupervised
         var targetResult = Tensor.Stack(targets, Axis.Zero).Flatten();
         
         return (featureResult, targetResult);
+    }
+
+    private static (Tensor features, Tensor targets) BootstrapData(Tensor features, Tensor targets)
+    {
+        var random = new Random();
+        var (height, _, _) = features.Shape;
+
+        var newFeatures = new Tensor[height];
+        var resultTargets = Tensor.Like(targets.Shape);
+
+        for (var i = 0; i < height; i++)
+        {
+            var index = random.Next(0, height);
+            newFeatures[i] = features.Row(index);
+            resultTargets[i] = targets[index];
+        }
+
+        var resultFeatures = Tensor.Stack(newFeatures, Axis.Zero);
+        
+        return (resultFeatures, resultTargets);
     }
 }

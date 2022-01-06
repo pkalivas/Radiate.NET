@@ -18,7 +18,9 @@ public class DecisionTree
     {
         var info = forestInfo with
         {
-            NFeatures = Math.Min(features.Shape.Width, forestInfo.NFeatures),
+            NFeatures = forestInfo.NFeatures <= 0 
+                ? features.Shape.Width
+                : Math.Min(features.Shape.Width, forestInfo.NFeatures),
             MinSampleSplit = Math.Max(MinSampleSplit, forestInfo.MinSampleSplit)
         };
         
@@ -64,6 +66,12 @@ public class DecisionTree
         var (splitIndex, splitThreshold) = FindSplit(features, targets, featureIndexes);
         
         var (leftIndexes, rightIndexes) = SplitIndexes(features.Column(splitIndex), splitThreshold);
+
+        if (!leftIndexes.Any() || !rightIndexes.Any())
+        {
+            return new TreeNode(targets);
+        }
+        
         var (leftFeatures, leftTargets) = SplitTensors(features, targets, leftIndexes);
         var (rightFeatures, rightTargets) = SplitTensors(features, targets, rightIndexes);
 
@@ -76,9 +84,9 @@ public class DecisionTree
     private int[] GetFeatureIndexes(int featureNum)
     {
         var indexLookup = new HashSet<int>();
-        while (indexLookup.Count < _info.NFeatures)
+        while (indexLookup.Count < featureNum)
         {
-            var index = _random.Next(0, featureNum);
+            var index = _random.Next(0, _info.NFeatures);
 
             if (!indexLookup.Contains(index))
             {
@@ -180,6 +188,10 @@ public class DecisionTree
     {
         var featureRows = indexes.Select(features.Row).ToArray();
 
+        if (featureRows.Length == 0)
+        {
+            
+        }
         var newFeatures = Tensor.Stack(featureRows, Axis.Zero);
         var newTargets = indexes.Select(idx => targets[idx]).ToTensor();
         

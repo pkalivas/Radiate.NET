@@ -86,12 +86,12 @@ public class LSTM : Layer
         return current.HiddenGradient;
     }
 
-    public override void UpdateWeights(GradientInfo info, int epoch)
+    public override void UpdateWeights(GradientInfo info, int epoch, int batchSize)
     {
-        _inputGate.UpdateWeights(info, epoch);
-        _forgetGate.UpdateWeights(info, epoch);
-        _gateGate.UpdateWeights(info, epoch);
-        _outputGate.UpdateWeights(info, epoch);
+        _inputGate.UpdateWeights(info, epoch, batchSize);
+        _forgetGate.UpdateWeights(info, epoch, batchSize);
+        _gateGate.UpdateWeights(info, epoch, batchSize);
+        _outputGate.UpdateWeights(info, epoch, batchSize);
         
         _forwardTrack.Clear();
         _backwardTrack.Clear();

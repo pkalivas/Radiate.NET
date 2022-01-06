@@ -54,7 +54,7 @@ public class MultiLayerPerceptron : ISupervised
         var epochCount = 1;
         while (true)
         {
-            var predictions = new List<(Tensor, Tensor)>();
+            var predictions = new List<(Prediction, Tensor)>();
             var epochErrors = new List<float>();
 
             foreach (var (inputs, answers) in batches)
@@ -62,8 +62,8 @@ public class MultiLayerPerceptron : ISupervised
                 var batchErrors = new List<Cost>();
                 foreach (var (x, y) in inputs.Zip(answers))
                 {
-                    var prediction = PassForward(x);
-                    var cost = lossFunction(prediction, y);
+                    var prediction = PassForward(x, y);
+                    var cost = lossFunction(prediction.Result, y);
                     
                     batchErrors.Add(cost);
                     predictions.Add((prediction, y));
@@ -76,7 +76,7 @@ public class MultiLayerPerceptron : ISupervised
                 
                 foreach (var layer in _layers)
                 {
-                    layer.UpdateWeights(_gradientInfo, epochCount);
+                    layer.UpdateWeights(_gradientInfo, epochCount, predictions.Count);
                 }
                 
                 epochErrors.AddRange(batchErrors.Select(err => err.Loss));
@@ -108,22 +108,23 @@ public class MultiLayerPerceptron : ISupervised
         return new Prediction(output, maxIndex, output[maxIndex]);
     }
     
-    public Tensor PassForward(Tensor input)
+    public Prediction PassForward(Tensor input, Tensor target)
     {
         if (_layers.Any())
         {
-            return _layers.Aggregate(input, (current, layer) => layer.FeedForward(current));
+            var result = _layers.Aggregate(input, (current, layer) => layer.FeedForward(current));
+            return new Prediction(result, result.MaxIdx(), result.Max());
         }
 
         foreach (var layer in _layerInfo)
         {
             var shape = input.Shape;
-            var newLayer = GetLayer(layer, shape);
+            var newLayer = GetLayer(_layerInfo, layer, shape);
             input = newLayer.FeedForward(input);
             _layers.Add(newLayer);
         }
 
-        return input;
+        return new Prediction(input, input.MaxIdx(), input.Max());
     }
     
     private void PassBackward(Tensor errors)
@@ -134,7 +135,7 @@ public class MultiLayerPerceptron : ISupervised
         }
     }
     
-    private static Layer GetLayer(LayerInfo info, Shape shape)
+    private static Layer GetLayer(List<LayerInfo> layers, LayerInfo info, Shape shape)
     {
         var (height, _, _) = shape;
 
@@ -165,7 +166,14 @@ public class MultiLayerPerceptron : ISupervised
 
         if (info is MaxPoolInfo maxPool)
         {
-            return new MaxPool(shape, maxPool.Kernel, maxPool.Stride);
+            var previousLayer = layers[layers.IndexOf(info) - 1];
+            var kernel = previousLayer switch
+            {
+                ConvInfo cInfo => cInfo.Kernel,
+                _ => maxPool.Kernel
+            };
+            
+            return new MaxPool(shape, kernel, maxPool.Stride);
         }
 
         if (info is ConvInfo conv)

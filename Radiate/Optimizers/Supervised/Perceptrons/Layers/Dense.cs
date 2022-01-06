@@ -98,12 +98,12 @@ public class Dense : Layer
         return resultError;
     }
 
-    public override void UpdateWeights(GradientInfo info, int epoch)
+    public override void UpdateWeights(GradientInfo info, int epoch, int batchSize)
     {
         var gradient = GradientFactory.Get(info);
         
-        _weights.Add(gradient.Calculate(_weightGradients, epoch));
-        _bias.Add(gradient.Calculate(_biasGradients, epoch));
+        _weights.Add(gradient.Calculate(_weightGradients / batchSize, epoch));
+        _bias.Add(gradient.Calculate(_biasGradients / batchSize, epoch));
 
         _biasGradients.Zero();
         _weightGradients.Zero();

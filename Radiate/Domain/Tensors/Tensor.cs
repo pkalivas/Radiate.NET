@@ -124,6 +124,25 @@ public class Tensor : IEnumerable<float>
         return result;
     }
 
+    public Tensor Plane(int index)
+    {
+        if (Shape.Depth == 0)
+        {
+            throw new Exception("Cannot take Plane from 1D or 2D Tensor.");
+        }
+
+        var result = new Tensor(Shape.Height, Shape.Width, 1);
+        for (var i = 0; i < Shape.Height; i++)
+        {
+            for (var j = 0; j < Shape.Width; j++)
+            {
+                result[i, j, 0] = this[i, j, index];
+            }
+        }
+
+        return result;
+    }
+
     public Tensor Flatten() => this.ToArray().ToTensor();
 
     public Tensor Reshape(Shape otherShape) =>
@@ -149,6 +168,9 @@ public class Tensor : IEnumerable<float>
     public float Max() => TensorMath.Max(this);
     
     public float HistEntropy() => TensorMath.HistEntropy(this);
+
+    public float PlaneDot(Tensor other, int index) => 
+        TensorMath.PlaneDot(this, other, index);
     
     public void Add(Tensor other) => this.AddInPlace(other);
     
@@ -166,6 +188,22 @@ public class Tensor : IEnumerable<float>
                         this[j, k] = 0f;
             else
                 this[j] = 0f;
+    }
+
+    public int MaxIdx()
+    {
+        var idx = 0;
+        var best = float.MinValue;
+        for (var i = 0; i < Shape.Height; i++)
+        {
+            if (this[i] > best)
+            {
+                idx = i;
+                best = this[i];
+            }
+        }
+
+        return idx;
     }
 
     public static float Dot(Tensor one, Tensor two) => TensorMath.Dot(one, two);

@@ -21,6 +21,6 @@ public class MeanSquaredError : ILossFunction
 
         var loss = squaredErrors.Sum() / output.Count();
         
-        return new Cost(errors.ToTensor(), loss);
+        return new Cost(squaredErrors.ToTensor(), loss);
     }
 }

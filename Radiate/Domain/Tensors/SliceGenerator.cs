@@ -19,7 +19,7 @@ public class SliceGenerator
 
     public IEnumerable<Slice> Slice(Tensor volume)
     {
-        var (_, _, kDepth) = _kernelShape;
+        var (_, _, kDepth) = volume.Shape;
         var (hStride, wStride) = CalcStride(volume);
         
         for (var i = 0; i < hStride; i++)
