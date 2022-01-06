@@ -30,16 +30,17 @@ public class ConvNetMinst : IExample
         var featureTargetPair = new TensorTrainSet(normalizedInputs, oneHotEncode)
             .Transform(inputShape)
             .Batch(batchSize)
-            .Pad(imagePadding)
+            // .Pad(imagePadding)
             .Split();
         
         var neuralNetwork = new MultiLayerPerceptron()
-            .AddLayer(new ConvInfo(16, 3))
+            .AddLayer(new ConvInfo(32, 3))
             .AddLayer(new MaxPoolInfo(2))
-            .AddLayer(new ConvInfo(16, 3) { Stride = 4 })
+            .AddLayer(new ConvInfo(64, 3))
             .AddLayer(new MaxPoolInfo(2))
             .AddLayer(new FlattenInfo())
-            .AddLayer(new DenseInfo(64, Activation.Sigmoid))
+            .AddLayer(new DropoutInfo(0.5f))
+            // .AddLayer(new DenseInfo(64, Activation.Sigmoid))
             .AddLayer(new DenseInfo(featureTargetPair.OutputSize, Activation.SoftMax));
 
         var optimizer = new Optimizer<MultiLayerPerceptron>(neuralNetwork, featureTargetPair);
@@ -47,14 +48,11 @@ public class ConvNetMinst : IExample
         var progressBar = new ProgressBar(maxEpochs);
         var model = await optimizer.Train(epoch => 
         {
-            var displayString = $"Loss: {epoch.Loss} Accuracy: {epoch.CategoricalAccuracy}";
-            
-            progressBar.Tick(displayString);
+            progressBar.Tick(epoch);
             return maxEpochs == epoch.Index;
         });
 
         await ModelWriter.Write(model, "conv");
-        Console.WriteLine($"\n{ModelDescriptor.Describe(model)}");
         
         var (trainAcc, testAcc) = optimizer.Validate();
         

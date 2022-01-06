@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Radiate.Domain.Activation;
+﻿using Radiate.Domain.Activation;
 using Radiate.Domain.Gradients;
 using Radiate.Domain.Models;
 using Radiate.Domain.Records;
@@ -85,10 +84,20 @@ public class Conv : Layer
             var (prevInSlice, j, k, _) = slice;
             for (var i = 0; i < _filters.Length; i++)
             {
-                _filterGradients[i] += errors[j, k, i] * prevInSlice * prevOut[j, k, i];
+                var (gHeight, gWidth, gDepth) = _filterGradients[i].Shape;
+                for (var l = 0; l < gHeight; l++)
+                {
+                    for (var m = 0; m < gWidth; m++)
+                    {
+                        for (var t = 0; t < gDepth; t++)
+                        {
+                            _filterGradients[i][l, m, t] += errors[j, k, i] * prevInSlice[l, m, t] * prevOut[j, k, i];
+                        }
+                    }
+                }
             }
         });
-        
+
         return CalculateError(errors, prevOut);
     }
 
@@ -122,7 +131,6 @@ public class Conv : Layer
             BiasGradients = _biasGradients
         }
     };
-
 
     private Tensor Convolve(List<Slice> slices)
     {
@@ -165,28 +173,6 @@ public class Conv : Layer
             }
         });
 
-        // Parallel.ForEach(errorPlanes, ePlane =>
-        // {
-        //     foreach (var slice in _sliceGenerator.Slice(ePlane))
-        //     {
-        //         var (lossSlice, j, k, _) = slice;
-        //
-        //         for (var i = 0; i < _filters.Length; i++)
-        //         {
-        //             var kPlane = kernelPlanes[i];
-        //             for (var l = 0; l < output.Shape.Depth; l++)
-        //             {
-        //                 foreach (var currKernelPlane in kPlane)
-        //                 {
-        //                     output[j, k, l] += Tensor.Dot(lossSlice, currKernelPlane);
-        //                 }
-        //             }
-        //
-        //             _biasGradients[i] += errors[j, k, i] * prevOut[j, k, i];
-        //         }
-        //     }
-        // });
-        
         return output;
     }
 
@@ -207,19 +193,5 @@ public class Conv : Layer
 
         return kernelPlanes;
     }
-
-    private static Tensor[] GetErrorPlanes(Tensor errors)
-    {
-        var (_, _, depth) = errors.Shape;
-        var result = new Tensor[depth];
-
-        for (var i = 0; i < depth; i++)
-        {
-            result[i] = errors.Plane(i);
-        }
-
-        return result;
-    }
-    
 
 }
