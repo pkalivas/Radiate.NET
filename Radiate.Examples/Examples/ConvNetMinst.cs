@@ -18,9 +18,12 @@ public class ConvNetMinst : IExample
         const int featureLimit = 5000;
         const int batchSize = 128;
         const int maxEpochs = 15;
-        var inputShape = new Shape(28, 28, 1);
+        // var inputShape = new Shape(28, 28, 1);
+        var inputShape = new Shape(32, 32, 3);
+        
+        var (rawInputs, rawLabels) = await new Cifar(featureLimit).GetDataSet();
+        // var (rawInputs, rawLabels) = await new Mnist(featureLimit).GetDataSet();
 
-        var (rawInputs, rawLabels) = await new Mnist(featureLimit).GetDataSet();
         var normalizedInputs = rawInputs.Normalize();
         var oneHotEncode = rawLabels.OneHotEncode();
         

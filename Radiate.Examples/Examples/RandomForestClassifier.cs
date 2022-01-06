@@ -26,6 +26,6 @@ public class RandomForestClassifier : IExample
         await ModelWriter.Write(model);
         
         var (trainValid, testValid) = optimizer.Validate();
-        Console.WriteLine($"Train: {trainValid} Test: {testValid}");
+        Console.WriteLine($"Train: {trainValid}\nTest: {testValid}");
     }
 }

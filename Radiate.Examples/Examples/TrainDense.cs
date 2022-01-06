@@ -14,7 +14,7 @@ public class TrainDense : IExample
 {
     public async Task Run()
     {
-        const int maxEpoch = 500;
+        const int maxEpoch = 1000;
         var progress = new ProgressBar(maxEpoch);
         
         var (inputs, targets) = await new XOR().GetDataSet();
