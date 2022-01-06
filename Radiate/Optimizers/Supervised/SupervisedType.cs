@@ -2,5 +2,6 @@
 
 public enum SupervisedType
 {
-    MultiLayerPerceptron = 0
+    MultiLayerPerceptron = 0,
+    RandomForest = 1
 }

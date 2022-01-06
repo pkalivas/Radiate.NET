@@ -1,4 +1,6 @@
-﻿using Radiate.Data;
+﻿using System.IO;
+using Newtonsoft.Json;
+using Radiate.Data;
 using Radiate.Data.Utils;
 using Radiate.Domain.Models;
 using Radiate.Domain.Tensors;
@@ -27,9 +29,19 @@ public class BlobMeans : IExample
             return epoch.Index == maxEpoch || epoch.AverageLoss == 0 && epoch.RegressionAccuracy > 0;
         });
 
+        await Save(optimizer.Model.Save());
+        
         var validator = new Validator();
         var acc = validator.Validate(optimizer.Model, pair.TrainingInputs);
 
         Console.WriteLine($"\nLoss: {acc.AverageLoss} Accuracy {acc.RegressionAccuracy}");
+    }
+    
+    private static async Task Save(UnsupervisedWrap wrap)
+    {
+        var path = $"C:\\Users\\peter\\Desktop\\Radiate.NET\\Radiate.Examples\\Saves\\kmeans.json";
+        var content = JsonConvert.SerializeObject(wrap);
+
+        await File.WriteAllTextAsync(path, content);
     }
 }

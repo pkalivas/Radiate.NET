@@ -63,6 +63,11 @@ public class RandomForest : ISupervised
         return new Prediction(new[] { confidence }.ToTensor(), classification, confidence);
     }
 
+    public SupervisedWrap Save() => new()
+    {
+        SupervisedType = SupervisedType.RandomForest
+    };
+
     private static (Tensor features, Tensor targets) MergeBatch(IReadOnlyCollection<Batch> data)
     {
         var features = data.SelectMany(row => row.Features.Select(ten => ten)).ToArray();

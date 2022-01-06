@@ -19,6 +19,13 @@ public class KMeans : IUnsupervised
         _clusters = new List<int>[kClusters];
         _centroids = new Tensor[kClusters];
     }
+
+    public KMeans(UnsupervisedWrap wrap)
+    {
+        _kClusters = wrap.KMeansWrap.KClusters;
+        _clusters = wrap.KMeansWrap.Clusters;
+        _centroids = wrap.KMeansWrap.Centroids;
+    }
     
     public void Train(Batch batches, Func<Epoch, bool> trainFunc)
     {
@@ -62,6 +69,17 @@ public class KMeans : IUnsupervised
 
         return new Prediction(result, label);
     }
+
+    public UnsupervisedWrap Save() => new()
+    {
+        UnsupervisedType = UnsupervisedType.KMeans,
+        KMeansWrap = new()
+        {
+            KClusters = _kClusters,
+            Clusters = _clusters,
+            Centroids = _centroids
+        }
+    };
 
     private List<(Tensor output, Tensor target)> CreateClusters(IReadOnlyList<Tensor> inputs, IReadOnlyList<Tensor> answers)
     {
