@@ -2,4 +2,4 @@
 
 namespace Radiate.Domain.Records;
 
-public record Batch(Tensor[] Features, Tensor[] Targets);
+public record Batch(Tensor[] Features, Tensor[] Targets = null);

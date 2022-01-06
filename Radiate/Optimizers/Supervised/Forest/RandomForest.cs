@@ -3,6 +3,7 @@ using Radiate.Domain.Loss;
 using Radiate.Domain.Models;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
+using Radiate.Optimizers.Supervised.Forest.Info;
 
 namespace Radiate.Optimizers.Supervised.Forest;
 
@@ -17,6 +18,14 @@ public class RandomForest : ISupervised
         _nTrees = nTrees;
         _info = info;
         _trees = new DecisionTree[nTrees];
+    }
+
+    public RandomForest(SupervisedWrap wrap)
+    {
+        var forest = wrap.RandomForestWrap;
+        _nTrees = forest.NTrees;
+        _info = forest.Info;
+        _trees = forest.Trees.Select(tree => new DecisionTree(tree)).ToArray();
     }
 
     public void Train(List<Batch> data, LossFunction lossFunction, Func<Epoch, bool> trainFunc)
@@ -65,7 +74,13 @@ public class RandomForest : ISupervised
 
     public SupervisedWrap Save() => new()
     {
-        SupervisedType = SupervisedType.RandomForest
+        SupervisedType = SupervisedType.RandomForest,
+        RandomForestWrap = new()
+        {
+            NTrees = _nTrees,
+            Info = _info,
+            Trees = _trees.Select(tree => tree.Save()).ToList()
+        }
     };
 
     private static (Tensor features, Tensor targets) MergeBatch(IReadOnlyCollection<Batch> data)

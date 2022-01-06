@@ -1,4 +1,5 @@
 ﻿using Radiate.Optimizers.Supervised;
+using Radiate.Optimizers.Supervised.Forest.Info;
 
 namespace Radiate.Domain.Models;
 
@@ -16,5 +17,7 @@ public class MultiLayerPerceptronWrap
 
 public class RandomForestWrap
 {
-    
+    public int NTrees { get; set; }
+    public ForestInfo Info { get; set; }
+    public List<DecisionTreeWrap> Trees { get; set; }
 }

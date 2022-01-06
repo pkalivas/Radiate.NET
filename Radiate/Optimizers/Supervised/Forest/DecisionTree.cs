@@ -1,6 +1,8 @@
 ﻿using Radiate.Domain.Extensions;
+using Radiate.Domain.Models;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
+using Radiate.Optimizers.Supervised.Forest.Info;
 
 namespace Radiate.Optimizers.Supervised.Forest;
 
@@ -24,7 +26,27 @@ public class DecisionTree
         _root = GrowTree(features, targets);
     }
 
+    public DecisionTree(DecisionTreeWrap wrap)
+    {
+        var nodeLookup = wrap.Nodes.ToDictionary(node => node.NodeId);
+        
+        _info = wrap.Info;
+        _root = new TreeNode(wrap.RootId, nodeLookup);
+    }
+
     public Prediction Predict(Tensor input) => Traverse(input, _root);
+
+    public DecisionTreeWrap Save()
+    {
+        var rootId = Guid.NewGuid();
+
+        return new DecisionTreeWrap
+        {
+            Info = _info,
+            RootId = rootId,
+            Nodes = _root.Save(rootId)
+        };
+    }
 
     private TreeNode GrowTree(Tensor features, Tensor targets, int depth = 0)
     {

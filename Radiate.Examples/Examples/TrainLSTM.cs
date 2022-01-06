@@ -1,6 +1,7 @@
 ﻿using Radiate.Data;
 using Radiate.Data.Utils;
 using Radiate.Domain.Activation;
+using Radiate.Domain.Description;
 using Radiate.Domain.Extensions;
 using Radiate.Domain.Gradients;
 using Radiate.Domain.Loss;
@@ -27,14 +28,14 @@ public class TrainLSTM : IExample
             .AddLayer(new DenseInfo(1, Activation.Sigmoid));
 
         var optimizer = new Optimizer<MultiLayerPerceptron>(mlp, pair, Loss.MSE);
-        await optimizer.Train(epoch =>
+        var lstm = await optimizer.Train(epoch =>
         {
             progressBar.Tick($"Loss: {epoch.AverageLoss} Accuracy: {epoch.RegressionAccuracy}");
             return epoch.Index == trainEpochs;
         });
+        
+        Console.WriteLine($"\n{ModelDescriptor.Describe(lstm)}");
 
-        var lstm = optimizer.Model;
-        Console.WriteLine();
         foreach (var (ins, outs) in pair.TrainingInputs)
         {
             foreach (var (i, j) in ins.Zip(outs))

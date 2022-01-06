@@ -1,9 +1,8 @@
-﻿using System.IO;
-using Newtonsoft.Json;
-using Radiate.Data;
+﻿using Radiate.Data;
 using Radiate.Data.Utils;
 using Radiate.Domain.Models;
 using Radiate.Domain.Tensors;
+using Radiate.Examples.Writer;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Unsupervised.Clustering;
 
@@ -22,26 +21,18 @@ public class BlobMeans : IExample
         var kMeans = new KMeans(pair.OutputCategories);
         var optimizer = new Optimizer<KMeans>(kMeans, pair);
 
-        await optimizer.Train(epoch =>
+        var model = await optimizer.Train(epoch =>
         {
-            var displayString = $"Loss: {epoch.AverageLoss} Class Acc: {epoch.ClassificationAccuracy} Reg Acc: {epoch.RegressionAccuracy}";
+            var displayString = $"Loss: {epoch.AverageLoss}";
             progressBar.Tick(displayString);
             return epoch.Index == maxEpoch || epoch.AverageLoss == 0 && epoch.RegressionAccuracy > 0;
         });
 
-        await Save(optimizer.Model.Save());
+        await ModelWriter.Write(model);
         
         var validator = new Validator();
         var acc = validator.Validate(optimizer.Model, pair.TrainingInputs);
 
         Console.WriteLine($"\nLoss: {acc.AverageLoss} Accuracy {acc.RegressionAccuracy}");
-    }
-    
-    private static async Task Save(UnsupervisedWrap wrap)
-    {
-        var path = $"C:\\Users\\peter\\Desktop\\Radiate.NET\\Radiate.Examples\\Saves\\kmeans.json";
-        var content = JsonConvert.SerializeObject(wrap);
-
-        await File.WriteAllTextAsync(path, content);
     }
 }

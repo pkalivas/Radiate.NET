@@ -1,12 +1,11 @@
-﻿using System.IO;
-using Newtonsoft.Json;
-using Radiate.Data;
+﻿using Radiate.Data;
 using Radiate.Data.Utils;
 using Radiate.Domain.Activation;
+using Radiate.Domain.Description;
 using Radiate.Domain.Extensions;
-using Radiate.Domain.Models;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
+using Radiate.Examples.Writer;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
@@ -17,7 +16,7 @@ public class ConvNetMinst : IExample
 {
     public async Task Run()
     {
-        const int featureLimit = 500;
+        const int featureLimit = 5000;
         const int batchSize = 32;
         const int maxEpochs = 25;
         const int imagePadding = 1;
@@ -43,30 +42,22 @@ public class ConvNetMinst : IExample
         var optimizer = new Optimizer<MultiLayerPerceptron>(neuralNetwork, featureTargetPair);
         
         var progressBar = new ProgressBar(maxEpochs);
-        await optimizer.Train(epoch => 
+        var model = await optimizer.Train(epoch => 
         {
             var displayString = $"Loss: {epoch.AverageLoss} Accuracy: {epoch.ClassificationAccuracy}";
             
             progressBar.Tick(displayString);
             return maxEpochs == epoch.Index;
         });
-        
-        var wrap = optimizer.Model.Save();
-        await Save(wrap);
+
+        await ModelWriter.Write(model, "conv");
+        Console.WriteLine($"\n{ModelDescriptor.Describe(model)}");
         
         var (trainAcc, testAcc) = optimizer.Validate();
         
         var trainValid = trainAcc.ClassificationAccuracy;
         var testValid = testAcc.ClassificationAccuracy;
         
-        Console.WriteLine($"\nTrain accuracy: {trainValid} - Test accuracy: {testValid}");
-    }
-
-    private static async Task Save(SupervisedWrap wrap)
-    {
-        var path = $"C:\\Users\\peter\\Desktop\\Radiate.NET\\Radiate.Examples\\Saves\\convnet.json";
-        var content = JsonConvert.SerializeObject(wrap);
-
-        await File.WriteAllTextAsync(path, content);
+        Console.WriteLine($"Train accuracy: {trainValid} - Test accuracy: {testValid}");
     }
 }

@@ -27,22 +27,30 @@ public class KMeans : IUnsupervised
         _centroids = wrap.KMeansWrap.Centroids;
     }
     
-    public void Train(Batch batches, Func<Epoch, bool> trainFunc)
+    public void Train(Tensor[] data, Func<Epoch, bool> trainFunc)
     {
-        var (inputs, answers) = batches;
-        
-        foreach (var group in answers.GroupBy(val => Convert.ToInt32(val.Max())))
+        for (var i = 0; i < _kClusters; i++)
         {
-            var idx = _random.Next(0, inputs.Length);
-            _centroids[group.Key] = inputs[idx];
-            _clusters[group.Key] = new List<int>();
+            var idx = _random.Next(0, data.Length);
+            _centroids[i] = data[idx];
+            _clusters[i] = new List<int>();
         }
         
         var epochCount = 1;
         while (true)
         {
-            var predictions = CreateClusters(inputs, answers);
-            var newCentroids = UpdateCenters(inputs);
+            foreach (var cluster in _clusters)
+            {
+                cluster.Clear();
+            }
+
+            for (var i = 0; i < data.Length; i++)
+            {
+                var centerIdx = ClosestCenter(data[i]);
+                _clusters[centerIdx].Add(i);
+            }
+            
+            var newCentroids = UpdateCenters(data);
 
             for (var i = 0; i < _kClusters; i++)
             {
@@ -51,11 +59,7 @@ public class KMeans : IUnsupervised
 
             var loss = CalcLoss(newCentroids);
             
-            var classAcc = Validator.ClassificationAccuracy(predictions);
-            var regAcc = Validator.RegressionAccuracy(predictions);
-            var epoch = new Epoch(epochCount++, loss, classAcc, regAcc);
-            
-            if (trainFunc(epoch))
+            if (trainFunc(new Epoch(epochCount++, loss)))
             {
                 break;
             }
@@ -81,25 +85,9 @@ public class KMeans : IUnsupervised
         }
     };
 
-    private List<(Tensor output, Tensor target)> CreateClusters(IReadOnlyList<Tensor> inputs, IReadOnlyList<Tensor> answers)
+    private void CreateClusters(IReadOnlyList<Tensor> inputs)
     {
-        foreach (var cluster in _clusters)
-        {
-            cluster.Clear();
-        }
 
-        var predictions = new List<(Tensor output, Tensor target)>();
-        for (var i = 0; i < inputs.Count; i++)
-        {
-            var input = inputs[i];
-            var target = answers[i];
-            var centerIdx = ClosestCenter(input);
-            _clusters[centerIdx].Add(i);
-                
-            predictions.Add((new float[]{ centerIdx }.ToTensor(), target));
-        }
-
-        return predictions;
     }
 
     private Tensor[] UpdateCenters(IReadOnlyList<Tensor> inputs)

@@ -29,9 +29,9 @@ public class Optimizer<T>
 
     public T Model => _optimizer;
 
-    public async Task Train() => await Train(_ => true);
+    public async Task<T> Train() => await Train(_ => true);
 
-    public async Task Train(Func<Epoch, bool> trainFunc)
+    public async Task<T> Train(Func<Epoch, bool> trainFunc)
     {
         if (_optimizer is IPopulation population)
         {
@@ -40,14 +40,18 @@ public class Optimizer<T>
         
         if (_optimizer is IUnsupervised unsupervised)
         {
-            var batch = _tensorTrainSet.TrainingInputs.Single();
-            unsupervised.Train(batch, trainFunc);
+            var data = _tensorTrainSet.TrainingFeatureInputs
+                .SelectMany(batch => batch.Features.Select(row => row))
+                .ToArray();
+            unsupervised.Train(data, trainFunc);
         }
         
         if (_optimizer is ISupervised supervised)
         {
             supervised.Train(_tensorTrainSet.TrainingInputs, _lossFunction, trainFunc);
         }
+
+        return _optimizer;
     }
 
     public (Validation training, Validation testing) Validate()

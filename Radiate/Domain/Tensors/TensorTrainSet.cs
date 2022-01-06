@@ -7,7 +7,7 @@ public class TensorTrainSet
 {
     private TrainTestSplit TrainTest { get; set; }
     private TensorTrainOptions Options { get; set; }
-
+    
     public TensorTrainSet(IEnumerable<float[]> features, IEnumerable<float[]> targets)
     {
         var inputs = features.Select(row => row.ToTensor()).ToList();
@@ -20,6 +20,8 @@ public class TensorTrainSet
     public List<Batch> TrainingInputs => TrainingBatches();
 
     public List<Batch> TestingInputs => TestingBatches();
+
+    public List<Batch> TrainingFeatureInputs => TrainFeatureBatches();
     
     public int OutputSize => TrainTest.TrainTargets.First().Shape.Height;
 
@@ -102,6 +104,24 @@ public class TensorTrainSet
                 .ToArray();
             
             batches.Add(new Batch(batchFeatures, batchTargets));
+        }
+
+        return batches;
+    }
+
+    private List<Batch> TrainFeatureBatches()
+    {
+        var data = ApplyOptions();
+        
+        var batches = new List<Batch>();
+        for (var i = 0; i < data.TrainFeatures.Count; i++)
+        {
+            var batchFeatures = data.TrainFeatures
+                .Skip(i)
+                .Take(1)
+                .ToArray();
+
+            batches.Add(new Batch(batchFeatures));
         }
 
         return batches;

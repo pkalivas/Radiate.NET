@@ -7,6 +7,6 @@ namespace Radiate.Optimizers.Unsupervised;
 public interface IUnsupervised
 {
     Prediction Predict(Tensor tensor);
-    void Train(Batch batch, Func<Epoch, bool> trainFunc);
+    void Train(Tensor[] data, Func<Epoch, bool> trainFunc);
     UnsupervisedWrap Save();
 }

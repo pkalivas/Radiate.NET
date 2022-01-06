@@ -24,11 +24,11 @@ public class TrainDense : IExample
             .AddLayer(new DenseInfo(1, Activation.Sigmoid));
 
         var optimizer = new Optimizer<MultiLayerPerceptron>(mlp, pair, Loss.MSE);
-        await optimizer.Train(epoch => epoch.Index == maxEpoch);
+        var model = await optimizer.Train(epoch => epoch.Index == maxEpoch);
         
         foreach (var (ins, outs) in pair.TrainingInputs)
         {
-            var pred = optimizer.Model.Predict(ins.First());
+            var pred = model.Predict(ins.First());
             Console.WriteLine($"Answer {outs[0][0]} Confidence {pred.Confidence}");
         }
     }
