@@ -1,6 +1,6 @@
 ﻿using Radiate.Optimizers.Supervised.Perceptrons;
 
-namespace Radiate.Domain.Description;
+namespace Radiate.Examples.Description;
 
 public static class ModelDescriptor
 {

@@ -1,10 +1,10 @@
 ﻿using Radiate.Data;
 using Radiate.Data.Utils;
 using Radiate.Domain.Activation;
-using Radiate.Domain.Description;
 using Radiate.Domain.Extensions;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
+using Radiate.Examples.Description;
 using Radiate.Examples.Writer;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Supervised.Perceptrons;

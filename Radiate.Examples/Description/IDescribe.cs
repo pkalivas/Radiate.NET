@@ -1,4 +1,4 @@
-﻿namespace Radiate.Domain.Description;
+﻿namespace Radiate.Examples.Description;
 
 interface IDescribe
 {

@@ -1,11 +1,11 @@
 ﻿using Radiate.Data;
 using Radiate.Data.Utils;
 using Radiate.Domain.Activation;
-using Radiate.Domain.Description;
 using Radiate.Domain.Extensions;
 using Radiate.Domain.Gradients;
 using Radiate.Domain.Loss;
 using Radiate.Domain.Tensors;
+using Radiate.Examples.Description;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;

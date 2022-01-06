@@ -3,7 +3,7 @@ using Radiate.Domain.Records;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Layers;
 
-namespace Radiate.Domain.Description;
+namespace Radiate.Examples.Description;
 
 public class PerceptronDescriptor : IDescribe
 {
