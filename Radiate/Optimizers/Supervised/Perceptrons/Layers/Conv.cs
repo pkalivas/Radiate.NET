@@ -109,10 +109,9 @@ public class Conv : Layer
             _filters[i].Add(gradient.Calculate(_filterGradients[i] / batchSize, epoch));
             _filterGradients[i].Zero();
         }
-        
-        var deltas = gradient.Calculate(_biasGradients / batchSize, epoch);
+
         _bias.Zero();
-        _bias.Add(deltas);
+        _bias.Add(gradient.Calculate(_biasGradients / batchSize, epoch));
         _biasGradients.Zero();
     }
 

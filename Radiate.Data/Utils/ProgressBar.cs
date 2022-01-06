@@ -7,19 +7,17 @@ public class ProgressBar
 {
     private readonly int _maxVal;
     private readonly DateTime _startTime;
-    private readonly int _barSize;
     
     private DateTime _previousTime;
     private int _tick = 0;
     private int _row;
     private int _col;
 
-    public ProgressBar(int maxVal, int barSize = 20)
+    public ProgressBar(int maxVal)
     {
         _maxVal = maxVal;
         _startTime = DateTime.Now;
         _previousTime = DateTime.Now;
-        _barSize = barSize;
     }
 
     public void Tick(Epoch epoch)
@@ -59,44 +57,10 @@ public class ProgressBar
 
     public void Tick(string displayString)
     {
-        _tick++;
+        Console.Write($"\r{displayString}");
         
-        if (_tick == 1)
-        {
-            Console.WriteLine("\n");
-        }
-        
-        var percent = Math.Round((float)_tick / _maxVal * 100);
-        var tickPct = ((float)percent / 100) * _barSize;
-        var bar = string.Join("", Enumerable.Range(0, _barSize).Select(val => val <= tickPct? "#" : " "));
-        var timeSince = DateTime.Now - _startTime;
-        var iterationTime = DateTime.Now - _previousTime;
-        
-        var display = $"[{_tick}] " +
-            $"{timeSince.Hours}:{timeSince.Minutes}:{timeSince.Seconds}:{timeSince.Milliseconds} " +
-            $"{iterationTime.ToString()}/iter {percent}% [{bar}] - "+
-            $"{displayString}";
-        
-        Console.Write($"\r{display}");
-        
-        _previousTime = DateTime.Now;
-        
-        var backup = new string('\b', display.Length);
+        var backup = new string('\b', displayString.Length);
         Console.Write(backup);
-
-        if (_tick == _maxVal)
-        {
-            Console.WriteLine();
-        }
-    }
-
-    private string Format(TimeSpan timeSince, TimeSpan iterationTime)
-    {
-        var percent = (float)_tick / _maxVal;
-
-        var result = $"{timeSince,12:c} [Epoch {_tick} {percent,4:P2}] {iterationTime,9:mm\\:ss\\:fff}/iter";
-        
-        return result;
     }
 
 }

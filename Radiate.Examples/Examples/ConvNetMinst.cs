@@ -2,10 +2,8 @@
 using Radiate.Data.Utils;
 using Radiate.Domain.Activation;
 using Radiate.Domain.Extensions;
-using Radiate.Domain.Loss;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
-using Radiate.Examples.Description;
 using Radiate.Examples.Writer;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Supervised.Perceptrons;
@@ -20,7 +18,6 @@ public class ConvNetMinst : IExample
         const int featureLimit = 5000;
         const int batchSize = 128;
         const int maxEpochs = 15;
-        const int imagePadding = 1;
         var inputShape = new Shape(28, 28, 1);
 
         var (rawInputs, rawLabels) = await new Mnist(featureLimit).GetDataSet();
@@ -30,17 +27,13 @@ public class ConvNetMinst : IExample
         var featureTargetPair = new TensorTrainSet(normalizedInputs, oneHotEncode)
             .Transform(inputShape)
             .Batch(batchSize)
-            // .Pad(imagePadding)
             .Split();
         
         var neuralNetwork = new MultiLayerPerceptron()
             .AddLayer(new ConvInfo(32, 3))
             .AddLayer(new MaxPoolInfo(2))
-            .AddLayer(new ConvInfo(64, 3))
-            .AddLayer(new MaxPoolInfo(2))
             .AddLayer(new FlattenInfo())
-            .AddLayer(new DropoutInfo(0.5f))
-            // .AddLayer(new DenseInfo(64, Activation.Sigmoid))
+            .AddLayer(new DenseInfo(64, Activation.Sigmoid))
             .AddLayer(new DenseInfo(featureTargetPair.OutputSize, Activation.SoftMax));
 
         var optimizer = new Optimizer<MultiLayerPerceptron>(neuralNetwork, featureTargetPair);

@@ -99,10 +99,11 @@ public class MaxPool : Layer
         var (hStride, wStride) = _sliceGenerator.CalcStride(input);
         var output = new Tensor(hStride, wStride, Shape.Depth);
 
-        foreach (var (slice, sHeight, sWidth, sDepth) in slices)
+        Parallel.ForEach(slices, inSlice =>
         {
+            var (slice, sHeight, sWidth, sDepth) = inSlice;
             output[sHeight, sWidth, sDepth] = slice.Max();
-        }
+        });
         
         return output;
     }

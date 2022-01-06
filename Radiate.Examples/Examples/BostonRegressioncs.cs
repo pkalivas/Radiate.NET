@@ -33,8 +33,7 @@ public class BostonRegression : IExample
         var progressBar = new ProgressBar(maxEpochs);
         await optimizer.Train(epoch => 
         {
-            var displayString = $"Loss: {epoch.Loss} Accuracy: {epoch.RegressionAccuracy}";
-            progressBar.Tick(displayString);
+            progressBar.Tick(epoch);
             return maxEpochs == epoch.Index || Math.Abs(epoch.Loss) < .1;
         });
 

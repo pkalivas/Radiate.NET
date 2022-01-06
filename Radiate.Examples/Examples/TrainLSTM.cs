@@ -30,7 +30,7 @@ public class TrainLSTM : IExample
         var optimizer = new Optimizer<MultiLayerPerceptron>(mlp, pair, Loss.MSE);
         var lstm = await optimizer.Train(epoch =>
         {
-            progressBar.Tick($"Loss: {epoch.Loss} Accuracy: {epoch.RegressionAccuracy}");
+            progressBar.Tick(epoch);
             return epoch.Index == trainEpochs;
         });
         

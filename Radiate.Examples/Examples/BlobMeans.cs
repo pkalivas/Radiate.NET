@@ -23,8 +23,7 @@ public class BlobMeans : IExample
 
         var model = await optimizer.Train(epoch =>
         {
-            var displayString = $"Loss: {epoch.Loss}";
-            progressBar.Tick(displayString);
+            progressBar.Tick(epoch);
             return epoch.Index == maxEpoch || epoch.Loss == 0;
         });
 
