@@ -18,7 +18,7 @@ public class ConvNetMinst : IExample
     {
         const int featureLimit = 5000;
         const int batchSize = 32;
-        const int maxEpochs = 25;
+        const int maxEpochs = 5;
         const int imagePadding = 1;
         var inputShape = new Shape(28, 28, 1);
 

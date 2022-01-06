@@ -32,7 +32,7 @@ public class SoftMax : IActivationFunction
         }
         
         
-        return values.Select(val => val switch
+        return result.Select(val => val switch
         {
             > MaxClipValue => MaxClipValue,
             < MinClipValue => MinClipValue,
