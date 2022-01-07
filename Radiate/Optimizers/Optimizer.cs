@@ -1,12 +1,10 @@
-﻿using Radiate.Domain.Callbacks;
-using Radiate.Domain.Callbacks.Interfaces;
-using Radiate.Domain.Callbacks.Resolver;
+﻿using Radiate.Domain.Callbacks.Interfaces;
 using Radiate.Domain.Loss;
-using Radiate.Domain.Models;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
 using Radiate.Optimizers.Evolution;
 using Radiate.Optimizers.Supervised;
+using Radiate.Optimizers.TrainingSessions;
 using Radiate.Optimizers.Unsupervised;
 
 namespace Radiate.Optimizers;
@@ -48,47 +46,38 @@ public class Optimizer<T>
         
         if (_optimizer is IUnsupervised unsupervised)
         {
-            var data = _tensorTrainSet.TrainingFeatureInputs
-                .SelectMany(batch => batch.Features.Select(row => row))
-                .ToArray();
-            unsupervised.Train(data, trainFunc);
+            await TrainUnsupervised(unsupervised, trainFunc);
         }
         
         if (_optimizer is ISupervised supervised)
         {
-            TrainSupervised(supervised, trainFunc);
-            // supervised.Train(_tensorTrainSet.TrainingInputs, _lossFunction, trainFunc);
+            await TrainSupervised(supervised, trainFunc);
         }
 
         return _optimizer;
     }
 
-    public (Validation training, Validation testing) Validate()
+    private async Task TrainUnsupervised(IUnsupervised unsupervised, Func<Epoch, bool> trainFunc)
     {
-        var validator = new Validator(_lossFunction);
+        var trainSession = new UnsupervisedTrainingSession(unsupervised, _callbacks);
+        var data = _tensorTrainSet.TrainingFeatureInputs
+            .SelectMany(batch => batch.Features.Select(row => row))
+            .ToArray();
 
-        switch (_optimizer)
+        while (true)
         {
-            case IUnsupervised unsupervised:
-            {
-                var trainValid = validator.Validate(unsupervised, _tensorTrainSet.TrainingInputs);
-                var testValid = validator.Validate(unsupervised, _tensorTrainSet.TestingInputs);
+            var epoch = trainSession.Fit(data);
 
-                return (trainValid, testValid);
-            }
-            case ISupervised supervised:
+            if (trainFunc(epoch))
             {
-                var trainValid = validator.Validate(supervised, _tensorTrainSet.TrainingInputs);
-                var testValid = validator.Validate(supervised, _tensorTrainSet.TestingInputs);
-
-                return (trainValid, testValid);
+                break;
             }
-            default:
-                throw new Exception($"Cannot validate optimizer type.");
         }
-    }
 
-    private void TrainSupervised(ISupervised supervisedModel, Func<Epoch, bool> trainFunc)
+        await trainSession.CompleteTraining<T>(_lossFunction);
+    }
+    
+    private async Task TrainSupervised(ISupervised supervisedModel, Func<Epoch, bool> trainFunc)
     {
         var trainSession = new SupervisedTrainingSession(supervisedModel, _callbacks);
         var batches = _tensorTrainSet.TrainingInputs;
@@ -103,6 +92,6 @@ public class Optimizer<T>
             }
         }
 
-        trainSession.CompleteTraining<T>();
+        await trainSession.CompleteTraining<T>(_lossFunction);
     }
 }

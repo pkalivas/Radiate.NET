@@ -1,6 +1,7 @@
 ﻿using Radiate.Data;
-using Radiate.Data.Utils;
 using Radiate.Domain.Activation;
+using Radiate.Domain.Callbacks;
+using Radiate.Domain.Callbacks.Interfaces;
 using Radiate.Domain.Extensions;
 using Radiate.Domain.Loss;
 using Radiate.Domain.Tensors;
@@ -28,21 +29,12 @@ public class BostonRegression : IExample
         var linearRegressor = new MultiLayerPerceptron()
             .AddLayer(new DenseInfo(outputSize, Activation.Linear));
         
-        var optimizer = new Optimizer<MultiLayerPerceptron>(linearRegressor, featureTargetPair, Loss.MSE);
-        
-        var progressBar = new ProgressBar(maxEpochs);
-        await optimizer.Train(epoch => 
+        var optimizer = new Optimizer<MultiLayerPerceptron>(linearRegressor, featureTargetPair, Loss.MSE, new List<ITrainingCallback>()
         {
-            progressBar.Tick(epoch);
-            return maxEpochs == epoch.Index || Math.Abs(epoch.Loss) < .1;
+            new VerboseTrainingCallback(featureTargetPair, maxEpochs, false)
         });
 
-        var (trainAcc, testAcc) = optimizer.Validate();
-
-        var trainValid = trainAcc.RegressionAccuracy;
-        var testValid = testAcc.RegressionAccuracy;
-        
-        Console.WriteLine($"Train accuracy: {trainValid} - Test accuracy: {testValid}");
+        await optimizer.Train(epoch => maxEpochs == epoch.Index || Math.Abs(epoch.Loss) < .1);
     }
 
    

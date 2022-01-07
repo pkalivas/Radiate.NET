@@ -26,43 +26,40 @@ public class KMeans : IUnsupervised
         _clusters = wrap.KMeansWrap.Clusters;
         _centroids = wrap.KMeansWrap.Centroids;
     }
-    
-    public void Train(Tensor[] data, Func<Epoch, bool> trainFunc)
+
+    public float Step(Tensor[] data, int epochCount)
     {
-        for (var i = 0; i < _kClusters; i++)
+        if (epochCount == 0)
         {
-            var idx = _random.Next(0, data.Length);
-            _centroids[i] = data[idx];
-            _clusters[i] = new List<int>();
-        }
-        
-        var epochCount = 1;
-        while (true)
-        {
-            foreach (var cluster in _clusters)
-            {
-                cluster.Clear();
-            }
-
-            for (var i = 0; i < data.Length; i++)
-            {
-                var centerIdx = ClosestCenter(data[i]);
-                _clusters[centerIdx].Add(i);
-            }
-            
-            var newCentroids = UpdateCenters(data);
-
             for (var i = 0; i < _kClusters; i++)
             {
-                _centroids[i] = newCentroids[i];
+                var idx = _random.Next(0, data.Length);
+                _centroids[i] = data[idx];
+                _clusters[i] = new List<int>();
             }
+        }
 
-            var loss = CalcLoss(newCentroids);
+        for (var i = 0; i < data.Length; i++)
+        {
+            var centerIdx = ClosestCenter(data[i]);
+            _clusters[centerIdx].Add(i);
+        }
             
-            if (trainFunc(new Epoch(epochCount++, loss)))
-            {
-                break;
-            }
+        var newCentroids = UpdateCenters(data);
+
+        for (var i = 0; i < _kClusters; i++)
+        {
+            _centroids[i] = newCentroids[i];
+        }
+
+        return CalcLoss(newCentroids);
+    }
+
+    public void Update()
+    {
+        foreach (var cluster in _clusters)
+        {
+            cluster.Clear();
         }
     }
 
@@ -84,11 +81,6 @@ public class KMeans : IUnsupervised
             Centroids = _centroids
         }
     };
-
-    private void CreateClusters(IReadOnlyList<Tensor> inputs)
-    {
-
-    }
 
     private Tensor[] UpdateCenters(IReadOnlyList<Tensor> inputs)
     {

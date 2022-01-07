@@ -1,6 +1,8 @@
 ﻿using Radiate.Data;
+using Radiate.Domain.Callbacks;
+using Radiate.Domain.Callbacks.Interfaces;
 using Radiate.Domain.Tensors;
-using Radiate.Examples.Writer;
+using Radiate.Examples.Callbacks;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Supervised.Forest;
 using Radiate.Optimizers.Supervised.Forest.Info;
@@ -19,13 +21,12 @@ public class RandomForestClassifier : IExample
         var pair = new TensorTrainSet(rawFeatures, rawLabels).Split();
         
         var forest = new RandomForest(numTrees, new ForestInfo(minSampleSplit, maxDepth));
-        var optimizer = new Optimizer<RandomForest>(forest, pair);
+        var optimizer = new Optimizer<RandomForest>(forest, pair, new List<ITrainingCallback>
+        {
+            new VerboseTrainingCallback(pair),
+            new ModelWriterCallback()
+        });
 
-        var model = await optimizer.Train();
-        
-        await ModelWriter.Write(model);
-        
-        var (trainValid, testValid) = optimizer.Validate();
-        Console.WriteLine($"Train: {trainValid}\nTest: {testValid}");
+        await optimizer.Train();
     }
 }

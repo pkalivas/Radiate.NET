@@ -1,5 +1,4 @@
 ﻿using Radiate.Domain.Extensions;
-using Radiate.Domain.Loss;
 using Radiate.Domain.Models;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
@@ -51,39 +50,7 @@ public class RandomForest : ISupervised
     }
     
     public void Update(List<Cost> errors, int epochCount) { }
-
-    public void Train(List<Batch> data, LossFunction lossFunction, Func<Epoch, bool> trainFunc)
-    {
-        // var (features, targets) = MergeBatch(data);
-        //
-        // Parallel.For(0, _nTrees, i =>
-        // {
-        //     var (featureInputs, targetInputs) = BootstrapData(features, targets);
-        //     _trees[i] = new DecisionTree(_info, featureInputs, targetInputs);
-        // });
-        //
-        // var predictions = new List<(Prediction, Tensor)>();
-        // var epochErrors = new List<float>();
-        // foreach (var (batchFeature, batchTarget) in data)
-        // {
-        //     foreach (var (x, y) in batchFeature.Zip(batchTarget))
-        //     {
-        //         foreach (var tree in _trees)
-        //         {
-        //             var prediction = tree.Predict(x);
-        //             var cost = lossFunction(prediction.Result, y);
-        //             
-        //             epochErrors.Add(cost.Loss);
-        //             predictions.Add((prediction, y));
-        //         }
-        //     }
-        // }
-        //
-        // var epoch = Validator.ValidateEpoch(epochErrors, predictions);
-        //
-        // trainFunc(epoch);
-    }
-
+    
     public Prediction Predict(Tensor input)
     {
         var predictions = _trees.Select(tree => tree.Predict(input)).ToList();

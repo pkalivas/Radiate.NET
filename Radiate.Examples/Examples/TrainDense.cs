@@ -1,5 +1,4 @@
 ﻿using Radiate.Data;
-using Radiate.Data.Utils;
 using Radiate.Domain.Activation;
 using Radiate.Domain.Gradients;
 using Radiate.Domain.Loss;
@@ -15,7 +14,6 @@ public class TrainDense : IExample
     public async Task Run()
     {
         const int maxEpoch = 1000;
-        var progress = new ProgressBar(maxEpoch);
         
         var (inputs, targets) = await new XOR().GetDataSet();
 
@@ -26,11 +24,7 @@ public class TrainDense : IExample
             .AddLayer(new DenseInfo(1, Activation.Sigmoid));
 
         var optimizer = new Optimizer<MultiLayerPerceptron>(mlp, pair, Loss.MSE);
-        var model = await optimizer.Train(epoch =>
-        {
-            progress.Tick(epoch);
-            return epoch.Index == maxEpoch;
-        });
+        var model = await optimizer.Train(epoch => epoch.Index == maxEpoch);
         
         foreach (var (ins, outs) in pair.TrainingInputs)
         {

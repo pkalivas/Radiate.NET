@@ -40,11 +40,11 @@ public class Validator
             }
         }
 
-        var acc = Accuracy(predictions);
+        var categoricalAccuracy = CategoricalAccuracy(predictions);
         var classAcc = ClassificationAccuracy(predictions);
         var regAcc = RegressionAccuracy(predictions);
 
-        return new Validation(iterationLoss.Sum(), classAcc, regAcc, acc);
+        return new Validation(iterationLoss.Sum(), classAcc, regAcc, categoricalAccuracy);
     }
 
     public Validation Validate(IUnsupervised unsupervised, List<Batch> data)
@@ -64,20 +64,20 @@ public class Validator
             }
         }
 
-        var acc = Accuracy(predictions);
+        var categoricalAccuracy = CategoricalAccuracy(predictions);
         var classAcc = ClassificationAccuracy(predictions);
         var regAcc = RegressionAccuracy(predictions);
 
-        return new Validation(iterationLoss.Sum(), classAcc, regAcc, acc);
+        return new Validation(iterationLoss.Sum(), classAcc, regAcc, categoricalAccuracy);
     }
 
     public static Epoch ValidateEpoch(List<float> errors, List<(Prediction outputs, Tensor targets)> predictions)
     {
-        var acc = Accuracy(predictions);
+        var categoricalAccuracy = CategoricalAccuracy(predictions);
         var classAccuracy = ClassificationAccuracy(predictions);
         var regressionAccuracy = RegressionAccuracy(predictions);
 
-        return new Epoch(0, errors.Sum(), classAccuracy, regressionAccuracy, acc);
+        return new Epoch(0, errors.Sum(), categoricalAccuracy, regressionAccuracy, classAccuracy);
     }
     
     private static float ClassificationAccuracy(List<(Prediction predictions, Tensor targets)> outs)
@@ -105,7 +105,7 @@ public class Validator
         return (targetTotal - absoluteDifference) / targetTotal;
     }
 
-    private static float Accuracy(List<(Prediction prediction, Tensor targets)> predictions)
+    private static float CategoricalAccuracy(List<(Prediction prediction, Tensor targets)> predictions)
     {
         var correctClasses = predictions
             .Sum(pair => Math.Abs(pair.targets.Max() - pair.prediction.Classification) < Tolerance ? 1f : 0f);

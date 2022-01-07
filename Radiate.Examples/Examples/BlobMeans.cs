@@ -1,8 +1,7 @@
 ﻿using Radiate.Data;
-using Radiate.Data.Utils;
-using Radiate.Domain.Models;
+using Radiate.Domain.Callbacks;
+using Radiate.Domain.Callbacks.Interfaces;
 using Radiate.Domain.Tensors;
-using Radiate.Examples.Writer;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Unsupervised.Clustering;
 
@@ -13,25 +12,16 @@ public class BlobMeans : IExample
     public async Task Run()
     {
         const int maxEpoch = 100;
-        var progressBar = new ProgressBar(maxEpoch);
 
         var (rawInputs, rawLabels) = await new ClusterBlob().GetDataSet();
-        var pair = new TensorTrainSet(rawInputs, rawLabels);
+        var pair = new TensorTrainSet(rawInputs, rawLabels).Split();
 
         var kMeans = new KMeans(pair.OutputCategories);
-        var optimizer = new Optimizer<KMeans>(kMeans, pair);
-
-        var model = await optimizer.Train(epoch =>
+        var optimizer = new Optimizer<KMeans>(kMeans, pair, new List<ITrainingCallback>
         {
-            progressBar.Tick(epoch);
-            return epoch.Index == maxEpoch || epoch.Loss == 0;
+            new VerboseTrainingCallback(pair, maxEpoch),
         });
 
-        await ModelWriter.Write(model);
-        
-        var validator = new Validator();
-        var acc = validator.Validate(optimizer.Model, pair.TrainingInputs);
-
-        Console.WriteLine($"\nLoss: {acc.Loss} Accuracy {acc.Accuracy}");
+        await optimizer.Train(epoch => epoch.Index == maxEpoch || epoch.Loss == 0);
     }
 }

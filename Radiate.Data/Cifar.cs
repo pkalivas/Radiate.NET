@@ -1,9 +1,9 @@
 ﻿using System.IO.Compression;
 using System.Text.Json;
 using Radiate.Data.Models;
-using Radiate.Data.Utils;
 
 namespace Radiate.Data;
+// var inputShape = new Shape(32, 32, 3);
 
 public class Cifar : IDataSet
 {

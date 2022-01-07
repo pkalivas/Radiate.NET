@@ -20,7 +20,6 @@ public class EvolveHelloWorld : IExample
     {
         const int evolutionEpochs = 500;
         const int populationSize = 100;
-        var progressBar = new ProgressBar(evolutionEpochs);
         var target = new char[12] { 'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '!'};
 
         var worlds = new List<HelloWorld>();
@@ -45,12 +44,7 @@ public class EvolveHelloWorld : IExample
                     .Sum(points => points.First == points.Second ? 1.0f : 0.0f));
 
         var optimizer = new Optimizer<Population<HelloWorld, BaseEvolutionEnvironment>>(population);
-        await optimizer.Train(epoch =>
-        {
-            var displayString = $"Fitness: {epoch.Fitness}";
-            progressBar.Tick(displayString);
-            return epoch.Index == evolutionEpochs || epoch.Fitness == 12;
-        });
+        await optimizer.Train(epoch => epoch.Index == evolutionEpochs || epoch.Fitness == 12);
 
         var best = optimizer.Model.Best;
         Console.WriteLine($"\nFinal Result: {best.Print()}");

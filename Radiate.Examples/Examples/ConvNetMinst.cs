@@ -1,11 +1,11 @@
 ﻿using Radiate.Data;
-using Radiate.Data.Utils;
 using Radiate.Domain.Activation;
 using Radiate.Domain.Callbacks;
+using Radiate.Domain.Callbacks.Interfaces;
 using Radiate.Domain.Extensions;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
-using Radiate.Examples.Writer;
+using Radiate.Examples.Callbacks;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
@@ -16,20 +16,19 @@ public class ConvNetMinst : IExample
 {
     public async Task Run()
     {
-        const int featureLimit = 500;
-        const int batchSize = 32;
-        const int maxEpochs = 15;
-        var inputShape = new Shape(28, 28, 1);
-        // var inputShape = new Shape(32, 32, 3);
+        const int featureLimit = 5000;
+        const int batchSize = 128;
+        const int maxEpochs = 25;
         
-        // var (rawInputs, rawLabels) = await new Cifar(featureLimit).GetDataSet();
-        var (rawInputs, rawLabels) = await new Mnist(featureLimit).GetDataSet();
-
+        // var (rawInputs, rawLabels) = await new Mnist(featureLimit).GetDataSet();
+        var (rawInputs, rawLabels) = await new Cifar(featureLimit).GetDataSet();
+        
         var normalizedInputs = rawInputs.Normalize();
         var oneHotEncode = rawLabels.OneHotEncode();
         
-        var featureTargetPair = new TensorTrainSet(normalizedInputs, oneHotEncode)
-            .Transform(inputShape)
+        var pair = new TensorTrainSet(normalizedInputs, oneHotEncode)
+            // .Transform(new Shape(28, 28, 1))
+            .Transform(new Shape(32, 32, 3))
             .Batch(batchSize)
             .Split();
         
@@ -38,27 +37,14 @@ public class ConvNetMinst : IExample
             .AddLayer(new MaxPoolInfo(2))
             .AddLayer(new FlattenInfo())
             .AddLayer(new DenseInfo(64, Activation.Sigmoid))
-            .AddLayer(new DenseInfo(featureTargetPair.OutputSize, Activation.SoftMax));
+            .AddLayer(new DenseInfo(pair.OutputSize, Activation.SoftMax));
 
-        var optimizer = new Optimizer<MultiLayerPerceptron>(neuralNetwork, featureTargetPair, new[]
+        var optimizer = new Optimizer<MultiLayerPerceptron>(neuralNetwork, pair, new List<ITrainingCallback>
         {
-            new VerboseTrainingCallback(maxEpochs)
+            new VerboseTrainingCallback(pair, maxEpochs),
+            new ModelWriterCallback()
         });
         
-        // var progressBar = new ProgressBar(maxEpochs);
-        var model = await optimizer.Train(epoch => 
-        {
-            // progressBar.Tick(epoch);
-            return maxEpochs == epoch.Index;
-        });
-
-        await ModelWriter.Write(model, "conv");
-        
-        var (trainAcc, testAcc) = optimizer.Validate();
-        
-        var trainValid = trainAcc.ClassificationAccuracy;
-        var testValid = testAcc.ClassificationAccuracy;
-        
-        Console.WriteLine($"Train accuracy: {trainValid} - Test accuracy: {testValid}");
+        await optimizer.Train(epoch => maxEpochs == epoch.Index);
     }
 }

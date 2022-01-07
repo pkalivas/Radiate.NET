@@ -1,6 +1,5 @@
 ﻿using Radiate.Domain.Activation;
 using Radiate.Domain.Gradients;
-using Radiate.Domain.Loss;
 using Radiate.Domain.Models;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
@@ -78,49 +77,7 @@ public class MultiLayerPerceptron : ISupervised
             layer.UpdateWeights(_gradientInfo, epochCount, errors.Count);
         }
     }
-    
-    public void Train(List<Batch> batches, LossFunction lossFunction, Func<Epoch, bool> trainFunc)
-    {
-        var epochCount = 1;
-        while (true)
-        {
-            var predictions = new List<(Prediction, Tensor)>();
-            var epochErrors = new List<float>();
 
-            foreach (var (inputs, answers) in batches)
-            {
-                var batchErrors = new List<Cost>();
-                foreach (var (x, y) in inputs.Zip(answers))
-                {
-                    var prediction = PassForward(x, y);
-                    var cost = lossFunction(prediction.Result, y);
-                    
-                    batchErrors.Add(cost);
-                    predictions.Add((prediction, y));
-                }
-
-                foreach (var (passError, _) in batchErrors.Select(pair => pair).Reverse())
-                {
-                    PassBackward(passError);
-                }
-                
-                foreach (var layer in _layers)
-                {
-                    layer.UpdateWeights(_gradientInfo, epochCount, predictions.Count);
-                }
-                
-                epochErrors.AddRange(batchErrors.Select(err => err.Loss));
-            }
-
-            var epoch = Validator.ValidateEpoch(epochErrors, predictions);
-            
-            if (trainFunc(epoch with { Index = epochCount++ }))
-            {
-                break;
-            }
-        }
-    }
-    
     public SupervisedWrap Save() => new()
     {
         SupervisedType = SupervisedType.MultiLayerPerceptron,
@@ -156,15 +113,7 @@ public class MultiLayerPerceptron : ISupervised
 
         return new Prediction(input, input.MaxIdx(), input.Max());
     }
-    
-    private void PassBackward(Tensor errors)
-    {
-        for (var i = _layers.Count - 1; i >= 0; i--)
-        {
-            errors = _layers[i].PassBackward(errors);
-        }
-    }
-    
+
     private static Layer GetLayer(List<LayerInfo> layers, LayerInfo info, Shape shape)
     {
         var (height, _, _) = shape;

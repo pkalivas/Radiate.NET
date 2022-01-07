@@ -17,7 +17,6 @@ public class TrainLSTM : IExample
     public async Task Run()
     {
         const int trainEpochs = 500;
-        var progressBar = new ProgressBar(trainEpochs);
 
         var (inputs, targets) = await new SimpleMemory().GetDataSet();
         
@@ -28,11 +27,7 @@ public class TrainLSTM : IExample
             .AddLayer(new DenseInfo(1, Activation.Sigmoid));
 
         var optimizer = new Optimizer<MultiLayerPerceptron>(mlp, pair, Loss.MSE);
-        var lstm = await optimizer.Train(epoch =>
-        {
-            progressBar.Tick(epoch);
-            return epoch.Index == trainEpochs;
-        });
+        var lstm = await optimizer.Train(epoch => epoch.Index == trainEpochs);
         
         Console.WriteLine($"\n{ModelDescriptor.Describe(lstm)}");
 

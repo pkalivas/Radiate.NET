@@ -30,6 +30,8 @@ public class TensorTrainSet
         .Distinct()
         .Count();
 
+    public Shape BatchFeatureShape => new Shape(Options.BatchSize, TrainTest.TrainFeatures.Count);
+    
     public TensorTrainSet Batch(int batchSize)
     {
         Options = Options with { BatchSize = batchSize };
