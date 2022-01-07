@@ -1,6 +1,7 @@
 ﻿using Radiate.Data;
 using Radiate.Data.Utils;
 using Radiate.Domain.Activation;
+using Radiate.Domain.Callbacks;
 using Radiate.Domain.Extensions;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
@@ -15,14 +16,14 @@ public class ConvNetMinst : IExample
 {
     public async Task Run()
     {
-        const int featureLimit = 5000;
-        const int batchSize = 128;
+        const int featureLimit = 500;
+        const int batchSize = 32;
         const int maxEpochs = 15;
-        // var inputShape = new Shape(28, 28, 1);
-        var inputShape = new Shape(32, 32, 3);
+        var inputShape = new Shape(28, 28, 1);
+        // var inputShape = new Shape(32, 32, 3);
         
-        var (rawInputs, rawLabels) = await new Cifar(featureLimit).GetDataSet();
-        // var (rawInputs, rawLabels) = await new Mnist(featureLimit).GetDataSet();
+        // var (rawInputs, rawLabels) = await new Cifar(featureLimit).GetDataSet();
+        var (rawInputs, rawLabels) = await new Mnist(featureLimit).GetDataSet();
 
         var normalizedInputs = rawInputs.Normalize();
         var oneHotEncode = rawLabels.OneHotEncode();
@@ -39,12 +40,15 @@ public class ConvNetMinst : IExample
             .AddLayer(new DenseInfo(64, Activation.Sigmoid))
             .AddLayer(new DenseInfo(featureTargetPair.OutputSize, Activation.SoftMax));
 
-        var optimizer = new Optimizer<MultiLayerPerceptron>(neuralNetwork, featureTargetPair);
+        var optimizer = new Optimizer<MultiLayerPerceptron>(neuralNetwork, featureTargetPair, new[]
+        {
+            new VerboseTrainingCallback(maxEpochs)
+        });
         
-        var progressBar = new ProgressBar(maxEpochs);
+        // var progressBar = new ProgressBar(maxEpochs);
         var model = await optimizer.Train(epoch => 
         {
-            progressBar.Tick(epoch);
+            // progressBar.Tick(epoch);
             return maxEpochs == epoch.Index;
         });
 

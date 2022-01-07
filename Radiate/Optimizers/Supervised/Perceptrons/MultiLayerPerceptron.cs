@@ -48,6 +48,36 @@ public class MultiLayerPerceptron : ISupervised
         _layerInfo.Add(layerInfo);
         return this;
     }
+
+    public List<(Prediction prediction, Tensor target)> Step(Tensor[] features, Tensor[] targets)
+    {
+        var predictions = new List<(Prediction, Tensor)>();
+        
+        foreach (var (x, y) in features.Zip(targets))
+        {
+            var prediction = PassForward(x, y);
+            predictions.Add((prediction, y));
+        }
+        
+        return predictions;
+    }
+
+    public void Update(List<Cost> errors, int epochCount)
+    {
+        foreach (var (passError, _) in errors.Select(pair => pair).Reverse())
+        {
+            var currentError = passError;
+            for (var i = _layers.Count - 1; i >= 0; i--)
+            {
+                currentError = _layers[i].PassBackward(currentError);
+            }
+        }
+                
+        foreach (var layer in _layers)
+        {
+            layer.UpdateWeights(_gradientInfo, epochCount, errors.Count);
+        }
+    }
     
     public void Train(List<Batch> batches, LossFunction lossFunction, Func<Epoch, bool> trainFunc)
     {

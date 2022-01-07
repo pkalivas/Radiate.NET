@@ -28,38 +28,62 @@ public class RandomForest : ISupervised
         _trees = forest.Trees.Select(tree => new DecisionTree(tree)).ToArray();
     }
 
-    public void Train(List<Batch> data, LossFunction lossFunction, Func<Epoch, bool> trainFunc)
+    public List<(Prediction prediction, Tensor target)> Step(Tensor[] features, Tensor[] targets)
     {
-        var (features, targets) = MergeBatch(data);
+        var (inputs, answers) = MergeBatch(features, targets);
 
         Parallel.For(0, _nTrees, i =>
         {
-            var (featureInputs, targetInputs) = BootstrapData(features, targets);
+            var (featureInputs, targetInputs) = BootstrapData(inputs, answers);
             _trees[i] = new DecisionTree(_info, featureInputs, targetInputs);
         });
 
         var predictions = new List<(Prediction, Tensor)>();
-        var epochErrors = new List<float>();
-        foreach (var (batchFeature, batchTarget) in data)
+
+        foreach (var (x, y) in features.Zip(targets))
         {
-            foreach (var (x, y) in batchFeature.Zip(batchTarget))
-            {
-                foreach (var tree in _trees)
-                {
-                    var prediction = tree.Predict(x);
-                    var cost = lossFunction(prediction.Result, y);
-                    
-                    epochErrors.Add(cost.Loss);
-                    predictions.Add((prediction, y));
-                }
-            }
+            predictions.AddRange(_trees
+                .Select(tree => tree.Predict(x))
+                .Select(prediction => (prediction, y)));
         }
 
-        var epoch = Validator.ValidateEpoch(epochErrors, predictions);
-        
-        trainFunc(epoch);
+        return predictions;
     }
     
+    public void Update(List<Cost> errors, int epochCount) { }
+
+    public void Train(List<Batch> data, LossFunction lossFunction, Func<Epoch, bool> trainFunc)
+    {
+        // var (features, targets) = MergeBatch(data);
+        //
+        // Parallel.For(0, _nTrees, i =>
+        // {
+        //     var (featureInputs, targetInputs) = BootstrapData(features, targets);
+        //     _trees[i] = new DecisionTree(_info, featureInputs, targetInputs);
+        // });
+        //
+        // var predictions = new List<(Prediction, Tensor)>();
+        // var epochErrors = new List<float>();
+        // foreach (var (batchFeature, batchTarget) in data)
+        // {
+        //     foreach (var (x, y) in batchFeature.Zip(batchTarget))
+        //     {
+        //         foreach (var tree in _trees)
+        //         {
+        //             var prediction = tree.Predict(x);
+        //             var cost = lossFunction(prediction.Result, y);
+        //             
+        //             epochErrors.Add(cost.Loss);
+        //             predictions.Add((prediction, y));
+        //         }
+        //     }
+        // }
+        //
+        // var epoch = Validator.ValidateEpoch(epochErrors, predictions);
+        //
+        // trainFunc(epoch);
+    }
+
     public Prediction Predict(Tensor input)
     {
         var predictions = _trees.Select(tree => tree.Predict(input)).ToList();
@@ -84,11 +108,8 @@ public class RandomForest : ISupervised
         }
     };
 
-    private static (Tensor features, Tensor targets) MergeBatch(IReadOnlyCollection<Batch> data)
+    private static (Tensor features, Tensor targets) MergeBatch(Tensor[] features, Tensor[] targets)
     {
-        var features = data.SelectMany(row => row.Features.Select(ten => ten)).ToArray();
-        var targets = data.SelectMany(row => row.Targets.Select(ten => ten)).ToArray();
-
         var featureResult = Tensor.Stack(features, Axis.Zero);
         var targetResult = Tensor.Stack(targets, Axis.Zero).Flatten();
         

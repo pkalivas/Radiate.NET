@@ -1,4 +1,7 @@
-﻿using Radiate.Domain.Loss;
+﻿using Radiate.Domain.Callbacks;
+using Radiate.Domain.Callbacks.Interfaces;
+using Radiate.Domain.Callbacks.Resolver;
+using Radiate.Domain.Loss;
 using Radiate.Domain.Models;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
@@ -13,18 +16,23 @@ public class Optimizer<T>
     private readonly T _optimizer;
     private readonly LossFunction _lossFunction;
     private readonly TensorTrainSet _tensorTrainSet;
+    private readonly IEnumerable<ITrainingCallback> _callbacks;
 
-    public Optimizer(T optimizer, Loss loss = new()) 
-        : this(optimizer, null, loss) { }
+    public Optimizer(T optimizer, TensorTrainSet tensorTrainSet, IEnumerable<ITrainingCallback> callbacks)
+        : this(optimizer, tensorTrainSet, Loss.Difference, callbacks) { }
 
-    public Optimizer(T optimizer, TensorTrainSet tensorTrainSet, Loss loss = Loss.Difference) 
-        : this(optimizer, tensorTrainSet, LossFunctionResolver.Get(loss)) { }
+    public Optimizer(T optimizer, Loss loss = new(), IEnumerable<ITrainingCallback> callbacks = null) 
+        : this(optimizer, null, loss, callbacks) { }
 
-    public Optimizer(T optimizer, TensorTrainSet tensorTrainSet, LossFunction lossFunction)
+    public Optimizer(T optimizer, TensorTrainSet tensorTrainSet, Loss loss = Loss.Difference, IEnumerable<ITrainingCallback> callbacks = null) 
+        : this(optimizer, tensorTrainSet, LossFunctionResolver.Get(loss), callbacks) { }
+
+    public Optimizer(T optimizer, TensorTrainSet tensorTrainSet, LossFunction lossFunction, IEnumerable<ITrainingCallback> callbacks)
     {
         _optimizer = optimizer;
         _tensorTrainSet = tensorTrainSet;
         _lossFunction = lossFunction;
+        _callbacks = callbacks;
     }
 
     public T Model => _optimizer;
@@ -48,7 +56,8 @@ public class Optimizer<T>
         
         if (_optimizer is ISupervised supervised)
         {
-            supervised.Train(_tensorTrainSet.TrainingInputs, _lossFunction, trainFunc);
+            TrainSupervised(supervised, trainFunc);
+            // supervised.Train(_tensorTrainSet.TrainingInputs, _lossFunction, trainFunc);
         }
 
         return _optimizer;
@@ -77,5 +86,23 @@ public class Optimizer<T>
             default:
                 throw new Exception($"Cannot validate optimizer type.");
         }
+    }
+
+    private void TrainSupervised(ISupervised supervisedModel, Func<Epoch, bool> trainFunc)
+    {
+        var trainSession = new SupervisedTrainingSession(supervisedModel, _callbacks);
+        var batches = _tensorTrainSet.TrainingInputs;
+        
+        while (true)
+        {
+            var epoch = trainSession.Fit(batches, _lossFunction);
+
+            if (trainFunc(epoch))
+            {
+                break;
+            }
+        }
+
+        trainSession.CompleteTraining<T>();
     }
 }
