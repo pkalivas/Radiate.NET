@@ -3,7 +3,12 @@ namespace Radiate.Optimizers.Evolution.Population;
 
 public class PopulationSettings
 {
-    public int Size { get; set; } = 100;
+    public PopulationSettings(int size)
+    {
+        Size = size;
+    }
+    
+    public int Size { get; set; }
     public bool DynamicDistance { get; set; } = true;
     public double SpeciesDistance { get; set; } = .5;
     public double InbreedRate { get; set; } = .001;

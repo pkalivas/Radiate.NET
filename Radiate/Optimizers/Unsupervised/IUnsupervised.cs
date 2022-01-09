@@ -8,6 +8,5 @@ public interface IUnsupervised
 {
     Prediction Predict(Tensor tensor);
     float Step(Tensor[] data, int epochCount);
-    void Update();
     UnsupervisedWrap Save();
 }

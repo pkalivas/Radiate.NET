@@ -38,6 +38,13 @@ public class KMeans : IUnsupervised
                 _clusters[i] = new List<int>();
             }
         }
+        else
+        {
+            foreach (var cluster in _clusters)
+            {
+                cluster.Clear();
+            }
+        }
 
         for (var i = 0; i < data.Length; i++)
         {
@@ -53,14 +60,6 @@ public class KMeans : IUnsupervised
         }
 
         return CalcLoss(newCentroids);
-    }
-
-    public void Update()
-    {
-        foreach (var cluster in _clusters)
-        {
-            cluster.Clear();
-        }
     }
 
     public Prediction Predict(Tensor input)

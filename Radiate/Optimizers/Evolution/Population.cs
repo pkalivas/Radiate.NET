@@ -1,5 +1,4 @@
-﻿using Radiate.Domain.Records;
-using Radiate.Optimizers.Evolution.Population;
+﻿using Radiate.Optimizers.Evolution.Population;
 using Radiate.Optimizers.Evolution.Population.Delegates;
 using Radiate.Optimizers.Evolution.Population.ParentalCriteria;
 using Radiate.Optimizers.Evolution.Population.SurvivorCriteria;
@@ -14,7 +13,6 @@ namespace Radiate.Optimizers.Evolution;
     private Generation<T, TE> CurrentGeneration { get; set; }
     private EvolutionEnvironment EvolutionEnvironment { get; set; }
     private Solve<T> Solver { get; set; }
-
     private GetSurvivors<T> SurvivorPicker { get; set; } = new Fittest().Pick<T>;
     private GetParents<T> ParentPicker { get; set; } = new BiasedRandom().Pick<T>;
     private int GenerationsUnchanged { get; set; }
@@ -24,7 +22,7 @@ namespace Radiate.Optimizers.Evolution;
 
     public Population(IEnumerable<T> genomes)
     {
-        Settings = new PopulationSettings();
+        Settings = new PopulationSettings(genomes.Count());
         CurrentGeneration = new Generation<T, TE>
         {
             Members = genomes
@@ -40,21 +38,52 @@ namespace Radiate.Optimizers.Evolution;
             Species = new List<Niche>()
         };
     }
-    
-    public async Task Evolve(Func<Epoch, bool> trainFunc)
-    {
-        var count = 0;
-        while (true)
-        {
-            var topMember = await EvolveGeneration();
-            var epoch = new Epoch(count++, 0, topMember.Fitness, topMember.Fitness);
 
-            if (trainFunc(epoch))
+    public async Task<float> Step()
+    {
+        var topMember = CurrentGeneration.Step(Solver);
+        
+        await CurrentGeneration.Speciate(Settings.SpeciesDistance, EvolutionEnvironment);
+        
+        if (Settings.DynamicDistance)
+        {
+            if (CurrentGeneration.Species.Count < Settings.SpeciesTarget)
             {
-                break;
+                Settings.SpeciesDistance -= .1;
+            }
+            else if (CurrentGeneration.Species.Count > Settings.SpeciesTarget)
+            {
+                Settings.SpeciesDistance += .1;
+            }
+        
+            if (Settings.SpeciesDistance < .01)
+            {
+                Settings.SpeciesDistance = .01;
             }
         }
+        
+        if (GenerationsUnchanged >= Settings.StagnationLimit)
+        {
+            CurrentGeneration.CleanPopulation(Settings.CleanPct);
+            GenerationsUnchanged = 0;
+        }
+        else if (Math.Abs(PreviousFitness - topMember.Fitness) < Tolerance)
+        {
+            GenerationsUnchanged++;
+        }
+        else
+        {
+            GenerationsUnchanged = 0;
+        }
+
+        CurrentGeneration = await CurrentGeneration.CreateNextGeneration(Settings, 
+            EvolutionEnvironment, SurvivorPicker, ParentPicker);
+
+        PreviousFitness = topMember.Fitness;
+
+        return topMember.Fitness;
     }
+    
 
     public T Best => CurrentGeneration.GetBestMember().Model;
 
@@ -73,68 +102,18 @@ namespace Radiate.Optimizers.Evolution;
     public Population<T, TE> SetSurvivorPicker(GetSurvivors<T> survivors)
     {
         SurvivorPicker = survivors;
-
         return this;
     }
 
     public Population<T, TE> SetParentPicker(GetParents<T> parents)
     {
         ParentPicker = parents;
-
         return this;
     }
 
     public Population<T, TE> SetEnvironment(EvolutionEnvironment environment)
     {
         EvolutionEnvironment = environment;
-
         return this;
     }
-
-    private async Task<Member<T>> EvolveGeneration()
-    {
-        await CurrentGeneration.Optimize(Solver);
-
-        var topMember = CurrentGeneration.GetBestMember();
-
-        await CurrentGeneration.Speciate(Settings.SpeciesDistance, EvolutionEnvironment);
-        
-        if (Settings.DynamicDistance)
-        {
-            if (CurrentGeneration.Species.Count < Settings.SpeciesTarget)
-            {
-                Settings.SpeciesDistance -= .1;
-            }
-            else if (CurrentGeneration.Species.Count > Settings.SpeciesTarget)
-            {
-                Settings.SpeciesDistance += .1;
-            }
-
-            if (Settings.SpeciesDistance < .01)
-            {
-                Settings.SpeciesDistance = .01;
-            }
-        }
-
-        if (GenerationsUnchanged >= Settings.StagnationLimit)
-        {
-            CurrentGeneration.CleanPopulation(Settings.CleanPct);
-            GenerationsUnchanged = 0;
-        }
-        else if (Math.Abs(PreviousFitness - topMember.Fitness) < Tolerance)
-        {
-            GenerationsUnchanged++;
-        }
-        else
-        {
-            GenerationsUnchanged = 0;
-        }
-        
-        PreviousFitness = topMember.Fitness;
-
-        CurrentGeneration = await CurrentGeneration.CreateNextGeneration(Settings, EvolutionEnvironment, SurvivorPicker, ParentPicker);
-
-        return topMember;
-    }
-    
 }

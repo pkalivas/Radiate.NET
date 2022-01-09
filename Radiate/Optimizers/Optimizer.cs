@@ -15,7 +15,7 @@ public class Optimizer<T>
     private readonly LossFunction _lossFunction;
     private readonly TensorTrainSet _tensorTrainSet;
     private readonly IEnumerable<ITrainingCallback> _callbacks;
-
+    
     public Optimizer(T optimizer, TensorTrainSet tensorTrainSet, IEnumerable<ITrainingCallback> callbacks)
         : this(optimizer, tensorTrainSet, Loss.Difference, callbacks) { }
 
@@ -32,66 +32,17 @@ public class Optimizer<T>
         _lossFunction = lossFunction;
         _callbacks = callbacks;
     }
-
-    public T Model => _optimizer;
-
+    
     public async Task<T> Train() => await Train(_ => true);
 
-    public async Task<T> Train(Func<Epoch, bool> trainFunc)
-    {
-        if (_optimizer is IPopulation population)
-        {
-            await population.Evolve(trainFunc);
-        }
-        
-        if (_optimizer is IUnsupervised unsupervised)
-        {
-            await TrainUnsupervised(unsupervised, trainFunc);
-        }
-        
-        if (_optimizer is ISupervised supervised)
-        {
-            await TrainSupervised(supervised, trainFunc);
-        }
-
-        return _optimizer;
-    }
-
-    private async Task TrainUnsupervised(IUnsupervised unsupervised, Func<Epoch, bool> trainFunc)
-    {
-        var trainSession = new UnsupervisedTrainingSession(unsupervised, _callbacks);
-        var data = _tensorTrainSet.TrainingFeatureInputs
-            .SelectMany(batch => batch.Features.Select(row => row))
-            .ToArray();
-
-        while (true)
-        {
-            var epoch = trainSession.Fit(data);
-
-            if (trainFunc(epoch))
-            {
-                break;
-            }
-        }
-
-        await trainSession.CompleteTraining<T>(_lossFunction);
-    }
+    public async Task<T> Train(Func<Epoch, bool> trainFunc) =>
+        await GetTrainingSession().Train<T>(_tensorTrainSet, _lossFunction, trainFunc);
     
-    private async Task TrainSupervised(ISupervised supervisedModel, Func<Epoch, bool> trainFunc)
+    private TrainingSession GetTrainingSession() => _optimizer switch
     {
-        var trainSession = new SupervisedTrainingSession(supervisedModel, _callbacks);
-        var batches = _tensorTrainSet.TrainingInputs;
-        
-        while (true)
-        {
-            var epoch = trainSession.Fit(batches, _lossFunction);
-
-            if (trainFunc(epoch))
-            {
-                break;
-            }
-        }
-
-        await trainSession.CompleteTraining<T>(_lossFunction);
-    }
+        IPopulation population => new EvolutionTrainingSession(population, _callbacks),
+        IUnsupervised unsupervised => new UnsupervisedTrainingSession(unsupervised, _callbacks),
+        ISupervised supervised => new SupervisedTrainingSession(supervised, _callbacks),
+        _ => throw new Exception("Cannot resolve training session.")
+    };
 }

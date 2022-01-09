@@ -16,7 +16,26 @@ public class SupervisedTrainingSession : TrainingSession
         _supervisedModel = supervisedModel;
     }
 
-    public Epoch Fit(List<Batch> batches, LossFunction lossFunction)
+    public override async Task<T> Train<T>(TensorTrainSet trainingData, LossFunction lossFunction, Func<Epoch, bool> trainFunc)
+    {
+        var batches = trainingData.TrainingInputs;
+        
+        while (true)
+        {
+            var epoch = Fit(batches, lossFunction);
+
+            if (trainFunc(epoch))
+            {
+                break;
+            }
+        }
+
+        await CompleteTraining(_supervisedModel, lossFunction);
+
+        return (T) _supervisedModel;
+    }
+
+    private Epoch Fit(List<Batch> batches, LossFunction lossFunction)
     {
         foreach (var callback in GetCallbacks<IEpochStartedCallback>())
         {
@@ -51,17 +70,6 @@ public class SupervisedTrainingSession : TrainingSession
         return epoch;
     }
 
-    public async Task CompleteTraining<T>(LossFunction lossFunction)
-    {
-        if (_supervisedModel is T model)
-        {
-            foreach (var callback in GetCallbacks<ITrainingCompletedCallback>())
-            {
-                await callback.CompleteTraining(model, Epochs, lossFunction);
-            }    
-        }
-    }
-
     private List<(Prediction prediction, Tensor target)> FeedBatch(Batch data)
     {
         var (inputs, answers) = data;
@@ -77,6 +85,4 @@ public class SupervisedTrainingSession : TrainingSession
 
         return result;
     }
-
-
 }

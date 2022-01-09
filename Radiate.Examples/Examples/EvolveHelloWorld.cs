@@ -1,5 +1,4 @@
-﻿using Radiate.Data.Utils;
-using Radiate.Optimizers;
+﻿using Radiate.Optimizers;
 using Radiate.Optimizers.Evolution;
 using Radiate.Optimizers.Evolution.Population;
 
@@ -8,7 +7,7 @@ namespace Radiate.Examples.Examples;
 public class EvolveHelloWorld : IExample
 {
 
-    private static char[] Alphabet = new char[29] {
+    private static readonly char[] Alphabet = new char[29] {
         '!', ' ', 'a', 'b', 'c', 'd', 'e',
         'f', 'g', 'h', 'i', 'j', 'k', 'l',
         'm', 'n', 'o', 'p', 'q', 'r', 's', 
@@ -20,18 +19,13 @@ public class EvolveHelloWorld : IExample
     {
         const int evolutionEpochs = 500;
         const int populationSize = 100;
-        var target = new char[12] { 'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '!'};
+        var target = new[] { 'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '!'};
 
-        var worlds = new List<HelloWorld>();
-        foreach (var _ in Enumerable.Range(0, populationSize))
-        {
-            worlds.Add(new HelloWorld());
-        }
+        var worlds = Enumerable.Range(0, populationSize).Select(_ => new HelloWorld()).ToList();
 
         var population = new Population<HelloWorld, BaseEvolutionEnvironment>(worlds)
             .Configure(settings =>
             {
-                settings.Size = populationSize;
                 settings.DynamicDistance = true;
                 settings.SpeciesTarget = 5;
                 settings.SpeciesDistance = .5;
@@ -44,9 +38,9 @@ public class EvolveHelloWorld : IExample
                     .Sum(points => points.First == points.Second ? 1.0f : 0.0f));
 
         var optimizer = new Optimizer<Population<HelloWorld, BaseEvolutionEnvironment>>(population);
-        await optimizer.Train(epoch => epoch.Index == evolutionEpochs || epoch.Fitness == 12);
+        var model = await optimizer.Train(epoch => epoch.Index == evolutionEpochs || epoch.Fitness == 12);
 
-        var best = optimizer.Model.Best;
+        var best = model.Best;
         Console.WriteLine($"\nFinal Result: {best.Print()}");
     }
     
@@ -65,9 +59,9 @@ public class EvolveHelloWorld : IExample
                 .ToArray();
         }
     
-        public string Print() => String.Join("", Chars);
+        public string Print() => string.Join("", Chars);
     
-        public override async Task<T> Crossover<T, TE>(T other, TE environment, double crossoverRate)        
+        public override Task<T> Crossover<T, TE>(T other, TE environment, double crossoverRate)        
         {
             var child = new HelloWorld();
             var secondParent = other as HelloWorld;
@@ -93,10 +87,10 @@ public class EvolveHelloWorld : IExample
                 child.Chars = newData;
             }
 
-            return child as T;
+            return Task.FromResult(child as T);
         }
     
-        public override async Task<double> Distance<T, TE>(T other, TE environment)
+        public override Task<double> Distance<T, TE>(T other, TE environment)
         {
             var secondParent = other as HelloWorld;
             var total = 0.0;
@@ -105,7 +99,7 @@ public class EvolveHelloWorld : IExample
                 total += pOne == pTwo ? 1 : 0;
             }
 
-            return Chars.Length / total;
+            return Task.FromResult(Chars.Length / total);
         }
         
         public override T CloneGenome<T>()

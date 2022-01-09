@@ -188,10 +188,6 @@ public class DecisionTree
     {
         var featureRows = indexes.Select(features.Row).ToArray();
 
-        if (featureRows.Length == 0)
-        {
-            
-        }
         var newFeatures = Tensor.Stack(featureRows, Axis.Zero);
         var newTargets = indexes.Select(idx => targets[idx]).ToTensor();
         

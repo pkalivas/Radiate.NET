@@ -18,16 +18,11 @@ public class EvolveNEAT : IExample
         
         var (inputs, answers) = await new XOR().GetDataSet();
 
-        var networks = new List<Neat>();
-        foreach (var _ in Enumerable.Range(0, populationSize))
-        {
-            networks.Add(new Neat(2, 1, Activation.ExpSigmoid));
-        }
+        var networks = Enumerable.Range(0, populationSize).Select(_ => new Neat(2, 1, Activation.ExpSigmoid)).ToList();
 
         var population = new Population<Neat, NeatEnvironment>(networks)
             .Configure(settings =>
             {
-                settings.Size = populationSize;
                 settings.DynamicDistance = true;
                 settings.SpeciesTarget = 5;
                 settings.SpeciesDistance = .5;
@@ -65,15 +60,15 @@ public class EvolveNEAT : IExample
             });
 
         var optimizer = new Optimizer<Population<Neat, NeatEnvironment>>(population);
-        await optimizer.Train(epoch =>
+        var member = (await optimizer.Train(epoch =>
         {
-            Console.WriteLine($"{epoch.Fitness}");
+            Console.Write($"\r[{epoch.Index}] {epoch.Fitness}");
             return epoch.Index == maxEpochs;
-        });
+        })).Best;
         
-        var member = optimizer.Model.Best;
         member.ResetGenome();
-        
+
+        Console.WriteLine();
         foreach (var (point, idx) in inputs.Select((val, idx) => (val, idx)))
         {
             var output = member.Forward(point);

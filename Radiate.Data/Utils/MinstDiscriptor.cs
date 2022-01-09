@@ -8,8 +8,8 @@ public static class MinstDiscriptor
         Console.WriteLine($"{string.Join("-", Enumerable.Range(0, 50).Select(_ => ""))}");
         Console.WriteLine($"Total data points: {inputs.Count}");
         Console.WriteLine($"Label occurances:");
-
-        foreach (var group in features.GroupBy(val => val.ToList().IndexOf(val.Max())).OrderBy(val => val.Key))
+        
+        foreach (var group in features.GroupBy(val => val[0]).OrderBy(val => val.Key))
         {
             Console.WriteLine($"\t{group.Key} occurs {group.ToList().Count} times.");
         }

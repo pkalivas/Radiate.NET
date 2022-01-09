@@ -17,7 +17,6 @@ public class Generation<T, TE>
         Species = new List<Niche>();
     }
 
-
     public async Task Speciate(double distance, EvolutionEnvironment settings)
     {
         var retainedSpecies = new HashSet<Guid>();
@@ -60,8 +59,26 @@ public class Generation<T, TE>
             species.CalcTotalAdjustedFitness();
         }
     }
+    
+    public Member<T> Step(Solve<T> problem)
+    {
+        var newMembers = new List<(Guid memberId, float memberFitness)>(Members.Count);
+        Parallel.ForEach(Members.Keys, member =>
+        {
+            newMembers.Add((member, problem(Members[member].Model)));
+        });
+        
+        foreach (var (key, val) in newMembers)
+        {
+            if (Members.ContainsKey(key))
+            {
+                Members[key].Fitness = val;
+            }
+        }
 
-
+        return GetBestMember();
+    }
+    
     public async Task<Generation<T, TE>> CreateNextGeneration(
         PopulationSettings popSettings,
         EvolutionEnvironment envSettings, 
@@ -77,25 +94,26 @@ public class Generation<T, TE>
             })
             .ToDictionary(key => key.memberId, val => val.member);
 
-        foreach (var batch in BatchSizes(Members.Keys.Count - newMembers.Count))
+        var childNum = popSettings.Size - newMembers.Count;
+        var childTasks = new List<Task<T>>(childNum);
+        Parallel.For(0, childNum, i =>
         {
-            var childTasks = batch.Select(_ => Task.Run(async () =>
-            {
-                var (parentOneId, parentTwoId) = parentPicker(popSettings.InbreedRate, Species);
-                var parentOne = Members[parentOneId];
-                var parentTwo = Members[parentTwoId];
+            var (parentOneId, parentTwoId) = parentPicker(popSettings.InbreedRate, Species);
+            var parentOne = Members[parentOneId];
+            var parentTwo = Members[parentTwoId];
 
-                return parentOne.Fitness > parentTwo.Fitness 
-                    ? await parentOne.Model.Crossover(parentTwo.Model, envSettings, popSettings.CrossoverRate) 
-                    : await parentTwo.Model.Crossover(parentOne.Model, envSettings, popSettings.CrossoverRate);
-            }));
+            var newGenomeTask = parentOne.Fitness > parentTwo.Fitness 
+                ? parentOne.Model.Crossover(parentTwo.Model, envSettings, popSettings.CrossoverRate) 
+                : parentTwo.Model.Crossover(parentOne.Model, envSettings, popSettings.CrossoverRate);
+            
+            childTasks.Add(newGenomeTask);
+        });
 
-            foreach (var newMember in await Task.WhenAll(childTasks))
-            {
-                newMembers[Guid.NewGuid()] = new Member<T> {Fitness = 0, Model = newMember};
-            }
+        foreach (var child in await Task.WhenAll(childTasks))
+        {
+            newMembers[Guid.NewGuid()] = new Member<T> { Fitness = 0, Model = child };
         }
-
+        
         Species = Species.Select(niche => niche.Reset()).ToList();
 
         return new Generation<T, TE>
@@ -107,25 +125,6 @@ public class Generation<T, TE>
                 .ToDictionary(key => key.Mascot, val => val.Item2)
         };
     }
-
-
-    public async Task Optimize(Solve<T> problem)
-    {
-        foreach (var batch in BatchMembers(Members.Keys.ToList()))
-        {
-            var fitnessTasks = batch.Select(member => Task.Run(() => (
-                Id: member,
-                Fitness: problem(Members[member].Model)
-            )));
-
-            foreach (var (id, fitness) in (await Task.WhenAll(fitnessTasks)))
-            {
-                Members[id].Fitness = fitness;
-            };
-        }
-
-    }
-
 
     public void CleanPopulation(double pct)
     {
@@ -145,38 +144,7 @@ public class Generation<T, TE>
         }
     }
 
-
     public Member<T> GetBestMember() => 
         Members.Values
             .Aggregate(Members.Values.First(), (best, current) => current.Fitness > best.Fitness ? current : best);
-    
-
-
-    private static IEnumerable<List<Guid>> BatchMembers(List<Guid> memberIds)
-    {
-        var batchSize = Environment.ProcessorCount;
-        var batchCounter = 0;
-
-        while (batchCounter < memberIds.Count)
-        {
-            yield return memberIds.Skip(batchCounter).Take(batchSize).ToList();
-            batchCounter += batchSize;
-        }
-    }
-
-    private static IEnumerable<IEnumerable<int>> BatchSizes(int size)
-    {
-        var batchSize = Environment.ProcessorCount;
-        var batchCounter = 0;
-
-        while (batchCounter < size)
-        {
-            yield return batchCounter + batchSize > size 
-                ? Enumerable.Range(0, size - batchCounter)
-                : Enumerable.Range(0, batchSize);
-            batchCounter += batchSize;
-        }
-    }
-
-
 }

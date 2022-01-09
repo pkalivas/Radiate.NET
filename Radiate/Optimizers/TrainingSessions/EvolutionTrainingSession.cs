@@ -2,51 +2,48 @@
 using Radiate.Domain.Loss;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
-using Radiate.Optimizers.Unsupervised;
+using Radiate.Optimizers.Evolution;
 
 namespace Radiate.Optimizers.TrainingSessions;
 
-public class UnsupervisedTrainingSession : TrainingSession
+public class EvolutionTrainingSession : TrainingSession
 {
-    private readonly IUnsupervised _unsupervisedModel;
+    private readonly IPopulation _population;
 
-    public UnsupervisedTrainingSession(IUnsupervised unsupervised, IEnumerable<ITrainingCallback> callbacks) : base(callbacks)
+    public EvolutionTrainingSession(IPopulation population, IEnumerable<ITrainingCallback> callbacks) : base(callbacks)
     {
-        _unsupervisedModel = unsupervised;
+        _population = population;
     }
 
     public override async Task<T> Train<T>(TensorTrainSet trainingData, LossFunction lossFunction,
         Func<Epoch, bool> trainFunc)
     {
-        var data = trainingData.TrainingFeatureInputs
-            .SelectMany(batch => batch.Features.Select(row => row))
-            .ToArray();
-
         while (true)
         {
-            var epoch = Fit(data);
+            var epoch = await Fit();
 
             if (trainFunc(epoch))
             {
                 break;
             }
         }
+        
+        await CompleteTraining(_population, lossFunction);
 
-        await CompleteTraining(_unsupervisedModel, lossFunction);
-
-        return (T)_unsupervisedModel;
+        return (T)_population;
     }
 
 
-    private Epoch Fit(Tensor[] inputs)
+    private async Task<Epoch> Fit()
     {
         foreach (var callback in GetCallbacks<IEpochStartedCallback>())
         {
             callback.EpochStarted();
         }
-
-        var loss = _unsupervisedModel.Step(inputs, Epochs.Count);
-        var epoch = new Epoch(Epochs.Count + 1, loss);
+        
+        var fitness = await _population.Step();
+        var epoch = new Epoch(Epochs.Count + 1, 0f, 0f, 0f, 0f, fitness);
+        
         Epochs.Add(epoch);
         
         foreach (var callback in GetCallbacks<IEpochCompletedCallback>())
@@ -56,4 +53,5 @@ public class UnsupervisedTrainingSession : TrainingSession
 
         return epoch;
     }
+    
 }
