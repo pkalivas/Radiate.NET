@@ -1,5 +1,4 @@
 ﻿using Radiate.Data;
-using Radiate.Data.Utils;
 using Radiate.Domain.Activation;
 using Radiate.Domain.Callbacks;
 using Radiate.Domain.Callbacks.Interfaces;
@@ -32,7 +31,7 @@ public class ConvNetMinst : IExample
             .Split();
         
         var neuralNetwork = new MultiLayerPerceptron()
-            .AddLayer(new ConvInfo(64, 3))
+            .AddLayer(new ConvInfo(16, 3))
             .AddLayer(new MaxPoolInfo(2))
             .AddLayer(new FlattenInfo())
             .AddLayer(new DenseInfo(64, Activation.Sigmoid))
