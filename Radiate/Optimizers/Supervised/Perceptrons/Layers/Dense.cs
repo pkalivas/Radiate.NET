@@ -116,7 +116,7 @@ public class Dense : Layer
         Dense = new DenseWrap
         {
             Shape = Shape,
-            Activation = _activation.GetType(),
+            Activation = _activation.ActivationType(),
             Weights = _weights,
             WeightGradients = _weightGradients,
             Bias = _bias,

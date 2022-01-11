@@ -15,7 +15,7 @@ public class ExpSigmoid : IActivationFunction
 
     public float Deactivate(float value) => DCalc(value);
 
-    public Activation GetType() => Activation.ExpSigmoid;
+    public Activation ActivationType() => Activation.ExpSigmoid;
 
 
     private static float Calc(float val) => 1f / (1f + (float)Math.Exp(-val * 4.9f));

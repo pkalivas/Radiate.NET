@@ -12,6 +12,6 @@ public class Linear : IActivationFunction
 
     public float Deactivate(float value) => 1f;
 
-    public Activation GetType() => Activation.Linear;
+    public Activation ActivationType() => Activation.Linear;
 
 }

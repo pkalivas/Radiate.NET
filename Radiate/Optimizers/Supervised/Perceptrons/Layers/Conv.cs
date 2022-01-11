@@ -123,7 +123,7 @@ public class Conv : Layer
         {
             Shape = Shape,
             Kernel = _kernel,
-            Activation = _activation.GetType(),
+            Activation = _activation.ActivationType(),
             Stride = _sliceGenerator.Stride,
             Filters = _filters,
             FilterGradients = _filterGradients,

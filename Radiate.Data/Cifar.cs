@@ -14,7 +14,7 @@ public class Cifar : IDataSet
         _featureLimit = featureLimit;
     }
     
-    public async Task<(List<float[]> inputs, List<float[]> targets)> GetDataSet()
+    public Task<(List<float[]> inputs, List<float[]> targets)> GetDataSet()
     {
         var dataLocation = Path.Combine(Environment.CurrentDirectory, "DataSets", "cifar", "images.zip");
 
@@ -34,6 +34,6 @@ public class Cifar : IDataSet
             .Select(diget => new List<float> { diget.Label }.ToArray())
             .ToList();
 
-        return (rawInputs, rawLabels);
+        return Task.FromResult((rawInputs, rawLabels));
     }
 }

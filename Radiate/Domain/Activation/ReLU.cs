@@ -12,6 +12,6 @@ public class ReLU : IActivationFunction
 
     public float Deactivate(float value) => value > 0 ? 1f : 0f;
 
-    public Activation GetType() => Activation.ReLU;
+    public Activation ActivationType() => Activation.ReLU;
 
 }

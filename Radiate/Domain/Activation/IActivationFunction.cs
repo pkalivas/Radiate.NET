@@ -8,5 +8,5 @@ public interface IActivationFunction
     Tensor Deactivate(Tensor values);
     float Activate(float value);
     float Deactivate(float value);
-    Activation GetType();
+    Activation ActivationType();
 }

@@ -45,6 +45,6 @@ public class SoftMax : IActivationFunction
 
     public float Deactivate(float value) => throw new Exception($"Cannot take dSoftmax of single value");
 
-    public Activation GetType() => Activation.SoftMax;
+    public Activation ActivationType() => Activation.SoftMax;
 
 }

@@ -107,8 +107,8 @@ public class LSTM : Layer
         Lstm = new LSTMWrap
         {
             Shape = Shape,
-            CellActivation = _cellActivation.GetType(),
-            HiddenActivation = _hiddenActivation.GetType(),
+            CellActivation = _cellActivation.ActivationType(),
+            HiddenActivation = _hiddenActivation.ActivationType(),
             InputGate = _inputGate.Save().Dense,
             ForgetGate = _forgetGate.Save().Dense,
             GateGate = _gateGate.Save().Dense,
