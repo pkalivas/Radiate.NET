@@ -11,6 +11,7 @@ public class NeatEnvironment : EvolutionEnvironment
     public float NewEdgeRate { get; set; }
     public float EditWeights { get; set; }
     public float WeightPerturb { get; set; }
+    public float RecurrentNeuronRate { get; set; }
     public List<Activation> ActivationFunctions { get; set; }
 
     public override void Reset() { }

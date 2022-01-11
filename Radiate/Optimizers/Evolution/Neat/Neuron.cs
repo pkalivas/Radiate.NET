@@ -6,28 +6,32 @@ public class Neuron
 {
     public NeuronId Id { get; set; }
     public NeuronType NeuronType { get; set; }
+    public NeuronDirection Direction { get; set; }
     public float ActivatedValue { get; set; }
     public float DeactivatedValue { get; set; }
     public float CurrentState { get; set; }
     public float Error { get; set; }
     public float Bias { get; set; }
+    public float PreviousState { get; set; }
     private List<EdgeId> Outgoing { get; set; }
     private List<NeuronLink> Incoming { get; set; }
     private IActivationFunction Activation { get; set; }
 
     public Neuron() { }
 
-    public Neuron(NeuronId id, NeuronType neuronType, Activation activation)
+    public Neuron(NeuronId id, NeuronType neuronType, Activation activation, NeuronDirection direction)
     {
         Id = id;
         Outgoing = new List<EdgeId>();
         Incoming = new List<NeuronLink>();
         Activation = ActivationFunctionFactory.Get(activation);
+        Direction = direction;
         NeuronType = neuronType;
         ActivatedValue = 0;
         DeactivatedValue = 0;
         CurrentState = 0;
         Error = 0;
+        PreviousState = 0;
         Bias = (float) new Random().NextDouble();
     }
 
@@ -73,8 +77,19 @@ public class Neuron
 
     public void Activate()
     {
-        ActivatedValue = Activation.Activate(CurrentState);
-        DeactivatedValue = Activation.Deactivate(CurrentState);
+        if (Direction == NeuronDirection.Forward)
+        {
+            ActivatedValue = Activation.Activate(CurrentState);
+            DeactivatedValue = Activation.Deactivate(CurrentState);
+        }
+
+        if (Direction == NeuronDirection.Recurrent)
+        {
+            ActivatedValue = Activation.Activate(CurrentState + PreviousState);
+            DeactivatedValue = Activation.Deactivate(CurrentState + PreviousState);
+        }
+
+        PreviousState = CurrentState;
     }
 
     public void Reset()
@@ -106,6 +121,8 @@ public class Neuron
         NeuronType = NeuronType,
         ActivatedValue = 0,
         DeactivatedValue = 0,
+        PreviousState = 0,
+        Direction = Direction,
         CurrentState = 0,
         Error = 0,
         Bias = Bias

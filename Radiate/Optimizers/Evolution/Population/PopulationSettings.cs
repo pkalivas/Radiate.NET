@@ -16,5 +16,4 @@ public class PopulationSettings
     public int StagnationLimit { get; set; } = 15;
     public double CleanPct { get; set; } = .9;
     public int SpeciesTarget { get; set; } = 5;
-    public bool UseLogger { get; set; } = false;
 }

@@ -1,13 +1,12 @@
 ﻿using System.Diagnostics;
 using Radiate.Data;
-using Radiate.Data.Utils;
 using Radiate.Domain.Activation;
 using Radiate.Domain.Callbacks;
+using Radiate.Domain.Callbacks.Interfaces;
 using Radiate.Domain.Extensions;
 using Radiate.Domain.Gradients;
 using Radiate.Domain.Loss;
 using Radiate.Domain.Tensors;
-using Radiate.Examples.Description;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
@@ -31,16 +30,13 @@ public class TrainLSTM : IExample
             .AddLayer(new LSTMInfo(16, 16))
             .AddLayer(new DenseInfo(1, Activation.Sigmoid));
 
-        var optimizer = new Optimizer<MultiLayerPerceptron>(mlp, pair, Loss.MSE, new []
+        var optimizer = new Optimizer<MultiLayerPerceptron>(mlp, pair, Loss.MSE, new ITrainingCompletedCallback[]
         {
-            new VerboseTrainingCallback(pair, trainEpochs, false)
+            new VerboseTrainingCallback(pair, trainEpochs, false),
         });
         
         var lstm = await optimizer.Train(epoch => epoch.Index == trainEpochs);
         
-        s.Stop();
-        Console.WriteLine($"\n{s.ElapsedMilliseconds}");
-
         foreach (var (ins, outs) in pair.TrainingInputs)
         {
             foreach (var (i, j) in ins.Zip(outs))

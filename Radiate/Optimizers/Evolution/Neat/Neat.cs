@@ -30,15 +30,15 @@ public class Neat : Genome
 
         for (var i = 0; i < inputSize; i++)
         {
-            Inputs[i] = MakeNode(NeuronType.Input, activation);
+            Inputs[i] = MakeNode(NeuronType.Input, activation, NeuronDirection.Forward);
         }
 
         for (var i = 0; i < outputSize; i++)
         {
-            Outputs[i] = MakeNode(NeuronType.Output, activation);
+            Outputs[i] = MakeNode(NeuronType.Output, activation, NeuronDirection.Forward);
         }
 
-        var random = RandomGenerator.Next;
+        var random = new Random();
         foreach (var input in Inputs)
         {
             foreach (var output in Outputs)
@@ -57,11 +57,11 @@ public class Neat : Genome
 
     public bool HasTracer() => Tracer is not null;
     
-    private void AddNode(Activation activation)
+    private void AddNode(Activation activation, NeuronDirection direction)
     {
         FastMode = false;
 
-        var newNodeId = MakeNode(NeuronType.Hidden, activation);
+        var newNodeId = MakeNode(NeuronType.Hidden, activation, direction);
         var currentEdge = Edges[new Random().Next(Edges.Count)];
 
         MakeEdge(currentEdge.Src, newNodeId, 1.0f);
@@ -82,10 +82,10 @@ public class Neat : Genome
         }
     }
 
-    private NeuronId MakeNode(NeuronType neuronType, Activation activation)
+    private NeuronId MakeNode(NeuronType neuronType, Activation activation, NeuronDirection direction)
     {
         var nodeId = new NeuronId { Index = Nodes.Count };
-        Nodes.Add(new Neuron(nodeId, neuronType, activation));
+        Nodes.Add(new Neuron(nodeId, neuronType, activation, direction));
         return nodeId;
     }
 
@@ -389,7 +389,14 @@ public class Neat : Genome
             if (random.NextDouble() < neatEnv.NewNodeRate)
             {
                 var actFunction = neatEnv.ActivationFunctions[random.Next(neatEnv.ActivationFunctions.Count)];
-                child.AddNode(actFunction);
+                if (random.NextDouble() < neatEnv.RecurrentNeuronRate)
+                {
+                    child.AddNode(actFunction, NeuronDirection.Recurrent);
+                }
+                else
+                {
+                    child.AddNode(actFunction, NeuronDirection.Forward);
+                }
             }
 
             if (random.NextDouble() < neatEnv.NewEdgeRate)

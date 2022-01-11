@@ -158,15 +158,14 @@ public class LSTM : Layer
 
 public class LSTMCell
 {
-    public Tensor InputOut { get; set; }
-    public Tensor ForgetOut { get; set; }
-    public Tensor GateOut { get; set; }
-    public Tensor OutputOut { get; set; }
-    public Tensor LayerInput { get; set; }
-    public Tensor Hidden { get; set; }
-    public Tensor Cell { get; set; }
+    public Tensor InputOut { get; init; }
+    public Tensor ForgetOut { get; init; }
+    public Tensor GateOut { get; init; }
+    public Tensor OutputOut { get; init; }
+    public Tensor Hidden { get; init; }
+    public Tensor Cell { get; init; }
     public Tensor PreviousHidden { get; set; }
-    public Tensor PreviousCell { get; set; }
+    public Tensor PreviousCell { get; init; }
     public Tensor HiddenGradient { get; set; }
     public Tensor CellGradient { get; set; }
 

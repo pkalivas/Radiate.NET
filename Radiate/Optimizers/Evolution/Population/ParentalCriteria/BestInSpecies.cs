@@ -7,7 +7,7 @@ public class BestInSpecies : IParentPicker
 {
     public (Guid parentOne, Guid parentTwo) Pick<T>(double inbreedRate, List<Niche> species)
     {
-        var random = RandomGenerator.Next;
+        var random = new Random();
 
         var speciesOne = species[random.Next(species.Count)];
         var speciesTwo = species[random.Next(species.Count)];

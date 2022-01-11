@@ -7,7 +7,7 @@ public class BiasedRandom : IParentPicker
 {
     public (Guid parentOne, Guid parentTwo) Pick<T>(double inbreedRate, List<Niche> species)
     {
-        var random = RandomGenerator.Next;
+        var random = new Random();
 
         Guid parentOne;
         Guid parentTwo;
