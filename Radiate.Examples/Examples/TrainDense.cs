@@ -1,8 +1,12 @@
 ﻿using Radiate.Data;
 using Radiate.Domain.Activation;
+using Radiate.Domain.Callbacks;
+using Radiate.Domain.Callbacks.Interfaces;
 using Radiate.Domain.Gradients;
 using Radiate.Domain.Loss;
 using Radiate.Domain.Tensors;
+using Radiate.Domain.Tensors.Enums;
+using Radiate.Examples.Callbacks;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
@@ -13,23 +17,26 @@ public class TrainDense : IExample
 {
     public async Task Run()
     {
-        const int maxEpoch = 1000;
+        const int maxEpoch = 100;
         
-        var (inputs, targets) = await new XOR().GetDataSet();
+        var (inputs, targets) = await new Circles().GetDataSet();
 
-        var pair = new TensorTrainSet(inputs, targets).Batch(1);
+        var pair = new TensorTrainSet(inputs, targets)
+            .TransformTargets(Norm.OHE)
+            .TransformFeatures(Norm.Standardize)
+            .Shuffle()
+            .Split();
         
         var mlp = new MultiLayerPerceptron(new GradientInfo { Gradient = Gradient.SGD })
             .AddLayer(new DenseInfo(32, Activation.ReLU))
-            .AddLayer(new DenseInfo(1, Activation.Sigmoid));
+            .AddLayer(new DenseInfo(pair.OutputCategories, Activation.Sigmoid));
 
-        var optimizer = new Optimizer<MultiLayerPerceptron>(mlp, pair, Loss.MSE);
-        var model = await optimizer.Train(epoch => epoch.Index == maxEpoch);
-        
-        foreach (var (ins, outs) in pair.TrainingInputs)
+        var optimizer = new Optimizer<MultiLayerPerceptron>(mlp, pair, Loss.MSE, new List<ITrainingCallback>()
         {
-            var pred = model.Predict(ins.First());
-            Console.WriteLine($"Answer {outs[0][0]} Confidence {pred.Confidence}");
-        }
+            new VerboseTrainingCallback(pair, maxEpoch, false),
+            new ConfusionMatrixCallback()
+        });
+        
+        await optimizer.Train(epoch => epoch.Index == maxEpoch);
     }
 }

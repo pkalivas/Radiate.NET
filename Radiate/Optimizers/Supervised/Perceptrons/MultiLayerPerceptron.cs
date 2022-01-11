@@ -1,6 +1,7 @@
 ﻿using Radiate.Domain.Activation;
 using Radiate.Domain.Gradients;
 using Radiate.Domain.Models;
+using Radiate.Domain.Models.Wraps;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
@@ -23,7 +24,7 @@ public class MultiLayerPerceptron : ISupervised
         _layers = new List<Layer>();
     }
     
-    public MultiLayerPerceptron(SupervisedWrap wrap)
+    public MultiLayerPerceptron(ModelWrap wrap)
     {
         _layerInfo = new List<LayerInfo>();
         _layers = wrap.MultiLayerPerceptronWrap.LayerWraps
@@ -78,9 +79,9 @@ public class MultiLayerPerceptron : ISupervised
         }
     }
 
-    public SupervisedWrap Save() => new()
+    public ModelWrap Save() => new()
     {
-        SupervisedType = SupervisedType.MultiLayerPerceptron,
+        ModelType = ModelType.MultiLayerPerceptron,
         MultiLayerPerceptronWrap = new()
         {
             LayerWraps = _layers.Select(layer => layer.Save()).ToList()

@@ -1,4 +1,5 @@
 ﻿using Radiate.Domain.Models;
+using Radiate.Domain.Models.Wraps;
 using Radiate.Domain.Records;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Layers;

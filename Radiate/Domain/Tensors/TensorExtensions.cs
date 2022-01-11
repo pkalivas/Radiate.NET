@@ -22,4 +22,26 @@ public static class TensorExtensions
 
         return result;
     }
+
+    public static string ConfusionMatrix(this Tensor one)
+    {
+        var shape = one.Shape;
+        var result = $"{"",13}" + string.Join($"| {"",5}", Enumerable.Range(0, shape.Width)) + "|\n";
+        var sep = string.Join("-", Enumerable.Range(0, result.Length).Select(_ => "")) + "\n";
+        result += sep;
+        for (var i = 0; i < shape.Height; i++)
+        {
+            result += $"{i,5} | ";
+            for (var j = 0; j < shape.Width; j++)
+            {
+                var val = one[i, j];
+                var dis = $"{val,5}";
+                result += $"{dis}   ";
+            }
+
+            result += "\n";
+        }
+
+        return result;
+    }
 }

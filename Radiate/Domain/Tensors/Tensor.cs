@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using Radiate.Domain.Extensions;
 using Radiate.Domain.Records;
+using Radiate.Domain.Tensors.Enums;
 
 namespace Radiate.Domain.Tensors;
 
@@ -162,7 +163,16 @@ public class Tensor : IEnumerable<float>
 
     public Tensor T() =>
         TensorOperations.Transpose(this);
+
+    public Tensor Sign() =>
+        TensorOperations.Sign(this);
     
+    public Tensor RadialBasis(float gamma) =>
+        TensorOperations.RadialBasis(this, gamma);
+
+    public Tensor Polynomial(float dim) =>
+        TensorOperations.Polynomial(this, dim);
+
     public Tensor Unique() => this.Distinct().ToTensor();
 
     public float Max() => TensorMath.Max(this);
@@ -173,6 +183,8 @@ public class Tensor : IEnumerable<float>
         TensorMath.PlaneDot(this, other, index);
     
     public void Add(Tensor other) => this.AddInPlace(other);
+
+    public void Subtract(Tensor other) => this.SubtractInPlace(other);
     
     public void Mul(float value) => this.MultiplyInPlace(value);
     
@@ -197,6 +209,22 @@ public class Tensor : IEnumerable<float>
         for (var i = 0; i < Shape.Height; i++)
         {
             if (this[i] > best)
+            {
+                idx = i;
+                best = this[i];
+            }
+        }
+
+        return idx;
+    }
+    
+    public int MinIdx()
+    {
+        var idx = 0;
+        var best = float.MaxValue;
+        for (var i = 0; i < Shape.Height; i++)
+        {
+            if (this[i] < best)
             {
                 idx = i;
                 best = this[i];
@@ -237,7 +265,7 @@ public class Tensor : IEnumerable<float>
     
     public static Tensor Apply(Tensor ten, Func<float, float> func) => 
         TensorOperations.Apply(ten, func);
-
+    
     private static Tensor Apply(Tensor one, Tensor two, Func<float, float, float> func) =>
         TensorOperations.Apply(one, two, func);
 

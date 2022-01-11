@@ -5,6 +5,8 @@ namespace Radiate.Domain.Tensors;
 
 public static class TensorOperations
 {
+    private const float Tolerance = 0.001f;
+
     public static Tensor Diagonal(Tensor values)
     {
         var result = new Tensor(values.Count(), values.Count());
@@ -70,7 +72,7 @@ public static class TensorOperations
     
     public static Tensor Random(int height, int width = 0, int depth = 0)
     {
-        var rand = new Random();
+        var rand = RandomGenerator.RandomGenerator.Next;
         var result = new Tensor(height, width, depth);
         var dimension = result.GetDimension();
 
@@ -173,6 +175,124 @@ public static class TensorOperations
 
         return result;
     }
+
+    public static Tensor Sign(Tensor one)
+    {
+        var (height, width, depth) = one.Shape;
+        var result = Tensor.Like(one.Shape);
+        var func = (float val) => val < 0
+            ? -1
+            : val == 0
+                ? 0
+                : 1;
+        
+        for (var j = 0; j < height; j++)
+            if (width > 0)
+                for (var k = 0; k < width; k++)
+                    if (depth > 0) 
+                        for (var l = 0; l < depth; l++)
+                            result[j, k, l] = func(one[j, k, l]);
+                    else
+                        result[j, k] = func(one[j, k]);
+            else
+                result[j] = func(one[j]);
+
+        return result;
+    }
+
+    public static Tensor RadialBasis(Tensor one, float gamma)
+    {
+        var gVal = gamma <= 0 ? 1f / one.Count() : gamma;
+        var newTensor = new Tensor(one.Shape.Height * one.Shape.Height);
+
+        for (var i = 0; i < one.Shape.Height; i++)
+        {
+            for (var j = 0; j < one.Shape.Height; j++)
+            {
+                if (i == j)
+                {
+                    newTensor[i * one.Shape.Height + j] += one[j];
+                }
+                else
+                {
+                    var diff = (float)Math.Pow(one[i] - one[j], 2);
+
+                    newTensor[i * one.Shape.Height + j] += (float)Math.Exp(-diff / (2f * (gVal * gVal)));    
+                }
+                   
+            }
+        }
+
+        return newTensor;
+    }
+
+    public static Tensor Polynomial(Tensor one, float dim)
+    {
+        var newTensor = new Tensor(one.Shape.Height * one.Shape.Height);
+        for (var i = 0; i < one.Shape.Height; i++)
+        {
+            for (var j = 0; j < one.Shape.Height; j++)
+            {
+                if (i == j)
+                {
+                    newTensor[i * one.Shape.Height + j] += one[j];
+                }
+                else
+                {
+                    var diff = one[i] * one[j];
+
+                    newTensor[i * one.Shape.Height + j] += 1f + (float)Math.Pow(diff, dim);    
+                }
+                
+            }
+        }
+
+        return newTensor;
+    }
+    
+    public static List<Tensor> Normalize(List<Tensor> data, NormalizeScalars scalars)
+    {
+        var (minLookup, maxLookup, _, _) = scalars;
+        
+        return data
+            .Select(row => row
+                .Select((feature, index) =>
+                {
+                    var min = minLookup[index];
+                    var max = maxLookup[index];
+
+                    var denominator = Math.Abs(min - max) < Tolerance ? 1 : max - min;
+                    return (feature / (min == 0 ? 1 : min)) / denominator;
+                })
+                .ToTensor())
+            .ToList();
+    }
+    
+    public static List<Tensor> Standardize(List<Tensor> data, NormalizeScalars scalars)
+    {
+        var (_, _, meanLookup, stdLookup) = scalars;
+        
+        return data
+            .Select(row => row
+                .Select((feature, index) => (feature - meanLookup[index]) / stdLookup[index])
+                .ToTensor())
+            .ToList();
+    }
+    
+    public static List<Tensor> OneHotEncode(List<Tensor> targets)
+    {
+        var targetCount = targets.SelectMany(row => row).Distinct().Count();
+        return targets
+            .Select(tar => Enumerable
+                .Range(0, targetCount)
+                .Select((_, index) => Math.Abs(index - tar.First()) < Tolerance ? 1f : 0.0f)
+                .ToTensor())
+            .ToList();
+    }
+
+    public static List<Tensor> ImageNormalize(List<Tensor> features) => 
+        features.Select(row => Tensor.Apply(row, val => val / 255f)).ToList();
+    
     
     public static Tensor Slice(Tensor one, int[] height, int[] width, int[] depth)
     {

@@ -2,4 +2,4 @@
 
 namespace Radiate.Domain.Records;
 
-public record TrainTestSplit(List<Tensor> TrainFeatures, List<Tensor> TrainTargets, List<Tensor> TestFeatures, List<Tensor> TestTargets);
+public record TrainTestSplit(List<Tensor> Features, List<Tensor> Targets);

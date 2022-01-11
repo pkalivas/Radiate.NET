@@ -1,4 +1,5 @@
-﻿using Radiate.Examples.Examples;
+﻿using Radiate.Domain.RandomGenerator;
+using Radiate.Examples.Examples;
 
 namespace Radiate.Examples;
 
@@ -6,15 +7,18 @@ class Program
 {
     static void Main(string[] args)
     {
+        RandomGenerator.Seed = 3;
+        
         var options = "\n[0] Stop\n" +
                       "[1] Evolve NEAT\n" +
                       "[2] Evolve Hello World\n" +
-                      "[3] Train MLP Dense\n" +
-                      "[4] Train MLP LSTM\n" +
-                      "[5] Boston Housing Regression\n" +
-                      "[6] Conv Net Mnist\n" +
-                      "[7] KMeans Cluster\n" + 
-                      "[8] RandomForest Cancer Classifier\n" + 
+                      "[3] Simple MLP\n" +
+                      "[4] LSTM\n" +
+                      "[5] Regression\n" +
+                      "[6] Conv Net\n" +
+                      "[7] KMeans\n" + 
+                      "[8] RandomForest\n" + 
+                      "[9] SupportVectorMachine\n" +
                       ":: ";
 
         while (true)
@@ -70,7 +74,12 @@ class Program
 
         if (choice == 8)
         {
-            await new RandomForestClassifier().Run();
+            await new RandomForestPredictor().Run();
+        }
+
+        if (choice == 9)
+        {
+            await new SVMPredictor().Run();
         }
     }
 }

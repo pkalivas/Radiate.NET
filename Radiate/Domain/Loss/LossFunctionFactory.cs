@@ -1,6 +1,11 @@
 ﻿
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
+using Radiate.Optimizers.Evolution;
+using Radiate.Optimizers.Supervised.Forest;
+using Radiate.Optimizers.Supervised.Perceptrons;
+using Radiate.Optimizers.Supervised.SVM;
+using Radiate.Optimizers.Unsupervised.Clustering;
 
 namespace Radiate.Domain.Loss;
 
@@ -13,6 +18,16 @@ public static class LossFunctionResolver
         Loss.Difference => new Difference().Calculate,
         Loss.MSE => new MeanSquaredError().Calculate,
         Loss.CrossEntropy => new CrossEntropy().Calculate,
+        Loss.Hinge => new Hinge().Calculate,
         _ => throw new Exception($"Loss {loss} is not implemented.")
     };
+
+    public static LossFunction Get<T>(T model) => model switch
+    {
+        MultiLayerPerceptron or RandomForest or KMeans => new Difference().Calculate,
+        SupportVectorMachine => new Hinge().Calculate,
+        IPopulation => new Difference().Calculate,
+        _ => throw new Exception("Model not implemented for loss function.")
+    };
+
 }

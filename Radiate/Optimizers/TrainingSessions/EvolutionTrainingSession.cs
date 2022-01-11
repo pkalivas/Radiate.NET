@@ -15,8 +15,7 @@ public class EvolutionTrainingSession : TrainingSession
         _population = population;
     }
 
-    public override async Task<T> Train<T>(TensorTrainSet trainingData, LossFunction lossFunction,
-        Func<Epoch, bool> trainFunc)
+    public override async Task<T> Train<T>(TensorTrainSet trainingData, LossFunction lossFunction, Func<Epoch, bool> trainFunc)
     {
         while (true)
         {
@@ -28,8 +27,6 @@ public class EvolutionTrainingSession : TrainingSession
             }
         }
         
-        await CompleteTraining(_population, lossFunction);
-
         return (T)_population;
     }
 

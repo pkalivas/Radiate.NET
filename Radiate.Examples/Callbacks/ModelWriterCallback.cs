@@ -3,6 +3,8 @@ using Newtonsoft.Json;
 using Radiate.Domain.Callbacks.Interfaces;
 using Radiate.Domain.Loss;
 using Radiate.Domain.Records;
+using Radiate.Domain.Tensors;
+using Radiate.Optimizers;
 using Radiate.Optimizers.Supervised;
 using Radiate.Optimizers.Unsupervised;
 
@@ -16,8 +18,8 @@ public class ModelWriterCallback : ITrainingCompletedCallback
     {
         _ext = ext;
     }
-    
-    public async Task CompleteTraining<T>(T model, List<Epoch> epochs, LossFunction _)
+
+    public async Task CompleteTraining<T>(Optimizer<T> optimizer, List<Epoch> epochs, TensorTrainSet _) where T : class
     {
         var directory = new DirectoryInfo(Directory.GetCurrentDirectory());
         while (directory != null && !directory.GetDirectories("Saves").Any())
@@ -25,18 +27,13 @@ public class ModelWriterCallback : ITrainingCompletedCallback
             directory = directory.Parent;
         }
 
-        var modelType = model.GetType().ToString().Split(".").Last();
+        var wrapped = optimizer.Save();
+        var modelType = wrapped.ModelWrap.ModelType.GetType().ToString().Split(".").Last();
         modelType += string.IsNullOrEmpty(_ext) ? "" : $"_{_ext}";
-        
+
         var filePath = Path.Combine(directory.FullName, "Saves", $"{modelType}.json");
 
-        var content = model switch
-        {
-            ISupervised supervised => JsonConvert.SerializeObject(supervised.Save()),
-            IUnsupervised unsupervised => JsonConvert.SerializeObject(unsupervised.Save()),
-            _ => throw new Exception("Cannot serialize model.")
-        };
-
+        var content = JsonConvert.SerializeObject(wrapped);
         await File.WriteAllTextAsync(filePath, content);
     }
 }

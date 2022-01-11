@@ -1,4 +1,5 @@
 ﻿using Radiate.Domain.Activation;
+using Radiate.Domain.RandomGenerator;
 using Radiate.Optimizers.Evolution.Population;
 
 namespace Radiate.Optimizers.Evolution.Neat;
@@ -37,7 +38,7 @@ public class Neat : Genome
             Outputs[i] = MakeNode(NeuronType.Output, activation);
         }
 
-        var random = new Random();
+        var random = RandomGenerator.Next;
         foreach (var input in Inputs)
         {
             foreach (var output in Outputs)

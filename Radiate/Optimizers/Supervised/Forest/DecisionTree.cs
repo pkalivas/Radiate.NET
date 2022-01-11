@@ -1,7 +1,9 @@
 ﻿using Radiate.Domain.Extensions;
-using Radiate.Domain.Models;
+using Radiate.Domain.Models.Wraps;
+using Radiate.Domain.RandomGenerator;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
+using Radiate.Domain.Tensors.Enums;
 using Radiate.Optimizers.Supervised.Forest.Info;
 
 namespace Radiate.Optimizers.Supervised.Forest;
@@ -10,7 +12,7 @@ public class DecisionTree
 {
     private const int MinSampleSplit = 2;
     
-    private readonly Random _random = new();
+    private readonly Random _random = RandomGenerator.Next;
     private readonly ForestInfo _info;
     private readonly TreeNode _root;
     

@@ -1,7 +1,9 @@
 ﻿using Radiate.Domain.Extensions;
-using Radiate.Domain.Models;
+using Radiate.Domain.Models.Wraps;
+using Radiate.Domain.RandomGenerator;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
+using Radiate.Domain.Tensors.Enums;
 using Radiate.Optimizers.Supervised.Forest.Info;
 
 namespace Radiate.Optimizers.Supervised.Forest;
@@ -19,7 +21,7 @@ public class RandomForest : ISupervised
         _trees = new DecisionTree[nTrees];
     }
 
-    public RandomForest(SupervisedWrap wrap)
+    public RandomForest(ModelWrap wrap)
     {
         var forest = wrap.RandomForestWrap;
         _nTrees = forest.NTrees;
@@ -64,9 +66,9 @@ public class RandomForest : ISupervised
         return new Prediction(new[] { confidence }.ToTensor(), classification, confidence);
     }
 
-    public SupervisedWrap Save() => new()
+    public ModelWrap Save() => new()
     {
-        SupervisedType = SupervisedType.RandomForest,
+        ModelType = ModelType.RandomForest,
         RandomForestWrap = new()
         {
             NTrees = _nTrees,
@@ -85,7 +87,7 @@ public class RandomForest : ISupervised
 
     private static (Tensor features, Tensor targets) BootstrapData(Tensor features, Tensor targets)
     {
-        var random = new Random();
+        var random = RandomGenerator.Next;
         var (height, _, _) = features.Shape;
 
         var newFeatures = new Tensor[height];

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Radiate.Domain.Activation;
 using Radiate.Domain.Models;
+using Radiate.Domain.Models.Wraps;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
 using Radiate.UnitTests.Utils;
 
@@ -45,7 +46,7 @@ public class SequentialTests
         var filePath = $"{Environment.CurrentDirectory}\\Data\\saves\\convnet.json";
         var contents = await File.ReadAllTextAsync(filePath);
         
-        var wrap = JsonConvert.DeserializeObject<SupervisedWrap>(contents);
+        var wrap = JsonConvert.DeserializeObject<ModelWrap>(contents);
         var network = new Optimizers.Supervised.Perceptrons.MultiLayerPerceptron(wrap);
 
         var forwardPass = network.PassForward(LayerUtils.NineNineThreeTensor, LayerUtils.NineNineThreeTensor);

@@ -1,11 +1,13 @@
 ﻿
+using Radiate.Domain.RandomGenerator;
+
 namespace Radiate.Optimizers.Evolution.Population.ParentalCriteria;
 
 public class BiasedRandom : IParentPicker
 {
     public (Guid parentOne, Guid parentTwo) Pick<T>(double inbreedRate, List<Niche> species)
     {
-        var random = new Random();
+        var random = RandomGenerator.Next;
 
         Guid parentOne;
         Guid parentTwo;

@@ -1,5 +1,7 @@
 ﻿using Radiate.Domain.Extensions;
 using Radiate.Domain.Models;
+using Radiate.Domain.Models.Wraps;
+using Radiate.Domain.RandomGenerator;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
 
@@ -7,7 +9,7 @@ namespace Radiate.Optimizers.Unsupervised.Clustering;
 
 public class KMeans : IUnsupervised
 {
-    private readonly Random _random = new();
+    private readonly Random _random = RandomGenerator.Next;
 
     private readonly int _kClusters;
     private readonly List<int>[] _clusters;
@@ -20,7 +22,7 @@ public class KMeans : IUnsupervised
         _centroids = new Tensor[kClusters];
     }
 
-    public KMeans(UnsupervisedWrap wrap)
+    public KMeans(ModelWrap wrap)
     {
         _kClusters = wrap.KMeansWrap.KClusters;
         _clusters = wrap.KMeansWrap.Clusters;
@@ -70,9 +72,9 @@ public class KMeans : IUnsupervised
         return new Prediction(result, label);
     }
 
-    public UnsupervisedWrap Save() => new()
+    public ModelWrap Save() => new()
     {
-        UnsupervisedType = UnsupervisedType.KMeans,
+        ModelType = ModelType.KMeans,
         KMeansWrap = new()
         {
             KClusters = _kClusters,

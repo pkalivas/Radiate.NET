@@ -17,6 +17,22 @@ public static class TensorMath
             else
                 one[j] += two[j];
     }
+
+    public static void SubtractInPlace(this Tensor one, Tensor two)
+    {
+        var (oHeight, oWidth, oDepth) = one.Shape;
+        
+        for (var j = 0; j < oHeight; j++)
+            if (oWidth > 0)
+                for (var k = 0; k < oWidth; k++)
+                    if (oDepth > 0)
+                        for (var l = 0; l < oDepth; l++)
+                            one[j, k, l] -= two[j, k, l];
+                    else
+                        one[j, k] -= two[j, k];
+            else
+                one[j] -= two[j];
+    }
     
     public static void MultiplyInPlace(this Tensor one, float two)
     {

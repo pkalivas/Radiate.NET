@@ -1,5 +1,7 @@
 ﻿using Radiate.Domain.Extensions;
 using Radiate.Domain.Records;
+using Radiate.Domain.Tensors.Enums;
+using Radiate.Domain.Tensors.Transforms;
 
 namespace Radiate.Domain.Tensors;
 
@@ -7,6 +9,8 @@ public class TensorTrainSet
 {
     private TrainTestSplit TrainTest { get; set; }
     private TensorTrainOptions Options { get; set; }
+    private List<Batch> TrainBatchCache { get; set; } = new();
+    private List<Batch> TestBatchCache { get; set; } = new();
     
     public TensorTrainSet(IEnumerable<float[]> features, IEnumerable<float[]> targets)
     {
@@ -14,23 +18,44 @@ public class TensorTrainSet
         var answers = targets.Select(row => row.ToTensor()).ToList();
 
         Options = new TensorTrainOptions();
-        TrainTest = new TrainTestSplit(inputs, answers, new List<Tensor>(), new List<Tensor>());
+        TrainTest = new TrainTestSplit(inputs, answers);
     }
 
-    public List<Batch> TrainingInputs => TrainingBatches();
+    public TensorTrainSet(TensorTrainOptions options)
+    {
+        Options = options;
+    }
 
-    public List<Batch> TestingInputs => TestingBatches();
+    public TensorTrainOptions TensorOptions => Options;
 
-    public List<Batch> TrainingFeatureInputs => TrainFeatureBatches();
+    public List<Batch> TrainingInputs => TrainBatchCache.Any() ? TrainBatchCache : TrainingBatches();
+
+    public List<Batch> TestingInputs => TestBatchCache.Any() ? TestBatchCache : TestingBatches();
+
+    public (List<float[]>, List<float[]>) RawTrainingInputs()
+    {
+        var shuffle = new ShuffleTransform();
+        var split = new SplitTransform();
+        var swapped = shuffle.Apply(TrainTest, Options, Enums.TrainTest.Train);
+        var result = split.Apply(swapped.Item1, Options, Enums.TrainTest.Train);
+        return (result.Item1.Features.Select(row => row.ToArray()).ToList(), result.Item1.Targets.Select(row => row.ToArray()).ToList());
+    }
+
+    public (List<float[]>, List<float[]>) RawTestingInputs()
+    {
+        var shuffle = new ShuffleTransform();
+        var split = new SplitTransform();
+        var swapped = shuffle.Apply(TrainTest, Options, Enums.TrainTest.Test);
+        var result = split.Apply(swapped.Item1, Options, Enums.TrainTest.Test);
+        return (result.Item1.Features.Select(row => row.ToArray()).ToList(), result.Item1.Targets.Select(row => row.ToArray()).ToList());
+    }
     
-    public int OutputSize => TrainTest.TrainTargets.First().Shape.Height;
-
-    public int OutputCategories => TrainTest.TrainTargets.Concat(TrainTest.TestTargets)
+    public int OutputCategories => TrainTest.Targets
         .SelectMany(val => val)
         .Distinct()
         .Count();
 
-    public Shape BatchFeatureShape => new Shape(Options.BatchSize, TrainTest.TrainFeatures.Count);
+    public Shape InputShape => TrainingBatches().First().Features.First().Shape;
     
     public TensorTrainSet Batch(int batchSize)
     {
@@ -50,7 +75,7 @@ public class TensorTrainSet
         return this;
     }
 
-    public TensorTrainSet Transform(Shape shape)
+    public TensorTrainSet Reshape(Shape shape)
     {
         Options = Options with { FeatureShape = shape };
         return this;
@@ -62,140 +87,82 @@ public class TensorTrainSet
         return this;
     }
 
+    public TensorTrainSet Shuffle()
+    {
+        Options = Options with { Shuffle = true };
+        return this;
+    }
+
+    public TensorTrainSet Kernel(FeatureKernel featureKernel, float c = 0f, float gamma = 0f)
+    {
+        Options = Options with { SpaceKernel = new SpaceKernel(featureKernel, c, gamma) };
+        return this;
+    }
+
+    public TensorTrainSet TransformFeatures(Norm norm)
+    {
+        Options = Options with { FeatureNorm = norm };
+        return this;
+    }
+    
+    public TensorTrainSet TransformTargets(Norm norm)
+    {
+        Options = Options with { TargetNorm = norm };
+        return this;
+    }
+
+    public Tensor Process(Tensor input) => TensorSetTransforms.Process(input, Options);
+
     private List<Batch> TrainingBatches()
     {
-        var data = ApplyOptions();
-        
-        var (size, _, _, _, _) = Options;
-        var batchSize = size == 0 ? data.TrainFeatures.Count : size;
-        
-        var batches = new List<Batch>();
-        for (var i = 0; i < data.TrainFeatures.Count; i += batchSize)
+        var (trainTest, options) = TensorSetTransforms.Apply(TrainTest with { }, Options, Enums.TrainTest.Train);
+        var batchSize = options.BatchSize;
+        var trainBatches = new List<Batch>();
+
+        for (var i = 0; i < trainTest.Features.Count; i += batchSize)
         {
-            var batchFeatures = data.TrainFeatures
+            var batchFeatures = trainTest.Features
                 .Skip(i)
                 .Take(batchSize)
                 .ToArray();
-            
-            var batchTargets = data.TrainTargets
+        
+            var batchTargets = trainTest.Targets
                 .Skip(i)
                 .Take(batchSize)
                 .ToArray();
-            
-            batches.Add(new Batch(batchFeatures, batchTargets));
+        
+            trainBatches.Add(new Batch(batchFeatures, batchTargets));
         }
 
-        return batches;
+        TrainBatchCache = trainBatches;
+        Options = options;
+    
+        return trainBatches;
     }
 
     private List<Batch> TestingBatches()
     {
-        var data = ApplyOptions();
-        
-        var batches = new List<Batch>();
-        for (var i = 0; i < data.TestFeatures.Count; i++)
+        var (trainTest, options) = TensorSetTransforms.Apply(TrainTest with { }, Options, Enums.TrainTest.Test);
+        var testBatches = new List<Batch>();
+        for (var i = 0; i < trainTest.Features.Count; i++)
         {
-            var batchFeatures = data.TestFeatures
+            var batchFeatures = trainTest.Features
                 .Skip(i)
                 .Take(1)
                 .ToArray();
             
-            var batchTargets = data.TestTargets
+            var batchTargets = trainTest.Targets
                 .Skip(i)
                 .Take(1)
                 .ToArray();
             
-            batches.Add(new Batch(batchFeatures, batchTargets));
+            testBatches.Add(new Batch(batchFeatures, batchTargets));
         }
 
-        return batches;
-    }
+        TestBatchCache = testBatches;
+        Options = options;
 
-    private List<Batch> TrainFeatureBatches()
-    {
-        var data = ApplyOptions();
-        
-        var batches = new List<Batch>();
-        for (var i = 0; i < data.TrainFeatures.Count; i++)
-        {
-            var batchFeatures = data.TrainFeatures
-                .Skip(i)
-                .Take(1)
-                .ToArray();
-
-            batches.Add(new Batch(batchFeatures));
-        }
-
-        return batches;
-    }
-
-    private TrainTestSplit ApplyOptions()
-    {
-        var (_, padding, featureShape, splitPct, layer) = Options;
-
-        var result = TrainTest with { };
-        
-        if (layer > 0)
-        {
-            result = ApplyLayer(layer, result) with { };
-        }
-
-        if (featureShape is not null)
-        {
-            result = ApplyReshape(featureShape, result) with { };
-        }
-
-        if (padding > 0)
-        {
-            result = ApplyPadding(padding, result) with { };
-        }
-
-        if (splitPct > 0f)
-        {
-            result = ApplySplit(splitPct, result) with { };
-        }
-
-        return result;
-    }
-
-    private static TrainTestSplit ApplyLayer(int layer, TrainTestSplit trainTest)
-    {
-        var (trainFeatures, trainTargets, testFeatures, testTargets) = trainTest;
-        var newFeatures = new List<Tensor>();
-        var newTargets = new List<Tensor>();
-        
-        for (var i = 0; i < trainFeatures.Count - layer - 1; i++)
-        {
-            newFeatures.Add(trainFeatures.Skip(i).Take(layer).SelectMany(val => val).ToTensor());
-            newTargets.Add(trainTargets.Skip(i + layer).Take(1).SelectMany(val => val).ToTensor());
-        }
-
-        return new TrainTestSplit(newFeatures, newTargets, testFeatures, testTargets);
-    }
-
-    private static TrainTestSplit ApplyReshape(Shape shape, TrainTestSplit trainTest) => 
-        trainTest with { TrainFeatures = Reshape(trainTest.TrainFeatures, shape) };
-    
-    private static TrainTestSplit ApplyPadding(int padding, TrainTestSplit trainTest) =>
-        trainTest with { TrainFeatures = trainTest.TrainFeatures.Select(row => row.Pad(padding)).ToList() };
-    
-    private static TrainTestSplit ApplySplit(float splitPct, TrainTestSplit trainTest)
-    {
-        var (trainFeatures, trainTargets, _, _) = trainTest;
-        var splitIndex = (int) (trainFeatures.Count - (trainFeatures.Count * splitPct));
-
-        return new TrainTestSplit(
-            trainFeatures.Skip(splitIndex).ToList(), 
-            trainTargets.Skip(splitIndex).ToList(), 
-            trainFeatures.Take(splitIndex).ToList(),
-            trainTargets.Take(splitIndex).ToList());
+        return testBatches;
     }
     
-    
-    private static List<Tensor> Reshape(IEnumerable<Tensor> tensors, Shape shape)
-    {
-        var result = new Tensor[tensors.Count()];
-        Parallel.For(0, result.Length, i => result[i] = tensors.ElementAt(i).Reshape(shape));
-        return result.ToList();
-    }
 }

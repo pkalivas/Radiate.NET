@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Radiate.Domain.Activation;
 using Radiate.Domain.Models;
+using Radiate.Domain.Models.Wraps;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
 using Radiate.Optimizers.Supervised.Perceptrons.Layers;

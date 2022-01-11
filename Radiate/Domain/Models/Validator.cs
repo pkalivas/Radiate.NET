@@ -1,5 +1,4 @@
-﻿using Radiate.Domain.Extensions;
-using Radiate.Domain.Loss;
+﻿using Radiate.Domain.Loss;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
 using Radiate.Optimizers.Supervised;
@@ -18,11 +17,6 @@ public class Validator
         _lossFunction = lossFunction;
     }
 
-    public Validator(Loss.Loss loss = Loss.Loss.Difference)
-    {
-        _lossFunction = LossFunctionResolver.Get(loss);
-    }
-    
     public Validation Validate(ISupervised supervised, List<Batch> data)
     {
         var iterationLoss = new List<float>();
@@ -82,6 +76,11 @@ public class Validator
     
     private static float ClassificationAccuracy(List<(Prediction predictions, Tensor targets)> outs)
     {
+        if (!outs.Any())
+        {
+            return 0f;
+        }
+        
         var correctClasses = outs
             .Select(pair =>
             {
@@ -97,6 +96,11 @@ public class Validator
     
     private static float RegressionAccuracy(List<(Prediction predictions, Tensor targets)> outs)
     {
+        if (!outs.Any())
+        {
+            return 0f;
+        }
+        
         var targetTotal = outs.Sum(tar => tar.targets.Sum());
         var absoluteDifference = outs
             .Select(pair => Math.Abs(pair.targets.First() - pair.predictions.Confidence))
@@ -107,6 +111,11 @@ public class Validator
 
     private static float CategoricalAccuracy(List<(Prediction prediction, Tensor targets)> predictions)
     {
+        if (!predictions.Any())
+        {
+            return 0f;
+        }
+        
         var correctClasses = predictions
             .Sum(pair => Math.Abs(pair.targets.Max() - pair.prediction.Classification) < Tolerance ? 1f : 0f);
 

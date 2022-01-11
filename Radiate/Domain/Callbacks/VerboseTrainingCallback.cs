@@ -1,19 +1,18 @@
 ﻿using Radiate.Domain.Callbacks.Interfaces;
-using Radiate.Domain.Loss;
-using Radiate.Domain.Models;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
-using Radiate.Optimizers.Supervised;
-using Radiate.Optimizers.Unsupervised;
+using Radiate.Optimizers;
 
 namespace Radiate.Domain.Callbacks;
 
-public class VerboseTrainingCallback : IEpochStartedCallback, IEpochCompletedCallback, IBatchCompletedCallback, ITrainingCompletedCallback
+public class VerboseTrainingCallback : IEpochStartedCallback, 
+    IEpochCompletedCallback, 
+    IBatchCompletedCallback, 
+    ITrainingCompletedCallback
 {
     private readonly int _maxEpoch;
     private readonly int _numFeatures;
     private readonly DateTime _startTime;
-    private readonly List<Batch> _validationBatches;
 
     private DateTime _epochStart;
     private DateTime _epochEnd;
@@ -23,16 +22,13 @@ public class VerboseTrainingCallback : IEpochStartedCallback, IEpochCompletedCal
     private Epoch _previousEpoch;
     private int _batchCount;
     private bool _init = false;
-    private bool _updateOnBatch;
+    private readonly bool _updateOnBatch;
     
 
     public VerboseTrainingCallback(TensorTrainSet trainSet, int maxEpoch = 1, bool updateOnBatch = true)
     {
-        var batchFeatureShape = trainSet.BatchFeatureShape;
-
-        _validationBatches = trainSet.TestingInputs;
         _maxEpoch = maxEpoch;
-        _numFeatures = batchFeatureShape.Width;
+        _numFeatures = trainSet.TrainingInputs.Count;
         _startTime = DateTime.Now;
         _previousTime = DateTime.Now;
         _epochStart = DateTime.Now;
@@ -58,7 +54,7 @@ public class VerboseTrainingCallback : IEpochStartedCallback, IEpochCompletedCal
         
     public void BatchCompleted(List<Prediction> predictions, List<Tensor> targets)
     {
-        _batchCount += predictions.Count;
+        _batchCount++;
 
         if (_updateOnBatch)
         {
@@ -119,15 +115,9 @@ public class VerboseTrainingCallback : IEpochStartedCallback, IEpochCompletedCal
         _previousTime = DateTime.Now;
     }
 
-    public Task CompleteTraining<T>(T model, List<Epoch> epochs, LossFunction lossFunction)
+    public Task CompleteTraining<T>(Optimizer<T> optimizer, List<Epoch> epochs, TensorTrainSet tensorSet) where T: class
     {
-        var validator = new Validator(lossFunction);
-        var validation = model switch
-        {
-            ISupervised supervised => validator.Validate(supervised, _validationBatches),
-            IUnsupervised unsupervised => validator.Validate(unsupervised, _validationBatches),
-            _ => throw new Exception("Cannot validate model.")
-        };
+        var validation = optimizer.ValidationScores();
         
         var labels = $"{"Validation",-7} |" +
                      $" {"Class Acc",-15} |" +

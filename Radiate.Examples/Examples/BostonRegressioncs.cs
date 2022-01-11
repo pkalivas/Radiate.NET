@@ -2,9 +2,9 @@
 using Radiate.Domain.Activation;
 using Radiate.Domain.Callbacks;
 using Radiate.Domain.Callbacks.Interfaces;
-using Radiate.Domain.Extensions;
 using Radiate.Domain.Loss;
 using Radiate.Domain.Tensors;
+using Radiate.Domain.Tensors.Enums;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
@@ -17,13 +17,11 @@ public class BostonRegression : IExample
     {
         const int outputSize = 1;
         const int maxEpochs = 200;
-        const int batchSize = 1;
         
         var (features, targets) = await new BostonHousing().GetDataSet();
         
-        var normalizedFeatures = features.Standardize();
-        var featureTargetPair = new TensorTrainSet(normalizedFeatures, targets)
-            .Batch(batchSize)
+        var featureTargetPair = new TensorTrainSet(features, targets)
+            .TransformFeatures(Norm.Standardize)
             .Split();
         
         var linearRegressor = new MultiLayerPerceptron()
