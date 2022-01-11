@@ -64,17 +64,21 @@ public class LSTM : Layer
         var dG = current.InputOut * dS;
         var dF = current.PreviousCell * dS;
 
-        var dInput = _cellActivation.Deactivate(current.InputOut) * dI;
-        var dForget = _cellActivation.Deactivate(current.ForgetOut) * dF;
-        var dOutput = _cellActivation.Deactivate(current.OutputOut) * dO;
-        var dGate = _hiddenActivation.Deactivate(current.GateOut) * dG;
+        dI.Multiply(_cellActivation.Deactivate(current.InputOut));
+        dF.Multiply(_cellActivation.Deactivate(current.ForgetOut));
+        dO.Multiply(_cellActivation.Deactivate(current.OutputOut));
+        dG.Multiply(_hiddenActivation.Deactivate(current.GateOut));
+        
+        var iE = _inputGate.PassBackward(dI);
+        var fE = _forgetGate.PassBackward(dF);
+        var oE = _outputGate.PassBackward(dO);
+        var gE = _gateGate.PassBackward(dG);
 
-        var iE = _inputGate.PassBackward(dInput);
-        var fE = _forgetGate.PassBackward(dForget);
-        var oE = _outputGate.PassBackward(dOutput);
-        var gE = _gateGate.PassBackward(dGate);
-
-        var dx = (iE + fE + oE + gE).ToArray();
+        var dx = Tensor.Like(iE.Shape);
+        dx.Add(iE);
+        dx.Add(fE);
+        dx.Add(oE);
+        dx.Add(gE);
 
         var cellGrad = dS * current.ForgetOut;
         var hiddenGrad = dx.Skip(Shape.Height).Take(Shape.Width);
@@ -89,11 +93,16 @@ public class LSTM : Layer
 
     public override void UpdateWeights(GradientInfo info, int epoch, int batchSize)
     {
-        _inputGate.UpdateWeights(info, epoch, batchSize);
-        _forgetGate.UpdateWeights(info, epoch, batchSize);
-        _gateGate.UpdateWeights(info, epoch, batchSize);
-        _outputGate.UpdateWeights(info, epoch, batchSize);
-        
+        var gates = new List<Dense>()
+        {
+            _inputGate,
+            _forgetGate,
+            _gateGate,
+            _outputGate
+        };
+
+        Parallel.ForEach(gates, gate => gate.UpdateWeights(info, epoch, batchSize));
+
         _forwardTrack.Clear();
         _backwardTrack.Clear();
         

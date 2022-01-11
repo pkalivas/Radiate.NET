@@ -1,6 +1,8 @@
-﻿using Radiate.Data;
+﻿using System.Diagnostics;
+using Radiate.Data;
 using Radiate.Data.Utils;
 using Radiate.Domain.Activation;
+using Radiate.Domain.Callbacks;
 using Radiate.Domain.Extensions;
 using Radiate.Domain.Gradients;
 using Radiate.Domain.Loss;
@@ -16,6 +18,9 @@ public class TrainLSTM : IExample
 {
     public async Task Run()
     {
+        var s = new Stopwatch();
+        s.Start();
+        
         const int trainEpochs = 500;
 
         var (inputs, targets) = await new SimpleMemory().GetDataSet();
@@ -26,10 +31,15 @@ public class TrainLSTM : IExample
             .AddLayer(new LSTMInfo(16, 16))
             .AddLayer(new DenseInfo(1, Activation.Sigmoid));
 
-        var optimizer = new Optimizer<MultiLayerPerceptron>(mlp, pair, Loss.MSE);
+        var optimizer = new Optimizer<MultiLayerPerceptron>(mlp, pair, Loss.MSE, new []
+        {
+            new VerboseTrainingCallback(pair, trainEpochs, false)
+        });
+        
         var lstm = await optimizer.Train(epoch => epoch.Index == trainEpochs);
         
-        Console.WriteLine($"\n{ModelDescriptor.Describe(lstm)}");
+        s.Stop();
+        Console.WriteLine($"\n{s.ElapsedMilliseconds}");
 
         foreach (var (ins, outs) in pair.TrainingInputs)
         {

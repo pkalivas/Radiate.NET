@@ -185,6 +185,8 @@ public class Tensor : IEnumerable<float>
     public void Add(Tensor other) => this.AddInPlace(other);
 
     public void Subtract(Tensor other) => this.SubtractInPlace(other);
+
+    public void Multiply(Tensor other) => this.MultiplyInPlace(other);
     
     public void Mul(float value) => this.MultiplyInPlace(value);
     
