@@ -1,5 +1,4 @@
-﻿using Radiate.Domain.RandomGenerator;
-using Radiate.Examples.Examples;
+﻿using Radiate.Examples.Examples;
 
 namespace Radiate.Examples;
 
@@ -7,7 +6,7 @@ class Program
 {
     static void Main(string[] args)
     {
-        RandomGenerator.Seed = 3;
+        RandomGenerator.RandomGenerator.Seed = 3;
         
         var options = "\n[0] Stop\n" +
                       "[1] Evolve NEAT\n" +

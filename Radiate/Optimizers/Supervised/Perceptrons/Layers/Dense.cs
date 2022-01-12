@@ -1,8 +1,8 @@
-﻿using Radiate.Domain.Activation;
-using Radiate.Domain.Gradients;
-using Radiate.Domain.Models.Wraps;
-using Radiate.Domain.Records;
-using Radiate.Domain.Tensors;
+﻿using Radiate.Activations;
+using Radiate.Gradients;
+using Radiate.IO.Wraps;
+using Radiate.Records;
+using Radiate.Tensors;
 
 namespace Radiate.Optimizers.Supervised.Perceptrons.Layers;
 

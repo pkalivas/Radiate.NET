@@ -1,15 +1,15 @@
 ﻿using System.Diagnostics;
+using Radiate.Activations;
+using Radiate.Callbacks;
+using Radiate.Callbacks.Interfaces;
 using Radiate.Data;
-using Radiate.Domain.Activation;
-using Radiate.Domain.Callbacks;
-using Radiate.Domain.Callbacks.Interfaces;
-using Radiate.Domain.Extensions;
-using Radiate.Domain.Gradients;
-using Radiate.Domain.Loss;
-using Radiate.Domain.Tensors;
+using Radiate.Extensions;
+using Radiate.Gradients;
+using Radiate.Losses;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
+using Radiate.Tensors;
 
 namespace Radiate.Examples.Examples;
 

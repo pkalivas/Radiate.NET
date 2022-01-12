@@ -1,10 +1,9 @@
-﻿using Radiate.Domain.Extensions;
-using Radiate.Domain.Models.Wraps;
-using Radiate.Domain.RandomGenerator;
-using Radiate.Domain.Records;
-using Radiate.Domain.Tensors;
-using Radiate.Domain.Tensors.Enums;
+﻿using Radiate.Extensions;
+using Radiate.IO.Wraps;
 using Radiate.Optimizers.Supervised.Forest.Info;
+using Radiate.Records;
+using Radiate.Tensors;
+using Radiate.Tensors.Enums;
 
 namespace Radiate.Optimizers.Supervised.Forest;
 
@@ -87,7 +86,7 @@ public class RandomForest : ISupervised
 
     private static (Tensor features, Tensor targets) BootstrapData(Tensor features, Tensor targets)
     {
-        var random = RandomGenerator.Next;
+        var random = RandomGenerator.RandomGenerator.Next;
         var (height, _, _) = features.Shape;
 
         var newFeatures = new Tensor[height];

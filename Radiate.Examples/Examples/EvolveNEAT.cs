@@ -1,5 +1,5 @@
-﻿using Radiate.Data;
-using Radiate.Domain.Activation;
+﻿using Radiate.Activations;
+using Radiate.Data;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Evolution;
 using Radiate.Optimizers.Evolution.Neat;

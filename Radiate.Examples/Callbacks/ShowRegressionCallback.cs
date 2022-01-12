@@ -1,7 +1,7 @@
-﻿using Radiate.Domain.Callbacks.Interfaces;
-using Radiate.Domain.Records;
-using Radiate.Domain.Tensors;
+﻿using Radiate.Callbacks.Interfaces;
 using Radiate.Optimizers;
+using Radiate.Records;
+using Radiate.Tensors;
 
 namespace Radiate.Examples.Callbacks;
 

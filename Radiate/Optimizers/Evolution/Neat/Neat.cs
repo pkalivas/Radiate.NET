@@ -1,5 +1,4 @@
-﻿using Radiate.Domain.Activation;
-using Radiate.Domain.RandomGenerator;
+﻿using Radiate.Activations;
 using Radiate.Optimizers.Evolution.Population;
 
 namespace Radiate.Optimizers.Evolution.Neat;
@@ -351,7 +350,7 @@ public class Neat : Genome
         return outputs.ToArray();
     }
     
-    public override async Task<T> Crossover<T, TE>(T other, TE environment, double crossoverRate)
+    public override Task<T> Crossover<T, TE>(T other, TE environment, double crossoverRate)
     {
         var random = new Random();
 
@@ -405,11 +404,11 @@ public class Neat : Genome
             }
         }
 
-        return child as T;
+        return Task.FromResult(child as T);
     }
 
 
-    public override async Task<double> Distance<T, TE>(T other, TE environment)
+    public override Task<double> Distance<T, TE>(T other, TE environment)
     {
         var parentTwo = other as Neat;
 
@@ -418,7 +417,7 @@ public class Neat : Genome
         var oneScore = similar / Edges.Count;
         var twoScore = similar / parentTwo.Edges.Count;
 
-        return 2 - (oneScore + twoScore);
+        return Task.FromResult(2.0 - (oneScore + twoScore));
     }
 
     public override T CloneGenome<T>() => new Neat

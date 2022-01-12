@@ -1,4 +1,4 @@
-﻿using Radiate.Domain.Activation;
+﻿using Radiate.Activations;
 
 namespace Radiate.Optimizers.Supervised.Perceptrons.Info;
 

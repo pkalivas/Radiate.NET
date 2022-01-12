@@ -1,9 +1,9 @@
-﻿using Radiate.Data;
-using Radiate.Domain.Callbacks;
-using Radiate.Domain.Callbacks.Interfaces;
-using Radiate.Domain.Tensors;
+﻿using Radiate.Callbacks;
+using Radiate.Callbacks.Interfaces;
+using Radiate.Data;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Unsupervised.Clustering;
+using Radiate.Tensors;
 
 namespace Radiate.Examples.Examples;
 

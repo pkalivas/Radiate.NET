@@ -1,7 +1,7 @@
-﻿using Radiate.Domain.Extensions;
-using Radiate.Domain.Models.Wraps;
-using Radiate.Domain.Records;
-using Radiate.Domain.Tensors;
+﻿using Radiate.Extensions;
+using Radiate.IO.Wraps;
+using Radiate.Records;
+using Radiate.Tensors;
 
 namespace Radiate.Optimizers.Supervised.Forest;
 

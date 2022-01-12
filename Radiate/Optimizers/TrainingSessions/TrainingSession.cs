@@ -1,8 +1,8 @@
-﻿using Radiate.Domain.Callbacks.Interfaces;
-using Radiate.Domain.Callbacks.Resolver;
-using Radiate.Domain.Loss;
-using Radiate.Domain.Records;
-using Radiate.Domain.Tensors;
+﻿using Radiate.Callbacks.Interfaces;
+using Radiate.Callbacks.Resolver;
+using Radiate.Losses;
+using Radiate.Records;
+using Radiate.Tensors;
 
 namespace Radiate.Optimizers.TrainingSessions;
 

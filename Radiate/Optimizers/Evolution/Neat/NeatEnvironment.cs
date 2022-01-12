@@ -1,4 +1,4 @@
-﻿using Radiate.Domain.Activation;
+﻿using Radiate.Activations;
 using Radiate.Optimizers.Evolution.Population;
 
 namespace Radiate.Optimizers.Evolution.Neat;

@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Radiate.Domain.Activation;
-using Radiate.Domain.Models;
-using Radiate.Domain.Models.Wraps;
-using Radiate.Domain.Records;
-using Radiate.Domain.Tensors;
+using Radiate.Activations;
+using Radiate.IO.Wraps;
 using Radiate.Optimizers.Supervised.Perceptrons.Layers;
+using Radiate.Records;
+using Radiate.Tensors;
 
 namespace Radiate.UnitTests.Utils;
 

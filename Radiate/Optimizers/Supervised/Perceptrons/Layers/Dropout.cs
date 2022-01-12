@@ -1,17 +1,15 @@
-﻿using Radiate.Domain.Extensions;
-using Radiate.Domain.Gradients;
-using Radiate.Domain.Models;
-using Radiate.Domain.Models.Wraps;
-using Radiate.Domain.RandomGenerator;
-using Radiate.Domain.Records;
-using Radiate.Domain.Tensors;
+﻿using Radiate.Extensions;
+using Radiate.Gradients;
+using Radiate.IO.Wraps;
+using Radiate.Records;
+using Radiate.Tensors;
 
 namespace Radiate.Optimizers.Supervised.Perceptrons.Layers;
 
 public class Dropout : Layer
 {
     private readonly float _dropoutRate;
-    private readonly Random _random = RandomGenerator.Next;
+    private readonly Random _random = RandomGenerator.RandomGenerator.Next;
 
     public Dropout(DropoutWrap wrap) : base(new Shape(0))
     {

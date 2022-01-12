@@ -1,6 +1,4 @@
 ﻿
-using Radiate.Domain.RandomGenerator;
-
 namespace Radiate.Optimizers.Evolution.Population.ParentalCriteria;
 
 public class BiasedRandom : IParentPicker

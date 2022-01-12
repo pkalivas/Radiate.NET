@@ -1,10 +1,9 @@
-﻿using Radiate.Domain.Extensions;
-using Radiate.Domain.Models.Wraps;
-using Radiate.Domain.RandomGenerator;
-using Radiate.Domain.Records;
-using Radiate.Domain.Tensors;
-using Radiate.Domain.Tensors.Enums;
+﻿using Radiate.Extensions;
+using Radiate.IO.Wraps;
 using Radiate.Optimizers.Supervised.Forest.Info;
+using Radiate.Records;
+using Radiate.Tensors;
+using Radiate.Tensors.Enums;
 
 namespace Radiate.Optimizers.Supervised.Forest;
 
@@ -12,7 +11,7 @@ public class DecisionTree
 {
     private const int MinSampleSplit = 2;
     
-    private readonly Random _random = RandomGenerator.Next;
+    private readonly Random _random = RandomGenerator.RandomGenerator.Next;
     private readonly ForestInfo _info;
     private readonly TreeNode _root;
     

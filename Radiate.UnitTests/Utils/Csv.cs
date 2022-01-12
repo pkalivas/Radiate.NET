@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Radiate.Domain.Extensions;
-using Radiate.Domain.Records;
-using Radiate.Domain.Tensors;
+using Radiate.Extensions;
+using Radiate.Records;
+using Radiate.Tensors;
 
 namespace Radiate.UnitTests.Utils;
 

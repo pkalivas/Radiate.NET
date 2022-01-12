@@ -1,11 +1,8 @@
-﻿using Radiate.Domain.Callbacks.Interfaces;
-using Radiate.Domain.Callbacks.Resolver;
-using Radiate.Domain.Extensions;
-using Radiate.Domain.Loss;
-using Radiate.Domain.Models;
-using Radiate.Domain.Models.Wraps;
-using Radiate.Domain.Records;
-using Radiate.Domain.Tensors;
+﻿using Radiate.Callbacks.Interfaces;
+using Radiate.Callbacks.Resolver;
+using Radiate.Extensions;
+using Radiate.IO.Wraps;
+using Radiate.Losses;
 using Radiate.Optimizers.Evolution;
 using Radiate.Optimizers.Supervised;
 using Radiate.Optimizers.Supervised.Forest;
@@ -14,6 +11,8 @@ using Radiate.Optimizers.Supervised.SVM;
 using Radiate.Optimizers.TrainingSessions;
 using Radiate.Optimizers.Unsupervised;
 using Radiate.Optimizers.Unsupervised.Clustering;
+using Radiate.Records;
+using Radiate.Tensors;
 
 namespace Radiate.Optimizers;
 
@@ -100,7 +99,15 @@ public class Optimizer<T> where T: class
             _ => throw new Exception("Cannot save optimizer")
         }
     };
-
+    
+    private TrainingSession GetTrainingSession() => _optimizer switch
+    {
+        IPopulation population => new EvolutionTrainingSession(population, _callbacks),
+        IUnsupervised unsupervised => new UnsupervisedTrainingSession(unsupervised, _callbacks),
+        ISupervised supervised => new SupervisedTrainingSession(supervised, _callbacks),
+        _ => throw new Exception("Cannot resolve training session.")
+    };
+    
     public static Optimizer<T> Load(OptimizerWrap wrap, IEnumerable<ITrainingCallback> callbacks = null) 
     {
         var modelWrap = wrap.ModelWrap;
@@ -115,29 +122,22 @@ public class Optimizer<T> where T: class
             }
             case ModelType.RandomForest:
             {
-                var perceptron = new RandomForest(modelWrap);
-                return new Optimizer<T>(perceptron as T, trainSet, wrap.LossFunction, callbacks);
+                var forest = new RandomForest(modelWrap);
+                return new Optimizer<T>(forest as T, trainSet, wrap.LossFunction, callbacks);
             }
             case ModelType.SVM:
             {
-                var perceptron = new SupportVectorMachine(modelWrap);
-                return new Optimizer<T>(perceptron as T, trainSet, wrap.LossFunction, callbacks);
+                var vectorMachine = new SupportVectorMachine(modelWrap);
+                return new Optimizer<T>(vectorMachine as T, trainSet, wrap.LossFunction, callbacks);
             }
             case ModelType.KMeans:
             {
-                var perceptron = new KMeans(modelWrap);
-                return new Optimizer<T>(perceptron as T, trainSet, wrap.LossFunction, callbacks);
+                var kMeans = new KMeans(modelWrap);
+                return new Optimizer<T>(kMeans as T, trainSet, wrap.LossFunction, callbacks);
             }
             default:
                 return null;
         }
     }
 
-    private TrainingSession GetTrainingSession() => _optimizer switch
-    {
-        IPopulation population => new EvolutionTrainingSession(population, _callbacks),
-        IUnsupervised unsupervised => new UnsupervisedTrainingSession(unsupervised, _callbacks),
-        ISupervised supervised => new SupervisedTrainingSession(supervised, _callbacks),
-        _ => throw new Exception("Cannot resolve training session.")
-    };
 }

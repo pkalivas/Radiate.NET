@@ -1,15 +1,13 @@
-﻿using Radiate.Domain.Extensions;
-using Radiate.Domain.Models;
-using Radiate.Domain.Models.Wraps;
-using Radiate.Domain.RandomGenerator;
-using Radiate.Domain.Records;
-using Radiate.Domain.Tensors;
+﻿using Radiate.Extensions;
+using Radiate.IO.Wraps;
+using Radiate.Records;
+using Radiate.Tensors;
 
 namespace Radiate.Optimizers.Unsupervised.Clustering;
 
 public class KMeans : IUnsupervised
 {
-    private readonly Random _random = RandomGenerator.Next;
+    private readonly Random _random = RandomGenerator.RandomGenerator.Next;
 
     private readonly int _kClusters;
     private readonly List<int>[] _clusters;

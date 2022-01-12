@@ -1,11 +1,11 @@
-﻿using Radiate.Data;
-using Radiate.Domain.Callbacks;
-using Radiate.Domain.Callbacks.Interfaces;
-using Radiate.Domain.Tensors;
+﻿using Radiate.Callbacks;
+using Radiate.Callbacks.Interfaces;
+using Radiate.Data;
 using Radiate.Examples.Callbacks;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Supervised.Forest;
 using Radiate.Optimizers.Supervised.Forest.Info;
+using Radiate.Tensors;
 
 namespace Radiate.Examples.Examples;
 

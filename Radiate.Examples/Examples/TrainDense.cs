@@ -1,15 +1,15 @@
-﻿using Radiate.Data;
-using Radiate.Domain.Activation;
-using Radiate.Domain.Callbacks;
-using Radiate.Domain.Callbacks.Interfaces;
-using Radiate.Domain.Gradients;
-using Radiate.Domain.Loss;
-using Radiate.Domain.Tensors;
-using Radiate.Domain.Tensors.Enums;
+﻿using Radiate.Activations;
+using Radiate.Callbacks;
+using Radiate.Callbacks.Interfaces;
+using Radiate.Data;
 using Radiate.Examples.Callbacks;
+using Radiate.Gradients;
+using Radiate.Losses;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
+using Radiate.Tensors;
+using Radiate.Tensors.Enums;
 
 namespace Radiate.Examples.Examples;
 

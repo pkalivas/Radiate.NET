@@ -1,5 +1,5 @@
-﻿using Radiate.Domain.Activation;
-using Radiate.Domain.Records;
+﻿using Radiate.Activations;
+using Radiate.Records;
 
 namespace Radiate.Optimizers.Supervised.Perceptrons.Info;
 

@@ -1,5 +1,5 @@
-﻿using Radiate.Domain.Records;
-using Radiate.Domain.Tensors;
+﻿using Radiate.Records;
+using Radiate.Tensors;
 
 namespace Radiate.UnitTests.Tensors;
 

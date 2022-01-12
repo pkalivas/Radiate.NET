@@ -3,9 +3,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Radiate.Domain.Activation;
-using Radiate.Domain.Models;
-using Radiate.Domain.Models.Wraps;
+using Radiate.Activations;
+using Radiate.IO.Wraps;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
 using Radiate.UnitTests.Utils;
 

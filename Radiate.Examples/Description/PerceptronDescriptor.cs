@@ -1,8 +1,7 @@
-﻿using Radiate.Domain.Models;
-using Radiate.Domain.Models.Wraps;
-using Radiate.Domain.Records;
+﻿using Radiate.IO.Wraps;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Layers;
+using Radiate.Records;
 
 namespace Radiate.Examples.Description;
 

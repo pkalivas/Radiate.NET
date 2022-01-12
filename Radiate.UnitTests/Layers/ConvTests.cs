@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Radiate.Domain.Activation;
+using Radiate.Activations;
 using Radiate.Optimizers.Supervised.Perceptrons.Layers;
 using Radiate.UnitTests.Utils;
 
