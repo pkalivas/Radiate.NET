@@ -16,30 +16,14 @@ public class SoftMax : IActivationFunction
             .ToTensor();
     }
 
-    public Tensor Deactivate(Tensor values)
-    {
-        // var diagMatrix = values.Diag();
-        // var tiledMatrix = values.Tile();
-        // var transposedMatrix = values.T();
-        //
-        // var result = new float[values.Count()];
-        // for (var i = 0; i < values.Count(); i++)
-        // {
-        //     for (var j = 0; j < values.Count(); j++)
-        //     {
-        //         result[i] += diagMatrix[j, i] - (tiledMatrix[j, i] * transposedMatrix[j, i]);
-        //     }
-        // }
-        //
-        //
-        return values.Select(val => val switch
+    public Tensor Deactivate(Tensor values) =>
+        values.Select(val => val switch
         {
             > MaxClipValue => MaxClipValue,
             < MinClipValue => MinClipValue,
             var x and >= MinClipValue and <= MaxClipValue => x,
             var x => throw new Exception($"Failed to activate Softmax {x}")
-        }).ToArray().ToTensor();
-    }
+        }).ToTensor();
 
     public float Activate(float value) => throw new Exception($"Softmax of single value is not real.");
 

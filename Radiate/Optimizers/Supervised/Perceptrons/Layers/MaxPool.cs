@@ -1,5 +1,4 @@
 ﻿using Radiate.Domain.Gradients;
-using Radiate.Domain.Models;
 using Radiate.Domain.Models.Wraps;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;
@@ -8,6 +7,8 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers;
 
 public class MaxPool : Layer
 {
+    private const float Tolerance = 1e-7f;
+    
     private readonly Kernel _kernel;
     private readonly Stack<Tensor> _inputs;
     private readonly Stack<List<Slice>> _slices;
@@ -67,7 +68,7 @@ public class MaxPool : Layer
                 {
                     for (var k = 0; k < depth; k++)
                     {
-                        if (slice[i, j, k] == sliceMax)
+                        if (Math.Abs(slice[i, j, k] - sliceMax) < Tolerance)
                         {
                             var deltaHeight = sHeight * _stride + i;
                             var deltaWidth = sWidth * _stride + j;

@@ -1,7 +1,6 @@
 ﻿using Radiate.Domain.Activation;
 using Radiate.Domain.Extensions;
 using Radiate.Domain.Gradients;
-using Radiate.Domain.Models;
 using Radiate.Domain.Models.Wraps;
 using Radiate.Domain.Records;
 using Radiate.Domain.Tensors;

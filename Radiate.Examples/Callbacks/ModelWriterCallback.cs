@@ -28,7 +28,7 @@ public class ModelWriterCallback : ITrainingCompletedCallback
         }
 
         var wrapped = optimizer.Save();
-        var modelType = wrapped.ModelWrap.ModelType.GetType().ToString().Split(".").Last();
+        var modelType = wrapped.ModelWrap.ModelType.ToString().Split(".").Last();
         modelType += string.IsNullOrEmpty(_ext) ? "" : $"_{_ext}";
 
         var filePath = Path.Combine(directory.FullName, "Saves", $"{modelType}.json");
