@@ -124,14 +124,14 @@ public class MultiLayerPerceptron : ISupervised
             {
                 var activation = ActivationFunctionFactory.Get(denseInfo.Activation);
             
-                return new Dense(new Shape(height, denseInfo.LayerSize, 0), activation);
+                return new Dense(new Shape(height, denseInfo.LayerSize), activation);
             }
             case LSTMInfo lstm:
             {
                 var cellActivation = ActivationFunctionFactory.Get(lstm.CellActivation);
                 var hiddenActivation = ActivationFunctionFactory.Get(lstm.HiddenActivation);
             
-                return new LSTM(new Shape(height, lstm.MemorySize, 0), cellActivation, hiddenActivation);
+                return new LSTM(new Shape(height, lstm.MemorySize), cellActivation, hiddenActivation);
             }
             case MaxPoolInfo maxPool:
             {
