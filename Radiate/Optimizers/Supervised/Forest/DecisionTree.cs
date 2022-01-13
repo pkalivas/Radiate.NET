@@ -142,7 +142,7 @@ public class DecisionTree
 
     private static float InfoGain(Tensor targets, Tensor column, float threshold)
     {
-        var parentEntropy = targets.HistEntropy();
+        var parentEntropy = targets.Entropy();
 
         var (leftIndexes, rightIndexes) = SplitIndexes(column, threshold);
         var leftThresholds = leftIndexes.Select(idx => targets[idx]).ToArray();
@@ -157,10 +157,10 @@ public class DecisionTree
         }
 
         var numLeft = Convert.ToSingle(leftCount);
-        var entropyLeft = leftThresholds.ToTensor().HistEntropy();
+        var entropyLeft = leftThresholds.ToTensor().Entropy();
         
         var numRight = Convert.ToSingle(rightCount);
-        var entropyRight = rightThresholds.ToTensor().HistEntropy();
+        var entropyRight = rightThresholds.ToTensor().Entropy();
 
         var cNum = Convert.ToSingle(targets.Count());
         var childEntropy = (numLeft / cNum) * entropyLeft + (numRight / cNum) * entropyRight;

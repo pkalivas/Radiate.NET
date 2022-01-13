@@ -166,7 +166,6 @@ public static class TensorOperations
     {
         var result = new float[pad * 2 + one.Shape.Height, pad * 2 + one.Shape.Width, one.Shape.Depth].ToTensor();
         var (height, width, depth) = result.Shape;
-        result.Zero();
         
         for (var i = pad; i < height - pad; i++)
         for (var j = pad; j < width - pad; j++)
@@ -178,13 +177,10 @@ public static class TensorOperations
 
     public static Tensor Sign(Tensor one)
     {
+        var result = Tensor.Like(one);
         var (height, width, depth) = one.Shape;
-        var result = Tensor.Like(one.Shape);
-        var func = (float val) => val < 0
-            ? -1
-            : val == 0
-                ? 0
-                : 1;
+        
+        var func = (float val) => val < 0 ? -1 : val == 0 ? 0 : 1;
         
         for (var j = 0; j < height; j++)
             if (width > 0)
@@ -250,7 +246,7 @@ public static class TensorOperations
         return newTensor;
     }
     
-    public static List<Tensor> Normalize(List<Tensor> data, NormalizeScalars scalars)
+    public static List<Tensor> Normalize(IEnumerable<Tensor> data, NormalizeScalars scalars)
     {
         var (minLookup, maxLookup, _, _) = scalars;
         
@@ -268,7 +264,7 @@ public static class TensorOperations
             .ToList();
     }
     
-    public static List<Tensor> Standardize(List<Tensor> data, NormalizeScalars scalars)
+    public static List<Tensor> Standardize(IEnumerable<Tensor> data, NormalizeScalars scalars)
     {
         var (_, _, meanLookup, stdLookup) = scalars;
         
@@ -290,7 +286,7 @@ public static class TensorOperations
             .ToList();
     }
 
-    public static List<Tensor> ImageNormalize(List<Tensor> features) => 
+    public static List<Tensor> ImageNormalize(IEnumerable<Tensor> features) => 
         features.Select(row => Tensor.Apply(row, val => val / 255f)).ToList();
     
     

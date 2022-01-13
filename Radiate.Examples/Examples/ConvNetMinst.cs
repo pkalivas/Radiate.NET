@@ -3,6 +3,7 @@ using Radiate.Callbacks;
 using Radiate.Callbacks.Interfaces;
 using Radiate.Data;
 using Radiate.Examples.Callbacks;
+using Radiate.Losses;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
@@ -18,7 +19,7 @@ public class ConvNetMinst : IExample
     {
         const int featureLimit = 5000;
         const int batchSize = 128;
-        const int maxEpochs = 25;
+        const int maxEpochs = 10;
         
         var (rawInputs, rawLabels) = await new Mnist(featureLimit).GetDataSet();
 
@@ -39,7 +40,6 @@ public class ConvNetMinst : IExample
         var optimizer = new Optimizer<MultiLayerPerceptron>(neuralNetwork, pair, new List<ITrainingCallback>
         {
             new VerboseTrainingCallback(pair, maxEpochs),
-            new ModelWriterCallback(),
             new ConfusionMatrixCallback()
         });
         

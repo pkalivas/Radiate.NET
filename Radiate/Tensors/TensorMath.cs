@@ -194,7 +194,7 @@ public static class TensorMath
         return bestVal > float.MinValue ? bestVal : 0;
     }
 
-    public static float HistEntropy(Tensor one)
+    public static float Entropy(Tensor one)
     {
         if (one.Sum() == 0f)
         {

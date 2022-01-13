@@ -169,7 +169,7 @@ public class Tensor : IEnumerable<float>
 
     public float Max() => TensorMath.Max(this);
     
-    public float HistEntropy() => TensorMath.HistEntropy(this);
+    public float Entropy() => TensorMath.Entropy(this);
 
     public float PlaneDot(Tensor other, int index) => 
         TensorMath.PlaneDot(this, other, index);
