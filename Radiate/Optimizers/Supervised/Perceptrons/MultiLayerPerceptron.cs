@@ -54,7 +54,7 @@ public class MultiLayerPerceptron : ISupervised
         
         foreach (var (x, y) in features.Zip(targets))
         {
-            var prediction = PassForward(x, y);
+            var prediction = PassForward(x);
             predictions.Add((prediction, y));
         }
         
@@ -95,7 +95,7 @@ public class MultiLayerPerceptron : ISupervised
         return new Prediction(output, maxIndex, output[maxIndex]);
     }
     
-    public Prediction PassForward(Tensor input, Tensor target)
+    public Prediction PassForward(Tensor input)
     {
         if (_layers.Any())
         {
@@ -118,50 +118,44 @@ public class MultiLayerPerceptron : ISupervised
     {
         var (height, _, _) = shape;
 
-        if (info is DenseInfo denseInfo)
+        switch (info)
         {
-            var activation = ActivationFunctionFactory.Get(denseInfo.Activation);
-            
-            return new Dense(new Shape(height, denseInfo.LayerSize, 0), activation);
-        }
-
-        if (info is LSTMInfo lstm)
-        {
-            var cellActivation = ActivationFunctionFactory.Get(lstm.CellActivation);
-            var hiddenActivation = ActivationFunctionFactory.Get(lstm.HiddenActivation);
-            
-            return new LSTM(new Shape(height, lstm.MemorySize, 0), cellActivation, hiddenActivation);
-        }
-
-        if (info is DropoutInfo dropoutInfo)
-        {
-            return new Dropout(dropoutInfo.DropoutPercent);
-        }
-        
-        if (info is FlattenInfo _)
-        {
-            return new Flatten(shape);
-        }
-
-        if (info is MaxPoolInfo maxPool)
-        {
-            var previousLayer = layers[layers.IndexOf(info) - 1];
-            var kernel = previousLayer switch
+            case DenseInfo denseInfo:
             {
-                ConvInfo cInfo => cInfo.Kernel,
-                _ => maxPool.Kernel
-            };
+                var activation = ActivationFunctionFactory.Get(denseInfo.Activation);
             
-            return new MaxPool(shape, kernel, maxPool.Stride);
+                return new Dense(new Shape(height, denseInfo.LayerSize, 0), activation);
+            }
+            case LSTMInfo lstm:
+            {
+                var cellActivation = ActivationFunctionFactory.Get(lstm.CellActivation);
+                var hiddenActivation = ActivationFunctionFactory.Get(lstm.HiddenActivation);
+            
+                return new LSTM(new Shape(height, lstm.MemorySize, 0), cellActivation, hiddenActivation);
+            }
+            case MaxPoolInfo maxPool:
+            {
+                var previousLayer = layers[layers.IndexOf(info) - 1];
+                var kernel = previousLayer switch
+                {
+                    ConvInfo cInfo => cInfo.Kernel,
+                    _ => maxPool.Kernel
+                };
+            
+                return new MaxPool(shape, kernel, maxPool.Stride);
+            }
+            case ConvInfo conv:
+            {
+                var activation = ActivationFunctionFactory.Get(conv.Activation);
+                return new Conv(shape, conv.Kernel, conv.Stride, activation);
+            }
+            case DropoutInfo dropoutInfo: 
+                return new Dropout(dropoutInfo.DropoutPercent);
+            case FlattenInfo _: 
+                return new Flatten(shape);
+            default:
+                throw new Exception($"Layer of {nameof(info)} does not exist");
         }
-
-        if (info is ConvInfo conv)
-        {
-            var activation = ActivationFunctionFactory.Get(conv.Activation);
-            return new Conv(shape, conv.Kernel, conv.Stride, activation);
-        }
-        
-        throw new Exception($"Layer of {nameof(info)} does not exist");
     }
     
 }
