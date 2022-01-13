@@ -13,7 +13,7 @@ public class RandomForestPredictor : IExample
 {
     public async Task Run()
     {
-        const int numTrees = 1;
+        const int numTrees = 10;
         const int maxDepth = 10;
         const int minSampleSplit = 2;
         

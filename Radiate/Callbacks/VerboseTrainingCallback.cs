@@ -109,9 +109,19 @@ public class VerboseTrainingCallback : IEpochStartedCallback,
                       $"\n\t{pctBatch}" +
                       $"\n\t{separator}\n";
         
-        Console.SetCursorPosition(_col, _row);
-        Console.Write($"{toWrite}");
         
+
+        if (_previousEpoch.Index != _maxEpoch)
+        {
+            Console.Write($"\r{toWrite}");
+            Console.SetCursorPosition(_col, _row);
+        }
+        else
+        {
+            Console.SetCursorPosition(_col, _row);
+            Console.Write($"\r{toWrite}");
+        }
+
         _previousTime = DateTime.Now;
     }
 

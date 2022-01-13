@@ -1,4 +1,5 @@
 ﻿using System.IO.Compression;
+using System.Reflection;
 using System.Text.Json;
 using Radiate.Data.Models;
 
@@ -9,19 +10,22 @@ public class Cifar : IDataSet
 {
     private readonly int _featureLimit;
 
-    public Cifar(int featureLimit)
+    public Cifar(int featureLimit = 0)
     {
         _featureLimit = featureLimit;
     }
     
     public Task<(List<float[]> inputs, List<float[]> targets)> GetDataSet()
     {
-        var dataLocation = Path.Combine(Environment.CurrentDirectory, "DataSets", "cifar", "images.zip");
+        var assembly = Assembly.GetExecutingAssembly();
+        var contents = new StreamReader(assembly.GetManifestResourceStream("Radiate.Data.DataSets.cifar.images.zip"));
 
-        using var zip = new ZipArchive(File.OpenRead(dataLocation), ZipArchiveMode.Read);
+        using var zip = new ZipArchive(contents.BaseStream, ZipArchiveMode.Read);
 
         var features = new List<CifarImage>();
-        for (var i = 0; i < _featureLimit; i++)
+        var entries = zip.Entries;
+        var iter = _featureLimit == 0 ? entries.Count : _featureLimit;
+        for (var i = 0; i < iter; i++)
         {
             var zipFile = zip.Entries[i].Open();
             features.Add(JsonSerializer.Deserialize<CifarImage>(zipFile));

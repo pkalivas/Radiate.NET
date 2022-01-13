@@ -1,11 +1,13 @@
-﻿namespace Radiate.Data;
+﻿using System.Reflection;
+
+namespace Radiate.Data;
 
 public class IrisFlowers : IDataSet
 {
     public async Task<(List<float[]> inputs, List<float[]> targets)> GetDataSet()
     {
-        var fileName = Path.Combine(Environment.CurrentDirectory, "DataSets", "Iris", "iris.csv");
-        var contents = await File.ReadAllTextAsync(fileName);
+        var assembly = Assembly.GetExecutingAssembly();
+        var contents = await new StreamReader(assembly.GetManifestResourceStream("Radiate.Data.DataSets.Iris.iris.csv")).ReadToEndAsync();
 
         var features = new List<float[]>();
         var labels = new List<string>();

@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.Reflection;
+using Newtonsoft.Json;
 using Radiate.Data.Models;
 
 namespace Radiate.Data;
@@ -14,8 +15,8 @@ public class TempTimeSeries : IDataSet
     
     public async Task<(List<float[]> inputs, List<float[]> targets)> GetDataSet()
     {
-        var fileLocation = Path.Combine(Environment.CurrentDirectory, "DataSets", "TempTimeSeries", "TempTimeSeries.json");
-        var contents = await File.ReadAllTextAsync(fileLocation);
+        var assembly = Assembly.GetExecutingAssembly();
+        var contents = await new StreamReader(assembly.GetManifestResourceStream("Radiate.Data.DataSets.TempTimeSeries.TempTimeSeries.json")).ReadToEndAsync();
         var data = JsonConvert.DeserializeObject<List<TempOverTime>>(contents)
             .Take(_featureLimit)
             .ToList();

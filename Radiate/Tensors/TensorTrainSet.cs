@@ -32,6 +32,8 @@ public class TensorTrainSet
 
     public List<Batch> TestingInputs => TestBatchCache.Any() ? TestBatchCache : TestingBatches();
 
+    public List<Batch> BatchAll => TrainingInputs.Concat(TestingBatches()).ToList();
+
     public (List<float[]>, List<float[]>) RawTrainingInputs()
     {
         var shuffle = new ShuffleTransform();

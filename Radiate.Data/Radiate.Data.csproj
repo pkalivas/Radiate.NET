@@ -3,6 +3,11 @@
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <RootNamespace>Radiate.Data</RootNamespace>
+		<PackageId>Radiate.Data</PackageId>
+		<Version>1.0.2</Version>
+		<Authors>Peter Kalivas</Authors>
+		<RepositoryUrl>https://github.com/pkalivas/Radiate.NET.git</RepositoryUrl> 
+		<RepositoryType>git</RepositoryType> 
     </PropertyGroup>
 
     <ItemGroup>
@@ -10,31 +15,50 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="DataSets\BostonHousing\Boston.csv">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="DataSets\Minst\test.gz">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
       <None Update="DataSets\Minst\train.gz">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="DataSets\TempTimeSeries\TempTimeSeries.json">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="DataSets\Iris\iris.csv">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="DataSets\Moons\moons.csv">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="DataSets\Circles\circles.csv">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Radiate\Radiate.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="DataSets\Circles\circles.csv" />
+      <EmbeddedResource Include="DataSets\Circles\circles.csv" />
+      <None Remove="DataSets\BlobCluster\blob.csv" />
+      <EmbeddedResource Include="DataSets\BlobCluster\blob.csv">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="DataSets\BostonHousing\Boston.csv" />
+      <EmbeddedResource Include="DataSets\BostonHousing\Boston.csv">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="DataSets\BreastCancer\BreastCancer.csv" />
+      <EmbeddedResource Include="DataSets\BreastCancer\BreastCancer.csv">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="DataSets\Cifar\images.zip" />
+      <EmbeddedResource Include="DataSets\Cifar\images.zip">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="DataSets\Iris\iris.csv" />
+      <EmbeddedResource Include="DataSets\Iris\iris.csv">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="DataSets\Minst\test.gz" />
+      <EmbeddedResource Include="DataSets\Minst\test.gz">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="DataSets\Moons\moons.csv" />
+      <EmbeddedResource Include="DataSets\Moons\moons.csv">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="DataSets\TempTimeSeries\TempTimeSeries.json" />
+      <EmbeddedResource Include="DataSets\TempTimeSeries\TempTimeSeries.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
     </ItemGroup>
 
 </Project>

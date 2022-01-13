@@ -33,7 +33,8 @@ public static class Csv
         {
             1 => new Shape(resultShapeSplit[0]),
             2 => new Shape(resultShapeSplit[0], resultShapeSplit[1]),
-            3 => new Shape(resultShapeSplit[0], resultShapeSplit[1], resultShapeSplit[2])
+            3 => new Shape(resultShapeSplit[0], resultShapeSplit[1], resultShapeSplit[2]),
+            _ => throw new KeyNotFoundException()
         };
 
         return values.ToTensor().Reshape(resultShape);

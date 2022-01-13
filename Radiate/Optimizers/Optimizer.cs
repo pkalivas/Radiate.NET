@@ -58,7 +58,7 @@ public class Optimizer<T> where T: class
 
         return model;
     }
-
+    
     public Prediction Predict(float[] input)
     {
         var processedInput = _tensorTrainSet.Process(input.ToTensor());
@@ -70,20 +70,12 @@ public class Optimizer<T> where T: class
         };
     }
 
-    public Validation ValidationScores()
+    public Validation ValidationScores() => Validate(_tensorTrainSet.TestingInputs);
+    
+    public Validation Validate(IEnumerable<float[]> inputs, IEnumerable<float[]> targets)
     {
-        var validator = new Validator(_loss switch
-        {
-            Loss.None => LossFunctionResolver.Get(_optimizer),
-            _ => LossFunctionResolver.Get(_loss)
-        });
-        
-        return _optimizer switch
-        {
-            ISupervised supervised => validator.Validate(supervised, _tensorTrainSet.TestingInputs),
-            IUnsupervised unsupervised => validator.Validate(unsupervised, _tensorTrainSet.TestingInputs),
-            _ => throw new Exception("Cannot validate model.")
-        };
+        var batches = new TensorTrainSet(inputs, targets).BatchAll;
+        return Validate(batches);
     }
     
     public OptimizerWrap Save() => new()
@@ -107,6 +99,22 @@ public class Optimizer<T> where T: class
         ISupervised supervised => new SupervisedTrainingSession(supervised, _callbacks),
         _ => throw new Exception("Cannot resolve training session.")
     };
+
+    private Validation Validate(List<Batch> batches)
+    {
+        var validator = new Validator(_loss switch
+        {
+            Loss.None => LossFunctionResolver.Get(_optimizer),
+            _ => LossFunctionResolver.Get(_loss)
+        });
+        
+        return _optimizer switch
+        {
+            ISupervised supervised => validator.Validate(supervised, batches),
+            IUnsupervised unsupervised => validator.Validate(unsupervised, batches),
+            _ => throw new Exception("Cannot validate model.")
+        };
+    }
     
     public static Optimizer<T> Load(OptimizerWrap wrap, IEnumerable<ITrainingCallback> callbacks = null) 
     {
