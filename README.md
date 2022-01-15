@@ -82,6 +82,7 @@ var prediction = trainedOptimizer.Predict(vectorToPredict);
 6. ExpSigmoid
 
 ## Examples
+Datasets coming from Radiate.Data which provides easily accessable common machine learning datasets.
 
 **Convolutional Neural Network on MNist handwritten digets dataset**
 
