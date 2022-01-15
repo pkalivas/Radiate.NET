@@ -16,6 +16,7 @@ Common machine learning algorithm implementations. Extension of rust crate [radi
 
 ## Examples
 **Neural Network on Circles dataset:**
+
 <img src="https://machinelearningmastery.com/wp-content/uploads/2017/12/Scatter-Plot-of-Circles-Test-Classification-Problem-1024x768.png" width="300px;" />
 
 ```c#
