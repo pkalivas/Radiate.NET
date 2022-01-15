@@ -35,7 +35,7 @@ Functional feature engineering with ```TensorTrainSet```. Transform input data (
 8. TransformFeatures - Transform the feature data. Options are *Normalize*, *Standardize*, *OHE* (One Hot Encode), and *Image* (divide data point by 255).
 8. TransformTargets - Transform the target data. Options same as above.
 
-## Model saving/loading to/from Json
+## Model saving and loading
 Save an ```Optimizer<T>``` model like
 ```c#
 var optimizer = new Optimizer<RandomForest>(forest, tensorTrainSet);
