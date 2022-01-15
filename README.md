@@ -19,7 +19,7 @@ Common machine learning algorithm implementations. Extension of rust crate [radi
 2. Functional feature engineering with ```TensorTrainSet```
 3. Model saving/loading to/from Json
 
-**Callbacks**
+##### Callbacks
 ---
 a
 ## Examples
