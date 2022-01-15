@@ -27,6 +27,27 @@ Hook into the training look with custom code. Create an object that implements o
 3. IEpochCompletedCallback
 4. ITrainingCompletedCallback
 
+### Feature Engineering
+---
+1. Batch
+    - Set a batch size to train on.
+2. Layer
+    - Layer data by n rows.
+3. Split
+    - Split the data into a training set and testing set. Default is 75% split training, 25% testing.
+4. Reshape
+    - Reshape the row vector to a shape of (height, width, depth), useful for images.
+5. Pad
+    - Pad an image Tensor with n zeros.
+6. Shuffle
+    - Shuffle the rows of the dataset randomly.
+7. Kernel
+    - Add kernel transform for the features, possible options are *RBF*, *Polynomial*, and *Linear* (None).
+8. TransformFeatures
+    - Transform the feature data. Options are *Normalize*, *Standardize*, *OHE* (One Hot Encode), and *Image* (divide data point by 255).
+8. TransformTargets
+    - Transform the target data. Options same as above.
+
 ## Examples
 
 **Convolutional Neural Network on MNist handwritten digets dataset**
