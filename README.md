@@ -17,6 +17,7 @@ Common machine learning algorithms implemented from scratch. Extension of rust c
 ## Examples
 - **Neural Network on Circles dataset:**
 <img src="https://machinelearningmastery.com/wp-content/uploads/2017/12/Scatter-Plot-of-Circles-Test-Classification-Problem-1024x768.png" width="500px;" />
+
 ```c#
 const int maxEpoch = 100;
 
