@@ -81,6 +81,11 @@ var prediction = trainedOptimizer.Predict(vectorToPredict);
 5. SoftMax
 6. ExpSigmoid
 
+## Gradients
+Only applies to ```MultiLayerPerceptron``` and ```SupportVectorMachine```
+1. Adam
+2. SGD
+
 ## Examples
 Datasets coming from Radiate.Data which provides easily accessable common machine learning datasets.
 
