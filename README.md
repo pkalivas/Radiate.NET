@@ -43,7 +43,7 @@ await optimizer.Train(epoch => epoch.Index == maxEpoch);
 ```
 
 - **Convolutional Neural Network on MNist dataset**
-<img src="https://storage.googleapis.com/tfds-data/visualization/fig/mnist-3.0.1.png" width="200px">
+<img src="https://camo.githubusercontent.com/01c057a753e92a9bc70b8c45d62b295431851c09cffadf53106fc0aea7e2843f/687474703a2f2f692e7974696d672e636f6d2f76692f3051493378675875422d512f687164656661756c742e6a7067" width="200px">
 
 ```c#
 const int featureLimit = 5000;
