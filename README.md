@@ -65,7 +65,8 @@ Common machine learning algorithm implementations. Extension of rust crate [radi
 >```
 > Loading in an ```Opimizer<T>``` from the above options:
 >```c#
->
+> var optimizer = ModelReader.FromJson<RandomForest>(jsonString);
+> var optimizer = ModelReader.FromStream<RandomForest>(stream);
 >```
 
 ## Examples
