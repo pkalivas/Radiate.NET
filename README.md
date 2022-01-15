@@ -3,7 +3,7 @@ Common machine learning algorithm implementations. Extension of rust crate [radi
 ## Algorithms
 1. **Random Forest**
 2. **Support Vector Machine**
-3. **Neural Networks**
+3. **MultiLayer Perceptron**
     - Dense Layer
     - Dropout Layer
     - Flatten Layer
