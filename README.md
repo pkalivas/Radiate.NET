@@ -45,7 +45,7 @@ Common machine learning algorithm implementations. Extension of rust crate [radi
 >8. TransformTargets
 >    - Transform the target data. Options same as above.
 3. Model saving/loading to/from Json
-> Save a trained model like
+> Save an ```Optimizer<T>``` model like
 > ```c#
 > var optimizer = new Optimizer<RandomForest>(forest, tensorTrainSet);
 > var wrapped = optimizer.Save();
