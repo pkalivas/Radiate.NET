@@ -14,34 +14,15 @@ Common machine learning algorithm implementations. Extension of rust crate [radi
 5. **Evolution Engine**
     - Implementation of [NEAT](http://nn.cs.utexas.edu/downloads/papers/stanley.ec02.pdf)
 
+## Features
+1. Training callbacks similar to [Keras Callbacks](https://keras.io/api/callbacks/)
+2. Functional feature engineering with ```TensorTrainSet```
+3. Model saving/loading to/from Json
+
+**Callbacks**
+---
+a
 ## Examples
-**Neural Network on Circles dataset:**
-
-<img src="https://machinelearningmastery.com/wp-content/uploads/2017/12/Scatter-Plot-of-Circles-Test-Classification-Problem-1024x768.png" width="300px;" />
-
-```c#
-const int maxEpoch = 100;
-
-var (inputs, targets) = await new Circles().GetDataSet();
-
-var pair = new TensorTrainSet(inputs, targets)
-    .TransformTargets(Norm.OHE)
-    .TransformFeatures(Norm.Standardize)
-    .Shuffle()
-    .Split();
-
-var mlp = new MultiLayerPerceptron(new GradientInfo { Gradient = Gradient.SGD })
-    .AddLayer(new DenseInfo(32, Activation.ReLU))
-    .AddLayer(new DenseInfo(pair.OutputCategories, Activation.Sigmoid));
-
-var optimizer = new Optimizer<MultiLayerPerceptron>(mlp, pair, Loss.MSE, new List<ITrainingCallback>()
-{
-    new VerboseTrainingCallback(pair, maxEpoch, false),
-    new ConfusionMatrixCallback()
-});
-
-await optimizer.Train(epoch => epoch.Index == maxEpoch);
-```
 
 **Convolutional Neural Network on MNist handwritten digets dataset**
 
