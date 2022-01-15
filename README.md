@@ -21,7 +21,12 @@ Common machine learning algorithm implementations. Extension of rust crate [radi
 
 ##### Callbacks
 ---
-a
+Hook into the training look with custom code. Create an object that implements one of the following:
+1. IEpochStartedCallback
+2. IBatchCompletedCallback
+3. IEpochCompletedCallback
+4. ITrainingCompletedCallback
+
 ## Examples
 
 **Convolutional Neural Network on MNist handwritten digets dataset**
