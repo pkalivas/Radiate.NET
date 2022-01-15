@@ -23,6 +23,7 @@ Common machine learning algorithm implementations. Extension of rust crate [radi
 > 4. ITrainingCompletedCallback
 
 2. Functional feature engineering with ```TensorTrainSet```
+> Transform input data (featurs, targets) with specific options below.
 >1. Batch
 >    - Set a batch size to train on.
 >2. Layer
@@ -42,27 +43,11 @@ Common machine learning algorithm implementations. Extension of rust crate [radi
 >8. TransformTargets
 >    - Transform the target data. Options same as above.
 3. Model saving/loading to/from Json
-
-### Feature Engineering
----
-1. Batch
-    - Set a batch size to train on.
-2. Layer
-    - Layer data by n rows.
-3. Split
-    - Split the data into a training set and testing set. Default is 75% split training, 25% testing.
-4. Reshape
-    - Reshape the row vector to a shape of (height, width, depth), useful for images.
-5. Pad
-    - Pad an image Tensor with n zeros.
-6. Shuffle
-    - Shuffle the rows of the dataset randomly.
-7. Kernel
-    - Add kernel transform for the features, possible options are *RBF*, *Polynomial*, and *Linear* (None).
-8. TransformFeatures
-    - Transform the feature data. Options are *Normalize*, *Standardize*, *OHE* (One Hot Encode), and *Image* (divide data point by 255).
-8. TransformTargets
-    - Transform the target data. Options same as above.
+> Save a trained model like
+> ```c#
+> var optimizer = new Optimizer<RandomForest>(forest, tensorTrainSet);
+> var wrapped = optimizer.Save();
+> ```
 
 ## Examples
 
