@@ -12,7 +12,7 @@ Common machine learning algorithm implementations. Extension of rust crate [radi
     - MaxPooling Layer
 4. **KMeans Clustering**
 5. **Evolution Engine**
-    - Implementation of [NEAT](http://nn.cs.utexas.edu/downloads/papers/stanley.ec02.pdf)
+    - Evolve any object which implements the Genome base class. Implementation of [NEAT](http://nn.cs.utexas.edu/downloads/papers/stanley.ec02.pdf) for evolving NeuralNetworks is included.
 
 ## Callbacks
 Similar to [Keras Callbacks](https://keras.io/api/callbacks/). Hook into the training loop with custom code. Create an object that implements any or all of the following:
