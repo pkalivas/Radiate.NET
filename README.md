@@ -60,8 +60,22 @@ Common machine learning algorithm implementations. Extension of rust crate [radi
 > var optimizer = ModelReader.FromStream<RandomForest>(stream);
 >```
 
+## Loss functions
+1. CrossEntropy
+2. Difference 
+3. Hinge
+4. MeanSquaredError
+
+## Activation Functions
+1. Sigmoid
+2. ReLu
+3. Tanh
+4. Linear
+5. SoftMax
+6. ExpSigmoid
+
 ## Make predictions
-Because the ```Optimizer<T>``` has ```TensorTrainSet```, it can transform a given ```float[]``` to acceptable input to the model. This makes making predictions as easy as
+Because the ```Optimizer<T>``` has ```TensorTrainSet```, it can transform a given ```float[]``` to acceptable input to the model even after saving/loading a model. This makes making predictions as easy as
 ```c#
 var vectorToPredict = new float[] { 1f, 2f, 3f, 4f, 5f };
 var prediction = trainedOptimizer.Predict(vectorToPredict);
