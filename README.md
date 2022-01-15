@@ -21,6 +21,7 @@ Common machine learning algorithm implementations. Extension of rust crate [radi
 > 2. IBatchCompletedCallback
 > 3. IEpochCompletedCallback
 > 4. ITrainingCompletedCallback
+> See [this](https://github.com/pkalivas/Radiate.NET/tree/main/Radiate.Examples/Callbacks) for example callbacks or [this](https://github.com/pkalivas/Radiate.NET/blob/main/Radiate/Callbacks/VerboseTrainingCallback.cs) for a ```VerboseTrainingCallback``` to print training progress to the Console.
 
 2. Functional feature engineering with ```TensorTrainSet```
 > Transform input data (featurs, targets) with specific options below.
