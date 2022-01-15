@@ -60,6 +60,12 @@ Common machine learning algorithm implementations. Extension of rust crate [radi
 > var optimizer = ModelReader.FromStream<RandomForest>(stream);
 >```
 
+## Make predictions
+Because the ```Optimizer<T>``` has ```TensorTrainSet```, it can transform a given ```float[]``` to acceptable input to the model. This makes making predictions as easy as
+```c#
+var vectorToPredict = new float[] { 1f, 2f, 3f, 4f, 5f };
+var prediction = trainedOptimizer.Predict(vectorToPredict);
+```
 ## Examples
 
 **Convolutional Neural Network on MNist handwritten digets dataset**
