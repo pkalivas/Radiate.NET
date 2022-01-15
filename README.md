@@ -19,7 +19,7 @@ Common machine learning algorithm implementations. Extension of rust crate [radi
 2. Functional feature engineering with ```TensorTrainSet```
 3. Model saving/loading to/from Json
 
-##### Callbacks
+### Callbacks
 ---
 Hook into the training look with custom code. Create an object that implements one of the following:
 1. IEpochStartedCallback
