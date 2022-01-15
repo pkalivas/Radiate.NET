@@ -48,6 +48,10 @@ Common machine learning algorithm implementations. Extension of rust crate [radi
 > var optimizer = new Optimizer<RandomForest>(forest, tensorTrainSet);
 > var wrapped = optimizer.Save();
 > ```
+> wrapped contains three objects
+> 1. TensorTrainSet options, the options used to transform the input features/targets. During predicion the Optimizer<T> uses these options to transform the input vector so it matches the trained features in order to get accurate predictions.
+> 2. LossFunction, the loss function used during training. If you save a model mid training, the loss function is needed when loading back in the model to continue training.
+> 3. ModelWrap, the machine learning model being trained/used for prediction.
 
 ## Examples
 
