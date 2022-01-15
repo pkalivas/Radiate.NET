@@ -50,6 +50,11 @@ Common machine learning algorithm implementations. Extension of rust crate [radi
 > var optimizer = new Optimizer<RandomForest>(forest, tensorTrainSet);
 > var wrapped = optimizer.Save();
 > ```
+> or by using the ModelWriter
+> ```c#
+> var optimizer = new Optimizer<RandomForest>(forest, tensorTrainSet);
+> var jsonString = ModelWriter.ToJson<RandomForest>(optimizer);
+>```
 > The ```Optimizer<T>``` is not Json serializable, but the ```OptimizerWrap``` is, so the ```Optimizer<T>``` must be converted to a concrete object before serializing.
 >
 >```OptimizerWrap``` contains three items:
