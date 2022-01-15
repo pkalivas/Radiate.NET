@@ -26,21 +26,8 @@ public class MultiLayerPerceptron : ISupervised
     public MultiLayerPerceptron(ModelWrap wrap)
     {
         _layerInfo = new List<LayerInfo>();
-        _layers = wrap.MultiLayerPerceptronWrap.LayerWraps
-            .Select(layerWrap => layerWrap.LayerType switch
-            {
-                LayerType.Conv => (Layer) new Conv(layerWrap.Conv),
-                LayerType.Dense => new Dense(layerWrap.Dense),
-                LayerType.Dropout => new Dropout(layerWrap.Dropout),
-                LayerType.Flatten => new Flatten(layerWrap.Flatten),
-                LayerType.LSTM => new LSTM(layerWrap.Lstm),
-                LayerType.MaxPool => new MaxPool(layerWrap.MaxPool),
-                _ => throw new Exception($"Layer {layerWrap.LayerType} is not loadable.")
-            })
-            .ToList();
+        _layers = wrap.MultiLayerPerceptronWrap.LayerWraps.Select(LoadLayer).ToList();
     }
-
-    public Shape Shape => _layers.Any() ? _layers.First().Shape : new Shape(0);
     
     public MultiLayerPerceptron AddLayer(LayerInfo layerInfo)
     {
@@ -81,7 +68,7 @@ public class MultiLayerPerceptron : ISupervised
     public ModelWrap Save() => new()
     {
         ModelType = ModelType.MultiLayerPerceptron,
-        MultiLayerPerceptronWrap = new()
+        MultiLayerPerceptronWrap = new MultiLayerPerceptronWrap
         {
             LayerWraps = _layers.Select(layer => layer.Save()).ToList()
         }
@@ -157,5 +144,16 @@ public class MultiLayerPerceptron : ISupervised
                 throw new Exception($"Layer of {nameof(info)} does not exist");
         }
     }
-    
+
+    public static Layer LoadLayer(LayerWrap layerWrap) => layerWrap.LayerType switch
+    {
+        LayerType.Conv => new Conv(layerWrap.Conv),
+        LayerType.Dense => new Dense(layerWrap.Dense),
+        LayerType.Dropout => new Dropout(layerWrap.Dropout),
+        LayerType.Flatten => new Flatten(layerWrap.Flatten),
+        LayerType.LSTM => new LSTM(layerWrap.Lstm),
+        LayerType.MaxPool => new MaxPool(layerWrap.MaxPool),
+        _ => throw new KeyNotFoundException($"Layer {layerWrap.LayerType} is not loadable.")
+    };
+
 }
