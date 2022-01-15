@@ -16,6 +16,12 @@ Common machine learning algorithm implementations. Extension of rust crate [radi
 
 ## Features
 1. Training callbacks similar to [Keras Callbacks](https://keras.io/api/callbacks/)
+> Hook into the training loop with custom code. Create an object that implements any or all of the following:
+> 1. IEpochStartedCallback
+> 2. IBatchCompletedCallback
+> 3. IEpochCompletedCallback
+> 4. ITrainingCompletedCallback
+
 2. Functional feature engineering with ```TensorTrainSet```
 3. Model saving/loading to/from Json
 
