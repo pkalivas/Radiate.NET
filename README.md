@@ -50,18 +50,23 @@ Common machine learning algorithm implementations. Extension of rust crate [radi
 > var optimizer = new Optimizer<RandomForest>(forest, tensorTrainSet);
 > var wrapped = optimizer.Save();
 > ```
-> or by using the ModelWriter
-> ```c#
-> var optimizer = new Optimizer<RandomForest>(forest, tensorTrainSet);
-> var jsonString = ModelWriter.ToJson<RandomForest>(optimizer);
-> var stream = ModelWriter.ToStream<RandomForest>(optimizer);
->```
 > The ```Optimizer<T>``` is not Json serializable, but the ```OptimizerWrap``` is, so the ```Optimizer<T>``` must be converted to a concrete object before serializing.
 >
 >```OptimizerWrap``` contains three items:
 > 1. TensorTrainSet options, the options used to transform the input features/targets. During predicion the Optimizer<T> uses these options to transform the input vector so it matches the trained features in order to get accurate predictions.
 > 2. LossFunction, the loss function used during training. If you save a model mid training, the loss function is needed when loading back in the model to continue training.
 > 3. ModelWrap, the machine learning model being trained/used for prediction.
+>
+> The ```Optimizer<T>``` can also be converted to a json string or a memory stream like so:
+> ```c#
+> var optimizer = new Optimizer<RandomForest>(forest, tensorTrainSet);
+> var jsonString = ModelWriter.ToJson<RandomForest>(optimizer);
+> var stream = ModelWriter.ToStream<RandomForest>(optimizer);
+>```
+> Loading in an ```Opimizer<T>``` from the above options:
+>```c#
+>
+>```
 
 ## Examples
 
