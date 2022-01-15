@@ -4,12 +4,18 @@
     <TargetFramework>net6.0</TargetFramework>
     <RootNamespace>Radiate</RootNamespace>
 	<PackageId>Radiate</PackageId>
-	<Version>1.0.3</Version>
+	<Version>1.0.5</Version>
 	<Authors>Peter Kalivas</Authors>
 	<RepositoryUrl>https://github.com/pkalivas/Radiate.NET.git</RepositoryUrl> 
     <RepositoryType>git</RepositoryType> 
+	<PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
-
+  <ItemGroup>
+	<None Include="../README.md">
+		<Pack>True</Pack>
+		<PackagePath>\</PackagePath>
+	</None>
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>

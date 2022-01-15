@@ -1,4 +1,4 @@
-Common machine learning algorithm implementations. Extension of rust crate [radiate](https://github.com/pkalivas/radiate).
+.NET port of Rust crate [radiate](https://github.com/pkalivas/radiate).
 
 ## Algorithms
 1. **Random Forest**
