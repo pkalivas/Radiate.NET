@@ -14,51 +14,51 @@ Common machine learning algorithm implementations. Extension of rust crate [radi
 5. **Evolution Engine**
     - Implementation of [NEAT](http://nn.cs.utexas.edu/downloads/papers/stanley.ec02.pdf)
 
-## Features
-1. Training callbacks similar to [Keras Callbacks](https://keras.io/api/callbacks/)
-> Hook into the training loop with custom code. Create an object that implements any or all of the following:
-> 1. IEpochStartedCallback
-> 2. IBatchCompletedCallback
-> 3. IEpochCompletedCallback
-> 4. ITrainingCompletedCallback
-> 
->See [this](https://github.com/pkalivas/Radiate.NET/tree/main/Radiate.Examples/Callbacks) for example callbacks or [this](https://github.com/pkalivas/Radiate.NET/blob/main/Radiate/Callbacks/VerboseTrainingCallback.cs) for a ```VerboseTrainingCallback``` to print training progress to the Console.
+## Callbacks
+Similar to [Keras Callbacks](https://keras.io/api/callbacks/). Hook into the training loop with custom code. Create an object that implements any or all of the following:
+1. IEpochStartedCallback
+2. IBatchCompletedCallback
+3. IEpochCompletedCallback
+4. ITrainingCompletedCallback
+ 
+See [this](https://github.com/pkalivas/Radiate.NET/tree/main/Radiate.Examples/Callbacks) for example callbacks or [this](https://github.com/pkalivas/Radiate.NET/blob/main/Radiate/Callbacks/VerboseTrainingCallback.cs) for a ```VerboseTrainingCallback``` to print training progress to the Console.
 
-2. Functional feature engineering with ```TensorTrainSet```
-> Transform input data (featurs, targets) with specific options below.
->1. Batch - Set a batch size to train on.
->2. Layer - Layer data by n rows.
->3. Split - Split the data into a training set and testing set. Default is 75% split training, 25% testing.
->4. Reshape - Reshape the row vector to a shape of (height, width, depth), useful for images.
->5. Pad - Pad an image Tensor with n zeros.
->6. Shuffle - Shuffle the rows of the dataset randomly.
->7. Kernel - Add kernel transform for the features, possible options are *RBF*, *Polynomial*, and *Linear* (None).
->8. TransformFeatures - Transform the feature data. Options are *Normalize*, *Standardize*, *OHE* (One Hot Encode), and *Image* (divide data point by 255).
->8. TransformTargets - Transform the target data. Options same as above.
-3. Model saving/loading to/from Json
-> Save an ```Optimizer<T>``` model like
-> ```c#
-> var optimizer = new Optimizer<RandomForest>(forest, tensorTrainSet);
-> var wrapped = optimizer.Save();
-> ```
-> The ```Optimizer<T>``` is not Json serializable, but the ```OptimizerWrap``` is, so the ```Optimizer<T>``` must be converted to a concrete object before serializing.
->
->```OptimizerWrap``` contains three items:
-> 1. TensorTrainSet options, the options used to transform the input features/targets. During predicion the Optimizer<T> uses these options to transform the input vector so it matches the trained features in order to get accurate predictions.
-> 2. LossFunction, the loss function used during training. If you save a model mid training, the loss function is needed when loading back in the model to continue training.
-> 3. ModelWrap, the machine learning model being trained/used for prediction.
->
-> The ```Optimizer<T>``` can also be converted to a json string or a memory stream like so:
-> ```c#
-> var optimizer = new Optimizer<RandomForest>(forest, tensorTrainSet);
-> var jsonString = ModelWriter.ToJson<RandomForest>(optimizer);
-> var stream = ModelWriter.ToStream<RandomForest>(optimizer);
->```
-> Loading in an ```Opimizer<T>``` from the above options:
->```c#
-> var optimizer = ModelReader.FromJson<RandomForest>(jsonString);
-> var optimizer = ModelReader.FromStream<RandomForest>(stream);
->```
+## Feature Engineering
+Functional feature engineering with ```TensorTrainSet```. Transform input data (featurs, targets) with specific options below.
+1. Batch - Set a batch size to train on.
+2. Layer - Layer data by n rows.
+3. Split - Split the data into a training set and testing set. Default is 75% split training, 25% testing.
+4. Reshape - Reshape the row vector to a shape of (height, width, depth), useful for images.
+5. Pad - Pad an image Tensor with n zeros.
+6. Shuffle - Shuffle the rows of the dataset randomly.
+7. Kernel - Add kernel transform for the features, possible options are *RBF*, *Polynomial*, and *Linear* (None).
+8. TransformFeatures - Transform the feature data. Options are *Normalize*, *Standardize*, *OHE* (One Hot Encode), and *Image* (divide data point by 255).
+8. TransformTargets - Transform the target data. Options same as above.
+
+## Model saving/loading to/from Json
+Save an ```Optimizer<T>``` model like
+```c#
+var optimizer = new Optimizer<RandomForest>(forest, tensorTrainSet);
+var wrapped = optimizer.Save();
+```
+The ```Optimizer<T>``` is not Json serializable, but the ```OptimizerWrap``` is, so the ```Optimizer<T>``` must be converted to a concrete object before serializing.
+
+```OptimizerWrap``` contains three items:
+1. TensorTrainSet options, the options used to transform the input features/targets. During predicion the Optimizer<T> uses these options to transform the input vector so it matches the trained features in order to get accurate predictions.
+2. LossFunction, the loss function used during training. If you save a model mid training, the loss function is needed when loading back in the model to continue training.
+3. ModelWrap, the machine learning model being trained/used for prediction.
+
+The ```Optimizer<T>``` can also be converted to a json string or a memory stream like so:
+```c#
+var optimizer = new Optimizer<RandomForest>(forest, tensorTrainSet);
+var jsonString = ModelWriter.ToJson<RandomForest>(optimizer);
+var stream = ModelWriter.ToStream<RandomForest>(optimizer);
+```
+Loading in an ```Opimizer<T>``` from the above options:
+```c#
+var optimizer = ModelReader.FromJson<RandomForest>(jsonString);
+var optimizer = ModelReader.FromStream<RandomForest>(stream);
+```
 
 ## Make predictions
 Because the ```Optimizer<T>``` has ```TensorTrainSet```, it can transform a given ```float[]``` to acceptable input to the model even after saving/loading a model. This makes making predictions as easy as
