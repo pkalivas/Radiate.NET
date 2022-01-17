@@ -1,7 +1,7 @@
-﻿using Radiate.Optimizers.Evolution.Population;
-using Radiate.Optimizers.Evolution.Population.Delegates;
-using Radiate.Optimizers.Evolution.Population.ParentalCriteria;
-using Radiate.Optimizers.Evolution.Population.SurvivorCriteria;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using Radiate.IO.Wraps;
+using Radiate.Optimizers.Evolution.Population;
 
 namespace Radiate.Optimizers.Evolution;
 
@@ -13,8 +13,6 @@ namespace Radiate.Optimizers.Evolution;
     private Generation<T, TE> CurrentGeneration { get; set; }
     private EvolutionEnvironment EvolutionEnvironment { get; set; }
     private Solve<T> Solver { get; set; }
-    private GetSurvivors<T> SurvivorPicker { get; set; } = new Fittest().Pick<T>;
-    private GetParents<T> ParentPicker { get; set; } = new BiasedRandom().Pick<T>;
     private int GenerationsUnchanged { get; set; }
     private double PreviousFitness { get; set; }
     private const double Tolerance = 0.0000001;
@@ -42,7 +40,7 @@ namespace Radiate.Optimizers.Evolution;
     public async Task<float> Step()
     {
         var topMember = CurrentGeneration.Step(Solver);
-        
+
         await CurrentGeneration.Speciate(Settings.SpeciesDistance, EvolutionEnvironment);
         
         if (Settings.DynamicDistance)
@@ -76,42 +74,33 @@ namespace Radiate.Optimizers.Evolution;
             GenerationsUnchanged = 0;
         }
 
-        CurrentGeneration = await CurrentGeneration.CreateNextGeneration(Settings, 
-            EvolutionEnvironment, SurvivorPicker, ParentPicker);
-
+        CurrentGeneration = CurrentGeneration.CreateNextGeneration(Settings, EvolutionEnvironment);
+        
         PreviousFitness = topMember.Fitness;
 
         return topMember.Fitness;
     }
-    
 
-    public T Best => CurrentGeneration.GetBestMember().Model;
+    public T Best()
+    {   
+        var result = CurrentGeneration.GetBestMember().Model;
+        result.ResetGenome();
+        return result;
+    }
 
-    public Population<T, TE> SetFitnessFunction(Solve<T> solver)
+    public Population<T, TE> AddFitnessFunction(Solve<T> solver)
     {
         Solver = solver;
         return this;
     }
 
-    public Population<T, TE> Configure(Action<PopulationSettings> settings)
+    public Population<T, TE> AddSettings(Action<PopulationSettings> settings)
     {
         settings.Invoke(Settings);
         return this;
     }
 
-    public Population<T, TE> SetSurvivorPicker(GetSurvivors<T> survivors)
-    {
-        SurvivorPicker = survivors;
-        return this;
-    }
-
-    public Population<T, TE> SetParentPicker(GetParents<T> parents)
-    {
-        ParentPicker = parents;
-        return this;
-    }
-
-    public Population<T, TE> SetEnvironment(EvolutionEnvironment environment)
+    public Population<T, TE> AddEnvironment(EvolutionEnvironment environment)
     {
         EvolutionEnvironment = environment;
         return this;

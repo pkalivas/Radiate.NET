@@ -94,6 +94,12 @@ public class Neuron
 
     public void Reset()
     {
+        Prepare();
+        PreviousState = 0;
+    }
+
+    public void Prepare()
+    {
         Error = 0;
         ActivatedValue = 0;
         DeactivatedValue = 0;

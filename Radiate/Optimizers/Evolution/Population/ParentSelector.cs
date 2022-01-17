@@ -1,9 +1,8 @@
-﻿
-namespace Radiate.Optimizers.Evolution.Population.ParentalCriteria;
+﻿namespace Radiate.Optimizers.Evolution.Population;
 
-public class BiasedRandom : IParentPicker
+public static class ParentSelector
 {
-    public (Guid parentOne, Guid parentTwo) Pick<T>(double inbreedRate, List<Niche> species)
+    public static (Guid parentOne, Guid parentTwo) Select<T>(double inbreedRate, List<Niche> species)
     {
         var random = new Random();
 
@@ -27,8 +26,7 @@ public class BiasedRandom : IParentPicker
 
         return (parentOne, parentTwo);
     }
-
-
+    
     private static Niche GetBiasedRandomNiche(List<Niche> species, Random random)
     {
         var total = species.Aggregate(0.0, (all, current) => all + current.TotalAdjustedFitness);

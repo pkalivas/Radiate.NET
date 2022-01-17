@@ -3,9 +3,6 @@ using Radiate.Data;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Evolution;
 using Radiate.Optimizers.Evolution.Neat;
-using Radiate.Optimizers.Evolution.Population.Enums;
-using Radiate.Optimizers.Evolution.Population.ParentalCriteria;
-using Radiate.Optimizers.Evolution.Population.SurvivorCriteria;
 
 namespace Radiate.Examples.Examples;
 
@@ -17,11 +14,10 @@ public class EvolveNEAT : IExample
         const int populationSize = 200;
         
         var (inputs, answers) = await new SimpleMemory().GetDataSet();
-
         var networks = Enumerable.Range(0, populationSize).Select(_ => new Neat(1, 1, Activation.ExpSigmoid)).ToList();
 
         var population = new Population<Neat, NeatEnvironment>(networks)
-            .Configure(settings =>
+            .AddSettings(settings =>
             {
                 settings.DynamicDistance = true;
                 settings.SpeciesTarget = 5;
@@ -31,9 +27,7 @@ public class EvolveNEAT : IExample
                 settings.CleanPct = .9;
                 settings.StagnationLimit = 15;
             })
-            .SetParentPicker(ParentPickerResolver.Get<Neat>(ParentPicker.BiasedRandom))
-            .SetSurvivorPicker(SurvivorPickerResolver.Get<Neat>(SurvivorPicker.Fittest))
-            .SetEnvironment(new NeatEnvironment
+            .AddEnvironment(new NeatEnvironment
             {
                 RecurrentNeuronRate = 1f,
                 ReactivateRate = .2f,
@@ -48,7 +42,7 @@ public class EvolveNEAT : IExample
                     Activation.ReLU
                 }
             })
-            .SetFitnessFunction(member =>
+            .AddFitnessFunction(member =>
             {
                 var total = 0.0f;
                 foreach (var points in inputs.Zip(answers))
@@ -61,13 +55,13 @@ public class EvolveNEAT : IExample
             });
 
         var optimizer = new Optimizer<Population<Neat, NeatEnvironment>>(population);
-        var member = (await optimizer.Train(epoch =>
+        var pop = await optimizer.Train(epoch =>
         {
             Console.Write($"\r[{epoch.Index}] {epoch.Fitness}");
             return epoch.Index == maxEpochs;
-        })).Best;
-        
-        member.ResetGenome();
+        });
+
+        var member = pop.Best();
 
         Console.WriteLine();
         foreach (var (point, idx) in inputs.Select((val, idx) => (val, idx)))

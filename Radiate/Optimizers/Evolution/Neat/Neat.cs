@@ -1,46 +1,42 @@
-﻿using Radiate.Activations;
+﻿using Newtonsoft.Json;
+using Radiate.Activations;
+using Radiate.IO.Wraps;
 using Radiate.Optimizers.Evolution.Population;
 
 namespace Radiate.Optimizers.Evolution.Neat;
 
 public class Neat : Genome
 {
-    private NeuronId[] Inputs { get; set; }
-    private NeuronId[] Outputs { get; set; }
-    private List<Neuron> Nodes { get; set; }
-    private List<Edge> Edges { get; set; }
-    private Dictionary<Guid, EdgeId> EdgeInnovationLookup { get; set; }
-    private Tracer Tracer { get; set; }
-    private Activation Activation { get; set; }
-    private bool FastMode { get; set; }
-
-    private Neat() { }
+    private readonly NeuronId[] _inputs;
+    private readonly NeuronId[] _outputs;
+    private readonly List<Neuron> _nodes;
+    private readonly List<Edge> _edges;
+    private readonly Dictionary<Guid, EdgeId> _edgeInnovationLookup;
+    private readonly Activation _activation;
     
-
     public Neat(int inputSize, int outputSize, Activation activation)
     {
-        Inputs = new NeuronId[inputSize];
-        Outputs = new NeuronId[outputSize];
-        Nodes = new List<Neuron>();
-        Edges = new List<Edge>();
-        EdgeInnovationLookup = new Dictionary<Guid, EdgeId>();
-        Activation = activation;
-        FastMode = true;
+        _inputs = new NeuronId[inputSize];
+        _outputs = new NeuronId[outputSize];
+        _nodes = new List<Neuron>();
+        _edges = new List<Edge>();
+        _edgeInnovationLookup = new Dictionary<Guid, EdgeId>();
+        _activation = activation;
 
         for (var i = 0; i < inputSize; i++)
         {
-            Inputs[i] = MakeNode(NeuronType.Input, activation, NeuronDirection.Forward);
+            _inputs[i] = MakeNode(NeuronType.Input, activation, NeuronDirection.Forward);
         }
 
         for (var i = 0; i < outputSize; i++)
         {
-            Outputs[i] = MakeNode(NeuronType.Output, activation, NeuronDirection.Forward);
+            _outputs[i] = MakeNode(NeuronType.Output, activation, NeuronDirection.Forward);
         }
 
         var random = new Random();
-        foreach (var input in Inputs)
+        foreach (var input in _inputs)
         {
-            foreach (var output in Outputs)
+            foreach (var output in _outputs)
             {
                 var weight = random.NextDouble() * 2 - 1;
                 MakeEdge(input, output, (float) weight);
@@ -48,25 +44,48 @@ public class Neat : Genome
         }
     }
     
+    private Neat(Neat neat)
+    {
+        _inputs = neat._inputs
+            .Select(input => new NeuronId { Index = input.Index })
+            .ToArray();
+        _outputs = neat._outputs
+            .Select(output => new NeuronId { Index = output.Index })
+            .ToArray();
+        _nodes = neat._nodes
+            .Select(node => node.Clone())
+            .ToList();
+        _activation = neat._activation;
+        _edges = neat._edges
+            .Select(edge => new Edge
+            {
+                Active = edge.Active,
+                Dst = new NeuronId { Index = edge.Dst.Index },
+                Id = new EdgeId { Index = edge.Id.Index },
+                Innovation = edge.Innovation,
+                Src = new NeuronId { Index = edge.Src.Index },
+                Weight = edge.Weight
+            })
+            .ToList();
+        _edgeInnovationLookup = neat._edgeInnovationLookup
+            .Select(pair => (Id: pair.Key, edge: new EdgeId { Index = pair.Value.Index }))
+            .ToDictionary(key => key.Id, val => val.edge);
+    }
     
     public List<float> GetOutputs() => 
-        Outputs
-            .Select(output => Nodes[output.Index].ActivatedValue)
+        _outputs
+            .Select(output => _nodes[output.Index].ActivatedValue)
             .ToList();
-
-    public bool HasTracer() => Tracer is not null;
     
     private void AddNode(Activation activation, NeuronDirection direction)
     {
-        FastMode = false;
-
         var newNodeId = MakeNode(NeuronType.Hidden, activation, direction);
-        var currentEdge = Edges[new Random().Next(Edges.Count)];
+        var currentEdge = _edges[new Random().Next(_edges.Count)];
 
         MakeEdge(currentEdge.Src, newNodeId, 1.0f);
         MakeEdge(newNodeId, currentEdge.Dst, currentEdge.Weight);
         
-        Edges[currentEdge.Id.Index].Disable(Nodes);
+        _edges[currentEdge.Id.Index].Disable(_nodes);
     }
     
     private void AddEdge()
@@ -77,25 +96,24 @@ public class Neat : Genome
         if (ValidConnection(sending, receiving))
         {
             MakeEdge(sending, receiving, (float) new Random().NextDouble());
-            FastMode = false;
         }
     }
 
     private NeuronId MakeNode(NeuronType neuronType, Activation activation, NeuronDirection direction)
     {
-        var nodeId = new NeuronId { Index = Nodes.Count };
-        Nodes.Add(new Neuron(nodeId, neuronType, activation, direction));
+        var nodeId = new NeuronId { Index = _nodes.Count };
+        _nodes.Add(new Neuron(nodeId, neuronType, activation, direction));
         return nodeId;
     }
 
     private EdgeId MakeEdge(NeuronId src, NeuronId dst, float weight)
     {
-        var edgeId = new EdgeId { Index = Edges.Count };
+        var edgeId = new EdgeId { Index = _edges.Count };
         var edge = new Edge(edgeId, src, dst, weight, true);
         
-        edge.LinkNodes(Nodes);
-        EdgeInnovationLookup[edge.Innovation] = edgeId;
-        Edges.Add(edge);
+        edge.LinkNodes(_nodes);
+        _edgeInnovationLookup[edge.Innovation] = edgeId;
+        _edges.Add(edge);
 
         return edgeId;
     }
@@ -122,9 +140,9 @@ public class Neat : Genome
 
     private bool Cyclical(NeuronId sending, NeuronId receiving)
     {
-        var receivingNode = Nodes[receiving.Index];
+        var receivingNode = _nodes[receiving.Index];
         var stack = receivingNode.OutgoingEdges()
-            .Select(edge => Edges[edge.Index].Dst.Index)
+            .Select(edge => _edges[edge.Index].Dst.Index)
             .ToList();
 
         while (stack.Any())
@@ -133,30 +151,30 @@ public class Neat : Genome
             
             stack.RemoveAt(stack.Count - 1);
 
-            var current = Nodes[topNode];
+            var current = _nodes[topNode];
             if (current.Id.Equals(sending))
             {
                 return true;
             }
 
-            stack.AddRange(current.OutgoingEdges().Select(edge => Edges[edge.Index].Dst.Index));
+            stack.AddRange(current.OutgoingEdges().Select(edge => _edges[edge.Index].Dst.Index));
         }
 
         return false;
     }
 
     private bool Exists(NeuronId sending, NeuronId receiving) => 
-        Edges.Any(edge => edge.Src.Equals(sending) && edge.Dst.Equals(receiving));
+        _edges.Any(edge => edge.Src.Equals(sending) && edge.Dst.Equals(receiving));
 
 
     private NeuronId RandomNodeNotOfType(NeuronType neuronType)
     {
         var random = new Random();
-        var node = Nodes[random.Next(Nodes.Count)];
+        var node = _nodes[random.Next(_nodes.Count)];
 
         while (node.NeuronType == neuronType)
         {
-            node = Nodes[random.Next(Nodes.Count)];
+            node = _nodes[random.Next(_nodes.Count)];
         }
 
         return node.Id;
@@ -166,88 +184,38 @@ public class Neat : Genome
     private void EditWeights(float editable, float size)
     {
         var random = new Random();
-        foreach (var edge in Edges)
+        foreach (var edge in _edges)
         {
             var shouldEdit = random.NextDouble() < editable;
             var weightValue = shouldEdit 
                 ? (float) random.NextDouble() 
                 : edge.Weight * ((float) random.NextDouble() * size - size);
-            edge.UpdateWeight(weightValue, Nodes);
+            edge.UpdateWeight(weightValue, _nodes);
         }
 
-        foreach (var node in Nodes)
+        foreach (var node in _nodes)
         {
             var shouldEdit = random.NextDouble() < editable;
             node.Bias = shouldEdit ? (float) random.NextDouble() : node.Bias * ((float) random.NextDouble() * size - size);
         }
     }
 
-    private void UpdateTracer()
-    {
-        if (Tracer is not null)
-        {
-            foreach (var node in Nodes)
-            {
-                Tracer.UpdateNeuronActivation(node);
-                Tracer.UpdateNeuronDerivative(node);
-            }
-
-            Tracer.Index++;
-        }
-    }
-
-
-    private float[] FastForward(IReadOnlyList<float> data)
-    {
-        var inSize = Inputs.Length;
-
-        for (var i = 0; i < inSize; i++)
-        {
-            Nodes[i].Reset();
-            Nodes[i].ActivatedValue = data[i];
-        }
-
-        var result = new List<float>();
-        for (var i = inSize; i < Nodes.Count; i++)
-        {
-            Nodes[i].Reset();
-            
-            Nodes[i].CurrentState = Nodes[i].IncomingEdges()
-                .Select((neuron, idx) => (neuron, data[idx]))
-                .Aggregate(Nodes[i].Bias, (sum, current) => sum + (current.Item2 * current.neuron.Weight));
-            
-            Nodes[i].Activate();
-
-            result.Add(Nodes[i].ActivatedValue);
-        }
-        
-        UpdateTracer();
-
-        return result.ToArray();
-    }
-    
-    
     public float[] Forward(float[] data)
     {
-        if (Inputs.Length != data.Length)
+        if (_inputs.Length != data.Length)
         {
-            throw new Exception($"Dense layer input does not match. Input size {Inputs.Length}, given size {data.Length}");
+            throw new Exception($"Dense layer input does not match. Input size {_inputs.Length}, given size {data.Length}");
         }
-
-        if (FastMode)
-        {
-            return FastForward(data);
-        }
-
+        
         var outputs = new List<float>();
         var updates = new List<NodeUpdate>();
         var pendingCount = 0;
-        var lowestPendingIdx = Nodes.Count;
+        var lowestPendingIdx = _nodes.Count;
 
         var inputCounter = 0;
-        foreach (var node in Nodes)
+        foreach (var node in _nodes)
         {
-            node.Reset();
+            node.Prepare();
 
             var update = new NodeUpdate();
             if (node.NeuronType == NeuronType.Input)
@@ -302,12 +270,12 @@ public class Neat : Genome
             var changes = 0;
 
             var startIdx = lowestPendingIdx;
-            var endIdx = Nodes.Count;
+            var endIdx = _nodes.Count;
             lowestPendingIdx = endIdx;
 
             for (var i = startIdx; i < endIdx; i++)
             {
-                var node = Nodes[i];
+                var node = _nodes[i];
                 var oldUpdate = updates[i];
 
                 if (oldUpdate.IsPending())
@@ -345,12 +313,38 @@ public class Neat : Genome
             }
         }
         
-        UpdateTracer();
-
         return outputs.ToArray();
     }
     
-    public override Task<T> Crossover<T, TE>(T other, TE environment, double crossoverRate)
+    public NeatWrap Save() => new NeatWrap
+    {
+        Inputs = _inputs
+            .Select(input => new NeuronId { Index = input.Index })
+            .ToArray(),
+        Outputs = _outputs
+            .Select(output => new NeuronId { Index = output.Index })
+            .ToArray(),
+        Nodes = _nodes
+            .Select(node => node.Clone())
+            .ToList(),
+        Edges = _edges
+            .Select(edge => new Edge
+            {
+                Active = edge.Active,
+                Dst = new NeuronId { Index = edge.Dst.Index },
+                Id = new EdgeId { Index = edge.Id.Index },
+                Innovation = edge.Innovation,
+                Src = new NeuronId { Index = edge.Src.Index },
+                Weight = edge.Weight
+            })
+            .ToList(),
+        Activation = _activation,
+        EdgeInnovationLookup = _edgeInnovationLookup
+            .Select(pair => (Id: pair.Key, edge: new EdgeId { Index = pair.Value.Index }))
+            .ToDictionary(key => key.Id, val => val.edge),
+    };
+    
+    public override T Crossover<T, TE>(T other, TE environment, double crossoverRate)
     {
         var random = new Random();
 
@@ -360,20 +354,20 @@ public class Neat : Genome
 
         if (random.NextDouble() < crossoverRate)
         {
-            foreach (var edge in child.Edges)
+            foreach (var edge in child._edges)
             {
-                if (parentTwo.EdgeInnovationLookup.ContainsKey(edge.Innovation))
+                if (parentTwo._edgeInnovationLookup.ContainsKey(edge.Innovation))
                 {
-                    var parentEdge = parentTwo.Edges.Single(pedge => pedge.Innovation == edge.Innovation);
+                    var parentEdge = parentTwo._edges.Single(pedge => pedge.Innovation == edge.Innovation);
 
                     if (random.NextDouble() < .5)
                     {
-                        edge.UpdateWeight(parentEdge.Weight, child.Nodes);
+                        edge.UpdateWeight(parentEdge.Weight, child._nodes);
                     }
 
                     if ((!edge.Active || !parentEdge.Active) && random.NextDouble() < neatEnv.ReactivateRate)
                     {
-                        edge.Enable(child.Nodes);
+                        edge.Enable(child._nodes);
                     }
                 }
             }
@@ -404,7 +398,7 @@ public class Neat : Genome
             }
         }
 
-        return Task.FromResult(child as T);
+        return child as T;
     }
 
 
@@ -412,54 +406,22 @@ public class Neat : Genome
     {
         var parentTwo = other as Neat;
 
-        var similar = EdgeInnovationLookup.Keys.Count(innov => parentTwo.EdgeInnovationLookup.ContainsKey(innov));
+        var similar = _edgeInnovationLookup.Keys.Count(innov => parentTwo._edgeInnovationLookup.ContainsKey(innov));
 
-        var oneScore = similar / Edges.Count;
-        var twoScore = similar / parentTwo.Edges.Count;
+        var oneScore = similar / _edges.Count;
+        var twoScore = similar / parentTwo._edges.Count;
 
         return Task.FromResult(2.0 - (oneScore + twoScore));
     }
 
-    public override T CloneGenome<T>() => new Neat
-    {
-        Inputs = Inputs
-            .Select(input => new NeuronId { Index = input.Index })
-            .ToArray(),
-        Outputs = Outputs
-            .Select(output => new NeuronId { Index = output.Index })
-            .ToArray(),
-        Nodes = Nodes
-            .Select(node => node.Clone())
-            .ToList(),
-        Activation = Activation,
-        Edges = Edges
-            .Select(edge => new Edge
-            {
-                Active = edge.Active,
-                Dst = new NeuronId { Index = edge.Dst.Index },
-                Id = new EdgeId { Index = edge.Id.Index },
-                Innovation = edge.Innovation,
-                Src = new NeuronId { Index = edge.Src.Index },
-                Weight = edge.Weight
-            })
-            .ToList(),
-        EdgeInnovationLookup = EdgeInnovationLookup
-            .Select(pair => (Id: pair.Key, edge: new EdgeId { Index = pair.Value.Index }))
-            .ToDictionary(key => key.Id, val => val.edge),
-        FastMode = Nodes.Count == Inputs.Length + Outputs.Length,
-    } as T;
+    public override T CloneGenome<T>() => new Neat(this) as T;
 
     public override void ResetGenome()
     {
-        foreach (var node in Nodes)
+        foreach (var node in _nodes)
         {
             node.Reset();
         }
-
-        if (Tracer is not null)
-        {
-            Tracer = new();
-        }
     }
-
+    
 }

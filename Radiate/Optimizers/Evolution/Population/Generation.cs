@@ -1,6 +1,7 @@
-﻿using Radiate.Optimizers.Evolution.Population.Delegates;
+﻿using System.Collections.Concurrent;
 
 namespace Radiate.Optimizers.Evolution.Population;
+
 public class Generation<T, TE> 
     where T : Genome
     where TE: EvolutionEnvironment
@@ -62,7 +63,7 @@ public class Generation<T, TE>
     
     public Member<T> Step(Solve<T> problem)
     {
-        var newMembers = new List<(Guid memberId, float memberFitness)>(Members.Count);
+        var newMembers = new ConcurrentBag<(Guid memberId, float memberFitness)>();
         Parallel.ForEach(Members.Keys, member =>
         {
             newMembers.Add((member, problem(Members[member].Model)));
@@ -79,13 +80,9 @@ public class Generation<T, TE>
         return GetBestMember();
     }
     
-    public async Task<Generation<T, TE>> CreateNextGeneration(
-        PopulationSettings popSettings,
-        EvolutionEnvironment envSettings, 
-        GetSurvivors<T> survivorPicker, 
-        GetParents<T> parentPicker)
+    public Generation<T, TE> CreateNextGeneration(PopulationSettings popSettings, EvolutionEnvironment envSettings)
     {
-        var newMembers = survivorPicker(Members, Species)
+        var newMembers = SurvivorSelector.Select(Members, Species)
             .Select(pair =>
             {
                 var model = pair.member.Model;
@@ -93,15 +90,15 @@ public class Generation<T, TE>
                 return (pair.memberId, member: new Member<T> { Fitness = 0, Model = model });
             })
             .ToDictionary(key => key.memberId, val => val.member);
-
+        
         var childNum = popSettings.Size - newMembers.Count;
-        var childTasks = new List<Task<T>>(childNum);
-        Parallel.For(0, childNum, i =>
+        var childTasks = new ConcurrentBag<T>();
+        Parallel.For(0, childNum, _ =>
         {
-            var (parentOneId, parentTwoId) = parentPicker(popSettings.InbreedRate, Species);
+            var (parentOneId, parentTwoId) = ParentSelector.Select<T>(popSettings.InbreedRate, Species);
             var parentOne = Members[parentOneId];
             var parentTwo = Members[parentTwoId];
-
+        
             var newGenomeTask = parentOne.Fitness > parentTwo.Fitness 
                 ? parentOne.Model.Crossover(parentTwo.Model, envSettings, popSettings.CrossoverRate) 
                 : parentTwo.Model.Crossover(parentOne.Model, envSettings, popSettings.CrossoverRate);
@@ -109,11 +106,11 @@ public class Generation<T, TE>
             childTasks.Add(newGenomeTask);
         });
 
-        foreach (var child in await Task.WhenAll(childTasks))
+        foreach (var child in childTasks)
         {
             newMembers[Guid.NewGuid()] = new Member<T> { Fitness = 0, Model = child };
         }
-        
+
         Species = Species.Select(niche => niche.Reset()).ToList();
 
         return new Generation<T, TE>
@@ -128,6 +125,7 @@ public class Generation<T, TE>
 
     public void CleanPopulation(double pct)
     {
+        var toRemove = new List<Guid>();
         foreach (var species in Species)
         {
             if (species.Members.Count == 1)
@@ -141,6 +139,13 @@ public class Generation<T, TE>
                 .OrderByDescending(mem => mem.fitness)
                 .Take(toTake)
                 .ToList();
+            
+            toRemove.AddRange(species.Members.Skip(toTake).Select(mem => mem.memberId));
+        }
+
+        foreach (var memId in toRemove)
+        {
+            Members.Remove(memId);
         }
     }
 

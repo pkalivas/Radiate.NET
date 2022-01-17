@@ -1,9 +1,8 @@
-﻿
-namespace Radiate.Optimizers.Evolution.Population.SurvivorCriteria;
+﻿namespace Radiate.Optimizers.Evolution.Population;
 
-public class Fittest : ISurvivorPicker
+public static class SurvivorSelector
 {
-    public List<(Guid memberId, Member<T> member)> Pick<T>(Dictionary<Guid, Member<T>> members, List<Niche> species) => 
+    public static List<(Guid memberId, Member<T> member)> Select<T>(Dictionary<Guid, Member<T>> members, List<Niche> species) => 
         species
             .Select(spec =>
             {

@@ -3,7 +3,7 @@ namespace Radiate.Optimizers.Evolution.Population;
 
 public abstract class Genome
 {
-    public abstract Task<T> Crossover<T, TE>(T other, TE environment, double crossoverRate)
+    public abstract T Crossover<T, TE>(T other, TE environment, double crossoverRate)
         where T: Genome
         where TE: EvolutionEnvironment;
 

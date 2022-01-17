@@ -24,7 +24,7 @@ public class EvolveHelloWorld : IExample
         var worlds = Enumerable.Range(0, populationSize).Select(_ => new HelloWorld()).ToList();
 
         var population = new Population<HelloWorld, BaseEvolutionEnvironment>(worlds)
-            .Configure(settings =>
+            .AddSettings(settings =>
             {
                 settings.DynamicDistance = true;
                 settings.SpeciesTarget = 5;
@@ -34,13 +34,13 @@ public class EvolveHelloWorld : IExample
                 settings.CleanPct = .9;
                 settings.StagnationLimit = 15;
             })
-            .SetFitnessFunction(member => member.Chars.Zip(target)
+            .AddFitnessFunction(member => member.Chars.Zip(target)
                     .Sum(points => points.First == points.Second ? 1.0f : 0.0f));
 
         var optimizer = new Optimizer<Population<HelloWorld, BaseEvolutionEnvironment>>(population);
         var model = await optimizer.Train(epoch => epoch.Index == evolutionEpochs || epoch.Fitness == 12);
 
-        var best = model.Best;
+        var best = model.Best();
         Console.WriteLine($"\nFinal Result: {best.Print()}");
     }
     
@@ -61,7 +61,7 @@ public class EvolveHelloWorld : IExample
     
         public string Print() => string.Join("", Chars);
     
-        public override Task<T> Crossover<T, TE>(T other, TE environment, double crossoverRate)        
+        public override T Crossover<T, TE>(T other, TE environment, double crossoverRate)        
         {
             var child = new HelloWorld();
             var secondParent = other as HelloWorld;
@@ -87,7 +87,7 @@ public class EvolveHelloWorld : IExample
                 child.Chars = newData;
             }
 
-            return Task.FromResult(child as T);
+            return child as T;
         }
     
         public override Task<double> Distance<T, TE>(T other, TE environment)
@@ -108,5 +108,6 @@ public class EvolveHelloWorld : IExample
         }
     
         public override void ResetGenome() { }
+        
     }
 }

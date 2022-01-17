@@ -3,7 +3,6 @@ using Radiate.Callbacks;
 using Radiate.Callbacks.Interfaces;
 using Radiate.Data;
 using Radiate.Examples.Callbacks;
-using Radiate.Losses;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
