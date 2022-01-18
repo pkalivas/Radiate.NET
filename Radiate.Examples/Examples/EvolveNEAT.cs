@@ -11,7 +11,7 @@ public class EvolveNEAT : IExample
     public async Task Run()
     {
         const int maxEpochs = 500;
-        const int populationSize = 200;
+        const int populationSize = 100;
         
         var (inputs, answers) = await new SimpleMemory().GetDataSet();
         var networks = Enumerable.Range(0, populationSize).Select(_ => new Neat(1, 1, Activation.ExpSigmoid)).ToList();
@@ -61,7 +61,7 @@ public class EvolveNEAT : IExample
             return epoch.Index == maxEpochs;
         });
 
-        var member = pop.Best();
+        var member = pop.Best;
 
         Console.WriteLine();
         foreach (var (point, idx) in inputs.Select((val, idx) => (val, idx)))

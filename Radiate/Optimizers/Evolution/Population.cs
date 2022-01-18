@@ -81,12 +81,7 @@ namespace Radiate.Optimizers.Evolution;
         return topMember.Fitness;
     }
 
-    public T Best()
-    {   
-        var result = CurrentGeneration.GetBestMember().Model;
-        result.ResetGenome();
-        return result;
-    }
+    public T Best => CurrentGeneration.GetBestMember().Model;
 
     public Population<T, TE> AddFitnessFunction(Solve<T> solver)
     {

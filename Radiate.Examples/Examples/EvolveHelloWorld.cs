@@ -40,7 +40,7 @@ public class EvolveHelloWorld : IExample
         var optimizer = new Optimizer<Population<HelloWorld, BaseEvolutionEnvironment>>(population);
         var model = await optimizer.Train(epoch => epoch.Index == evolutionEpochs || epoch.Fitness == 12);
 
-        var best = model.Best();
+        var best = model.Best;
         Console.WriteLine($"\nFinal Result: {best.Print()}");
     }
     
