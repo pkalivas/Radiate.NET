@@ -29,7 +29,7 @@ public class EvolveNEAT : IExample
             })
             .AddEnvironment(new NeatEnvironment
             {
-                RecurrentNeuronRate = 1f,
+                RecurrentNeuronRate = .95f,
                 ReactivateRate = .2f,
                 WeightMutateRate = .8f,
                 NewEdgeRate = .14f,
