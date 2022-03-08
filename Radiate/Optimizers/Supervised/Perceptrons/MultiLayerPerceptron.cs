@@ -35,14 +35,16 @@ public class MultiLayerPerceptron : ISupervised
         return this;
     }
 
-    public List<(Prediction prediction, Tensor target)> Step(Tensor[] features, Tensor[] targets)
+    public List<Step> Step(Tensor[] features, Tensor[] targets)
     {
-        var predictions = new List<(Prediction, Tensor)>();
+        var predictions = new List<Step>();
         
         foreach (var (x, y) in features.Zip(targets))
         {
+            var startTime = DateTime.Now;
             var prediction = PassForward(x);
-            predictions.Add((prediction, y));
+            
+            predictions.Add(new Step(prediction, y, DateTime.Now - startTime));
         }
         
         return predictions;

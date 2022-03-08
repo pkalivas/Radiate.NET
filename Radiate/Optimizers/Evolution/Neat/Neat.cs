@@ -43,6 +43,34 @@ public class Neat : Genome
             }
         }
     }
+
+    public Neat(NeatWrap neat)
+    {
+        _inputs = neat.Inputs
+            .Select(input => new NeuronId { Index = input.Index })
+            .ToArray();
+        _outputs = neat.Outputs
+            .Select(output => new NeuronId { Index = output.Index })
+            .ToArray();
+        _nodes = neat.Nodes
+            .Select(node => node.Clone())
+            .ToList();
+        _activation = neat.Activation;
+        _edges = neat.Edges
+            .Select(edge => new Edge
+            {
+                Active = edge.Active,
+                Dst = new NeuronId { Index = edge.Dst.Index },
+                Id = new EdgeId { Index = edge.Id.Index },
+                Innovation = edge.Innovation,
+                Src = new NeuronId { Index = edge.Src.Index },
+                Weight = edge.Weight
+            })
+            .ToList();
+        _edgeInnovationLookup = neat.EdgeInnovationLookup
+            .Select(pair => (Id: pair.Key, edge: new EdgeId { Index = pair.Value.Index }))
+            .ToDictionary(key => key.Id, val => val.edge);
+    }
     
     private Neat(Neat neat)
     {

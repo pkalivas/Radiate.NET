@@ -4,7 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <RootNamespace>Radiate</RootNamespace>
 	<PackageId>Radiate</PackageId>
-	<Version>1.0.6</Version>
+	<Version>1.0.9</Version>
 	<Authors>Peter Kalivas</Authors>
 	<RepositoryUrl>https://github.com/pkalivas/Radiate.NET.git</RepositoryUrl> 
     <RepositoryType>git</RepositoryType> 

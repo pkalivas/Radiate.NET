@@ -5,5 +5,5 @@ namespace Radiate.Callbacks.Interfaces;
 
 public interface IBatchCompletedCallback : ITrainingCallback
 {
-    public void BatchCompleted(List<Prediction> predictions, List<Tensor> targets);
+    public void BatchCompleted(List<Step> steps);
 }

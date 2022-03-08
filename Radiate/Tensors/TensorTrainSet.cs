@@ -115,6 +115,15 @@ public class TensorTrainSet
 
     public Tensor Process(Tensor input) => TensorSetTransforms.Process(input, Options);
 
+    public Tensor Process(List<float[]> input)
+    {
+        var dataSet = input
+            .Select(row => row.ToTensor())
+            .ToArray();
+        var stack = Tensor.Stack(dataSet, Axis.Zero);
+        return TensorSetTransforms.Process(stack, Options);
+    }
+
     private List<Batch> TrainingBatches()
     {
         var (trainTest, options) = TensorSetTransforms.Apply(TrainTest with { }, Options, Enums.TrainTest.Train);

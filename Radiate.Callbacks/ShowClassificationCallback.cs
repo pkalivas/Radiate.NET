@@ -3,9 +3,9 @@ using Radiate.Optimizers;
 using Radiate.Records;
 using Radiate.Tensors;
 
-namespace Radiate.Examples.Callbacks;
+namespace Radiate.Callbacks;
 
-public class ShowRegressionCallback : ITrainingCompletedCallback
+public class ShowClassificationCallback : ITrainingCompletedCallback
 {
     public Task CompleteTraining<T>(Optimizer<T> optimizer, List<Epoch> epochs, TensorTrainSet tensorSet) where T : class
     {
@@ -14,15 +14,15 @@ public class ShowRegressionCallback : ITrainingCompletedCallback
         foreach (var (x, y) in trainIns.Zip(trainOuts))
         {
             var pred = optimizer.Predict(x);
-            Console.WriteLine($"[{pred.Confidence:0.0000}, {y.Max()}]");
+            Console.WriteLine($"[{pred.Classification}, {y.Max()}]");
         }
         
-        Console.WriteLine("\nTesting");
+        Console.WriteLine($"\nTesting");
         var (testIns, testOuts) = tensorSet.RawTestingInputs();
         foreach (var (x, y) in testIns.Zip(testOuts))
         {
             var pred = optimizer.Predict(x);
-            Console.WriteLine($"[{pred.Confidence:0.0000}, {y.Max()}]");
+            Console.WriteLine($"[{pred.Classification}, {y.Max()}]");
         }
         
         return Task.CompletedTask;

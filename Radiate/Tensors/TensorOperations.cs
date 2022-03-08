@@ -249,19 +249,45 @@ public static class TensorOperations
     public static List<Tensor> Normalize(IEnumerable<Tensor> data, NormalizeScalars scalars)
     {
         var (minLookup, maxLookup, _, _) = scalars;
-        
-        return data
-            .Select(row => row
-                .Select((feature, index) =>
-                {
-                    var min = minLookup[index];
-                    var max = maxLookup[index];
 
-                    var denominator = Math.Abs(min - max) < Tolerance ? 1 : max - min;
-                    return (feature / (min == 0 ? 1 : min)) / denominator;
-                })
-                .ToTensor())
-            .ToList();
+        var result = new List<Tensor>();
+        foreach (var feature in data)
+        {
+            if (feature.GetDimension() is 1)
+            {
+                result.Add(feature
+                    .Select((val, index) =>
+                    {
+                        var min = minLookup[index];
+                        var max = maxLookup[index];
+
+                        var denominator = Math.Abs(min - max) < Tolerance ? 1 : max - min;
+                        return (val / (min == 0 ? 1 : min)) / denominator;
+                    })
+                    .ToTensor());
+            }
+
+            if (feature.GetDimension() is 2)
+            {
+                var temp = Tensor.Like(feature.Shape);
+                for (var i = 0; i < feature.Shape.Height; i++)
+                {
+                    for (var j = 0; j < feature.Shape.Width; j++)
+                    {
+                        var min = minLookup[j];
+                        var max = maxLookup[j];
+
+                        var denominator = Math.Abs(min - max) < Tolerance ? 1 : max - min;
+                        var value = (feature[i, j] / (min == 0 ? 1 : min)) / denominator;
+                        temp[i, j] = value;
+                    }
+                }
+                
+                result.Add(temp);
+            }
+        }
+
+        return result;
     }
     
     public static List<Tensor> Standardize(IEnumerable<Tensor> data, NormalizeScalars scalars)

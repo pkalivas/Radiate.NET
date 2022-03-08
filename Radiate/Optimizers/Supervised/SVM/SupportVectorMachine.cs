@@ -54,17 +54,19 @@ public class SupportVectorMachine : ISupervised
         return new Prediction(new[] { classes.Average() }.ToTensor(), classification, confidence);
     }
 
-    public List<(Prediction prediction, Tensor target)> Step(Tensor[] features, Tensor[] targets)
+    public List<Step> Step(Tensor[] features, Tensor[] targets)
     {
-        var result = new List<(Prediction prediction, Tensor target)>();
+        var result = new List<Step>();
         var separatorResults = new Prediction[_hyperPlanes.Length][];
 
+        var startTime = DateTime.Now;
         Parallel.For(0, _hyperPlanes.Length, i =>
         {
             separatorResults[i] = _hyperPlanes[i].Feed(features, targets)
                 .Select(pred => pred.prediction)
                 .ToArray();
         });
+        var stepTime = DateTime.Now - startTime;
 
         for (var i = 0; i < targets.Length; i++)
         {
@@ -82,7 +84,7 @@ public class SupportVectorMachine : ISupervised
             var pred = featurePreds[predMax];
             var prediction = new Prediction(pred.Result, predMax, pred.Confidence);
             
-            result.Add((prediction, targets[i]));
+            result.Add(new Step(prediction, targets[i], stepTime));
         }
 
         return result;

@@ -20,17 +20,19 @@ public class Validator
     public Validation Validate(ISupervised supervised, List<Batch> data)
     {
         var iterationLoss = new List<float>();
-        var predictions = new List<(Prediction, Tensor)>();
+        var predictions = new List<Step>();
         
         foreach (var (inputs, answers) in data)
         {
             foreach (var (feature, target) in inputs.Zip(answers))
             {
+                var startTime = DateTime.Now;
                 var prediction = supervised.Predict(feature);
+                var stepTime = DateTime.Now - startTime;
                 var (_, loss) = _lossFunction(prediction.Result, target);
             
                 iterationLoss.Add(loss);
-                predictions.Add((prediction, target));   
+                predictions.Add(new Step(prediction, target, stepTime));   
             }
         }
 
@@ -44,17 +46,19 @@ public class Validator
     public Validation Validate(IUnsupervised unsupervised, List<Batch> data)
     {
         var iterationLoss = new List<float>();
-        var predictions = new List<(Prediction output, Tensor target)>();
+        var predictions = new List<Step>();
         
         foreach (var (inputs, answers) in data)
         {
             foreach (var (feature, target) in inputs.Zip(answers))
             {
+                var startTime = DateTime.Now;
                 var prediction = unsupervised.Predict(feature);
+                var stepTime = DateTime.Now - startTime;
                 var (_, loss) = _lossFunction(prediction.Result, target);
             
                 iterationLoss.Add(loss);
-                predictions.Add((prediction, target));   
+                predictions.Add(new Step(prediction, target, stepTime));   
             }
         }
 
@@ -65,16 +69,18 @@ public class Validator
         return new Validation(iterationLoss.Sum(), classAcc, regAcc, categoricalAccuracy);
     }
 
-    public static Epoch ValidateEpoch(List<float> errors, List<(Prediction outputs, Tensor targets)> predictions)
+    public static Epoch ValidateEpoch(List<float> errors, List<Step> predictions)
     {
         var categoricalAccuracy = CategoricalAccuracy(predictions);
         var classAccuracy = ClassificationAccuracy(predictions);
         var regressionAccuracy = RegressionAccuracy(predictions);
-
-        return new Epoch(0, errors.Sum(), categoricalAccuracy, regressionAccuracy, classAccuracy);
+        var totalStepMillis = (double) predictions.Sum(step => step.Time.TotalMilliseconds) / predictions.Count;
+        
+        return new Epoch(0, errors.Sum(), categoricalAccuracy, 
+            regressionAccuracy, classAccuracy, 0, TimeSpan.FromMilliseconds(totalStepMillis));
     }
     
-    private static float ClassificationAccuracy(List<(Prediction predictions, Tensor targets)> outs)
+    private static float ClassificationAccuracy(List<Step> outs)
     {
         if (!outs.Any())
         {
@@ -84,7 +90,7 @@ public class Validator
         var correctClasses = outs
             .Select(pair =>
             {
-                var (first, second) = pair;
+                var (first, second, _) = pair;
                 var secondMax = second.ToList().IndexOf(second.Max());
                 
                 return first.Classification == secondMax ? 1f : 0f;
@@ -94,22 +100,22 @@ public class Validator
         return correctClasses / outs.Count;
     }
     
-    private static float RegressionAccuracy(List<(Prediction predictions, Tensor targets)> outs)
+    private static float RegressionAccuracy(List<Step> outs)
     {
         if (!outs.Any())
         {
             return 0f;
         }
         
-        var targetTotal = outs.Sum(tar => tar.targets.Sum());
+        var targetTotal = outs.Sum(tar => tar.Target.Sum());
         var absoluteDifference = outs
-            .Select(pair => Math.Abs(pair.targets.First() - pair.predictions.Confidence))
+            .Select(pair => Math.Abs(pair.Target.First() - pair.Prediction.Confidence))
             .Sum();
 
         return (targetTotal - absoluteDifference) / targetTotal;
     }
 
-    private static float CategoricalAccuracy(List<(Prediction prediction, Tensor targets)> predictions)
+    private static float CategoricalAccuracy(List<Step> predictions)
     {
         if (!predictions.Any())
         {
@@ -117,7 +123,7 @@ public class Validator
         }
         
         var correctClasses = predictions
-            .Sum(pair => Math.Abs(pair.targets.Max() - pair.prediction.Classification) < Tolerance ? 1f : 0f);
+            .Sum(pair => Math.Abs(pair.Target.Max() - pair.Prediction.Classification) < Tolerance ? 1f : 0f);
 
         return correctClasses / predictions.Count;
     }

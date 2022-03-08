@@ -2,7 +2,6 @@
 using Radiate.Callbacks;
 using Radiate.Callbacks.Interfaces;
 using Radiate.Data;
-using Radiate.Examples.Callbacks;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
@@ -16,9 +15,9 @@ public class ConvNetMinst : IExample
 {
     public async Task Run()
     {
-        const int featureLimit = 5000;
-        const int batchSize = 128;
-        const int maxEpochs = 1;
+        const int featureLimit = 500;
+        const int batchSize = 32;
+        const int maxEpochs = 3;
         
         var (rawInputs, rawLabels) = await new Mnist(featureLimit).GetDataSet();
 
@@ -30,7 +29,7 @@ public class ConvNetMinst : IExample
             .Split();
         
         var neuralNetwork = new MultiLayerPerceptron()
-            .AddLayer(new ConvInfo(64, 3))
+            .AddLayer(new ConvInfo(32, 3))
             .AddLayer(new MaxPoolInfo(2))
             .AddLayer(new FlattenInfo())
             .AddLayer(new DenseInfo(64, Activation.Sigmoid))

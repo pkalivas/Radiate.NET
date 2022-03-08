@@ -2,7 +2,6 @@
 using Radiate.Callbacks;
 using Radiate.Callbacks.Interfaces;
 using Radiate.Data;
-using Radiate.Examples.Callbacks;
 using Radiate.Gradients;
 using Radiate.Losses;
 using Radiate.Optimizers;
@@ -33,7 +32,8 @@ public class TrainDense : IExample
 
         var optimizer = new Optimizer<MultiLayerPerceptron>(mlp, pair, Loss.MSE, new List<ITrainingCallback>()
         {
-            new VerboseTrainingCallback(pair, maxEpoch, false),
+            new ColorizedVerboseTrainingCallback(pair, maxEpoch, false),
+            // new VerboseTrainingCallback(pair, maxEpoch, false),
             new ConfusionMatrixCallback()
         });
         

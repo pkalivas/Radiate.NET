@@ -6,4 +6,5 @@ public record Epoch(int Index,
     float CategoricalAccuracy = 0f, 
     float RegressionAccuracy = 0f,
     float ClassificationAccuracy = 0f,
-    float Fitness = 0f);
+    float Fitness = 0f,
+    TimeSpan avgStepTime = new TimeSpan());

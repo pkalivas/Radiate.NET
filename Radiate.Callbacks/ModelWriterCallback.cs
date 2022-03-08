@@ -1,13 +1,10 @@
-﻿using System.IO;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Radiate.Callbacks.Interfaces;
 using Radiate.Optimizers;
-using Radiate.Optimizers.Supervised;
-using Radiate.Optimizers.Unsupervised;
 using Radiate.Records;
 using Radiate.Tensors;
 
-namespace Radiate.Examples.Callbacks;
+namespace Radiate.Callbacks;
 
 public class ModelWriterCallback : ITrainingCompletedCallback
 {

@@ -38,8 +38,8 @@ public class SupervisedTrainingSession : TrainingSession
         {
             callback.EpochStarted();
         }
-        
-        var predictions = new List<(Prediction, Tensor)>();
+
+        var predictions = new List<Step>();
         var epochErrors = new List<float>();
         
         foreach (var batch in batches)
@@ -47,7 +47,7 @@ public class SupervisedTrainingSession : TrainingSession
             var batchPredictions = FeedBatch(batch);
             
             var batchErrors = batchPredictions
-                .Select(pair => lossFunction(pair.prediction.Result, pair.target))
+                .Select(pair => lossFunction(pair.Prediction.Result, pair.Target))
                 .ToList();
             
             _supervisedModel.Update(batchErrors, Epochs.Count);
@@ -67,17 +67,14 @@ public class SupervisedTrainingSession : TrainingSession
         return epoch;
     }
 
-    private List<(Prediction prediction, Tensor target)> FeedBatch(Batch data)
+    private List<Step> FeedBatch(Batch data)
     {
         var (inputs, answers) = data;
         var result = _supervisedModel.Step(inputs, answers);
-
-        var predictions = result.Select(pred => pred.prediction).ToList();
-        var targets = result.Select(tar => tar.target).ToList();
-
+        
         foreach (var callback in GetCallbacks<IBatchCompletedCallback>())
         {
-            callback.BatchCompleted(predictions, targets);
+            callback.BatchCompleted(result);
         }
 
         return result;

@@ -3,7 +3,7 @@ using Radiate.Optimizers;
 using Radiate.Records;
 using Radiate.Tensors;
 
-namespace Radiate.Examples.Callbacks;
+namespace Radiate.Callbacks;
 
 public class ConfusionMatrixCallback : ITrainingCompletedCallback
 {

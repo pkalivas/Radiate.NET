@@ -28,7 +28,7 @@ public class RandomForest : ISupervised
         _trees = forest.Trees.Select(tree => new DecisionTree(tree)).ToArray();
     }
 
-    public List<(Prediction prediction, Tensor target)> Step(Tensor[] features, Tensor[] targets)
+    public List<Step> Step(Tensor[] features, Tensor[] targets)
     {
         var (inputs, answers) = MergeBatch(features, targets);
 
@@ -38,13 +38,14 @@ public class RandomForest : ISupervised
             _trees[i] = new DecisionTree(_info, featureInputs, targetInputs);
         });
 
-        var predictions = new List<(Prediction, Tensor)>();
+        var predictions = new List<Step>();
 
         foreach (var (x, y) in features.Zip(targets))
         {
+            var startTime = DateTime.Now;
             predictions.AddRange(_trees
                 .Select(tree => tree.Predict(x))
-                .Select(prediction => (prediction, y)));
+                .Select(prediction => new Step(prediction, y, DateTime.Now - startTime)));
         }
 
         return predictions;
