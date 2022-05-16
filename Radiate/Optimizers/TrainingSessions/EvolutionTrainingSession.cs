@@ -1,4 +1,5 @@
-﻿using Radiate.Callbacks.Interfaces;
+﻿using Radiate.Activations;
+using Radiate.Callbacks.Interfaces;
 using Radiate.Losses;
 using Radiate.Optimizers.Evolution;
 using Radiate.Records;
@@ -15,21 +16,22 @@ public class EvolutionTrainingSession : TrainingSession
         _population = population;
     }
 
-    public override async Task<T> Train<T>(TensorTrainSet trainingData, LossFunction lossFunction, Func<Epoch, bool> trainFunc)
+    public override async Task<T> Train<T>(TensorTrainSet trainingData, LossFunction lossFunction, Func<Epoch, Task<bool>> trainFunc) where T : class
     {
         while (true)
         {
             var epoch = await Fit();
 
-            if (trainFunc(epoch))
+            if (await trainFunc(epoch))
             {
                 break;
             }
         }
-        
-        return (T)_population;
-    }
 
+        var bestMember = _population.Best(); 
+        bestMember.ResetGenome();
+        return (T)bestMember;
+    }
 
     private async Task<Epoch> Fit()
     {
@@ -37,9 +39,11 @@ public class EvolutionTrainingSession : TrainingSession
         {
             callback.EpochStarted();
         }
-        
+
+        var startTime = DateTime.UtcNow;
         var fitness = await _population.Step();
-        var epoch = new Epoch(Epochs.Count + 1, 0f, 0f, 0f, 0f, fitness);
+        var endTime = DateTime.UtcNow;
+        var epoch = new Epoch(Epochs.Count + 1, 0f, 0f, 0f, 0f, fitness, startTime, endTime);
         
         Epochs.Add(epoch);
         

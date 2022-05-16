@@ -15,7 +15,7 @@ public class SupervisedTrainingSession : TrainingSession
         _supervisedModel = supervisedModel;
     }
 
-    public override Task<T> Train<T>(TensorTrainSet trainingData, LossFunction lossFunction, Func<Epoch, bool> trainFunc)
+    public override async Task<T> Train<T>(TensorTrainSet trainingData, LossFunction lossFunction, Func<Epoch, Task<bool>> trainFunc)
     {
         var batches = trainingData.TrainingInputs;
         
@@ -23,13 +23,13 @@ public class SupervisedTrainingSession : TrainingSession
         {
             var epoch = Fit(batches, lossFunction);
 
-            if (trainFunc(epoch))
+            if (await trainFunc(epoch))
             {
                 break;
             }
         }
         
-        return Task.FromResult((T) _supervisedModel);
+        return (T) _supervisedModel;
     }
 
     private Epoch Fit(List<Batch> batches, LossFunction lossFunction)

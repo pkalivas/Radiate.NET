@@ -18,4 +18,5 @@ public class ModelWrap
     public RandomForestWrap RandomForestWrap { get; init; }
     public SVMWrap SVMWrap { get; init; }
     public KMeansWrap KMeansWrap { get; init; }
+    public NeatWrap NeatWrap { get; set; }
 }

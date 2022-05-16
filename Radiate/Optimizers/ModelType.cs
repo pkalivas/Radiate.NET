@@ -6,4 +6,6 @@ public enum ModelType
     RandomForest = 1,
     SVM = 2,
     KMeans = 3,
+    Neat = 4,
+    Other = 5
 }

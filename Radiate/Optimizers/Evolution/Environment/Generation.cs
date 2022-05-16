@@ -1,20 +1,18 @@
 ﻿using System.Collections.Concurrent;
 
-namespace Radiate.Optimizers.Evolution.Population;
+namespace Radiate.Optimizers.Evolution.Environment;
 
-public class Generation<T, TE> 
-    where T : Genome
-    where TE: EvolutionEnvironment
+public class Generation
 {
-    public Dictionary<Guid, Member<T>> Members { get; set; }
-    public Dictionary<Guid, Member<T>> MascotMembers { get; set; }
+    public Dictionary<Guid, Member> Members { get; set; }
+    public Dictionary<Guid, Member> MascotMembers { get; set; }
     public List<Niche> Species { get; set; }
 
 
     public Generation()
     {
-        Members = new Dictionary<Guid, Member<T>>();
-        MascotMembers = new Dictionary<Guid, Member<T>>();
+        Members = new Dictionary<Guid, Member>();
+        MascotMembers = new Dictionary<Guid, Member>();
         Species = new List<Niche>();
     }
 
@@ -61,12 +59,12 @@ public class Generation<T, TE>
         }
     }
     
-    public Member<T> Step(Solve<T> problem)
+    public Member Step<T>(Solve<T> problem) where T : class
     {
         var newMembers = new ConcurrentBag<(Guid memberId, float memberFitness)>();
         Parallel.ForEach(Members.Keys, member =>
         {
-            newMembers.Add((member, problem(Members[member].Model)));
+            newMembers.Add((member, problem(Members[member].Model as T)));
         });
         
         foreach (var (key, val) in newMembers)
@@ -80,22 +78,22 @@ public class Generation<T, TE>
         return GetBestMember();
     }
     
-    public Generation<T, TE> CreateNextGeneration(PopulationSettings popSettings, EvolutionEnvironment envSettings)
+    public Generation CreateNextGeneration(PopulationSettings popSettings, EvolutionEnvironment envSettings)
     {
         var newMembers = SurvivorSelector.Select(Members, Species)
             .Select(pair =>
             {
                 var model = pair.member.Model;
                 model.ResetGenome();
-                return (pair.memberId, member: new Member<T> { Fitness = 0, Model = model });
+                return (pair.memberId, member: new Member { Fitness = 0, Model = model });
             })
             .ToDictionary(key => key.memberId, val => val.member);
         
         var childNum = popSettings.Size - newMembers.Count;
-        var childTasks = new ConcurrentBag<T>();
+        var childTasks = new ConcurrentBag<IGenome>();
         Parallel.For(0, childNum, _ =>
         {
-            var (parentOneId, parentTwoId) = ParentSelector.Select<T>(popSettings.InbreedRate, Species);
+            var (parentOneId, parentTwoId) = ParentSelector.Select(popSettings.InbreedRate, Species);
             var parentOne = Members[parentOneId];
             var parentTwo = Members[parentTwoId];
         
@@ -108,12 +106,12 @@ public class Generation<T, TE>
 
         foreach (var child in childTasks)
         {
-            newMembers[Guid.NewGuid()] = new Member<T> { Fitness = 0, Model = child };
+            newMembers[Guid.NewGuid()] = new Member { Fitness = 0, Model = child };
         }
 
         Species = Species.Select(niche => niche.Reset()).ToList();
 
-        return new Generation<T, TE>
+        return new Generation
         {
             Members = newMembers,
             Species = Species,
@@ -149,7 +147,7 @@ public class Generation<T, TE>
         }
     }
 
-    public Member<T> GetBestMember() => 
+    public Member GetBestMember() => 
         Members.Values
             .Aggregate(Members.Values.First(), (best, current) => current.Fitness > best.Fitness ? current : best);
 }

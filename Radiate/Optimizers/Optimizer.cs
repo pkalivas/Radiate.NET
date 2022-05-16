@@ -4,6 +4,8 @@ using Radiate.Extensions;
 using Radiate.IO.Wraps;
 using Radiate.Losses;
 using Radiate.Optimizers.Evolution;
+using Radiate.Optimizers.Evolution.Environment;
+using Radiate.Optimizers.Evolution.Neat;
 using Radiate.Optimizers.Supervised;
 using Radiate.Optimizers.Supervised.Forest;
 using Radiate.Optimizers.Supervised.Perceptrons;
@@ -20,9 +22,17 @@ public class Optimizer<T> where T: class
 {
     private readonly T _optimizer;
     private readonly TensorTrainSet _tensorTrainSet;
+    private readonly Population<T> _population;
     private readonly Loss _loss;
     private readonly IEnumerable<ITrainingCallback> _callbacks;
-    
+
+    public Optimizer(Population<T> population, TensorTrainSet tensorTrainSet = null)
+    {
+        _population = population;
+        _tensorTrainSet = tensorTrainSet?.Compile();
+        _callbacks = new List<ITrainingCallback>();
+    }
+
     public Optimizer(T optimizer, TensorTrainSet tensorTrainSet, IEnumerable<ITrainingCallback> callbacks)
         : this(optimizer, tensorTrainSet, Loss.None, callbacks) { }
 
@@ -36,11 +46,17 @@ public class Optimizer<T> where T: class
         _tensorTrainSet = tensorTrainSet;
         _loss = loss;
         _callbacks = callbacks ?? new List<ITrainingCallback>();
+        Model = _optimizer;
     }
+    
+    private T Model { get; set; }
 
-    public async Task<T> Train() => await Train(_ => true);
+    public async Task<T> Train() => await Train(_ => Task.FromResult(true));
 
-    public async Task<T> Train(Func<Epoch, bool> trainFunc)
+    public async Task<T> Train(Func<Epoch, bool> trainFunc) =>
+        await Train(epoch => Task.Run(() => trainFunc(epoch)));
+
+    public async Task<T> Train(Func<Epoch, Task<bool>> trainFunc)
     {
         var lossFunction = _loss switch
         {
@@ -49,14 +65,14 @@ public class Optimizer<T> where T: class
         };
         
         var trainingSession = GetTrainingSession();
-        var model = await trainingSession.Train<T>(_tensorTrainSet, lossFunction, trainFunc);
+        Model = await trainingSession.Train<T>(_tensorTrainSet, lossFunction, trainFunc);
         
         foreach (var callback in CallbackResolver.Get<ITrainingCompletedCallback>(_callbacks))
         {
             await callback.CompleteTraining(this, trainingSession.Epochs, _tensorTrainSet);
         }
 
-        return model;
+        return Model;
     }
     
     public Prediction Predict(float[] input)
@@ -66,9 +82,18 @@ public class Optimizer<T> where T: class
         {
             ISupervised supervised => supervised.Predict(processedInput),
             IUnsupervised unsupervised => unsupervised.Predict(processedInput),
+            IEvolved evolved => evolved.Predict(processedInput),
             _ => throw new Exception("Cannot predict optimizer")
         };
     }
+
+    public Prediction ProcessedPredict(float[] input) => _optimizer switch
+    {
+        ISupervised supervised => supervised.Predict(input.ToTensor()),
+        IUnsupervised unsupervised => unsupervised.Predict(input.ToTensor()),
+        IEvolved evolved => evolved.Predict(input.ToTensor()),
+        _ => throw new Exception("Cannot predict optimizer")
+    };
 
     public Validation ValidationScores() => Validate(_tensorTrainSet.TestingInputs);
     
@@ -82,22 +107,22 @@ public class Optimizer<T> where T: class
     {
         TensorOptions = _tensorTrainSet.TensorOptions,
         LossFunction = _loss,
-        ModelWrap = _optimizer switch
+        ModelWrap = Model switch
         {
             MultiLayerPerceptron perceptron => perceptron.Save(),
             RandomForest forest => forest.Save(),
             SupportVectorMachine vectorMachine => vectorMachine.Save(),
             KMeans means => means.Save(),
+            Neat neat => neat.Save(),
             _ => throw new Exception("Cannot save optimizer")
         }
     };
     
     private TrainingSession GetTrainingSession() => _optimizer switch
     {
-        IPopulation population => new EvolutionTrainingSession(population, _callbacks),
         IUnsupervised unsupervised => new UnsupervisedTrainingSession(unsupervised, _callbacks),
         ISupervised supervised => new SupervisedTrainingSession(supervised, _callbacks),
-        _ => throw new Exception("Cannot resolve training session.")
+        _ => new EvolutionTrainingSession(_population, _callbacks),
     };
 
     private Validation Validate(List<Batch> batches)
@@ -142,6 +167,11 @@ public class Optimizer<T> where T: class
             {
                 var kMeans = new KMeans(modelWrap);
                 return new Optimizer<T>(kMeans as T, trainSet, wrap.LossFunction, callbacks);
+            }
+            case ModelType.Neat:
+            {
+                var neat = new Neat(modelWrap);
+                return new Optimizer<T>(neat as T, trainSet, Loss.None, callbacks);
             }
             default:
                 return null;

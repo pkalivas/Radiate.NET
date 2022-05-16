@@ -1,6 +1,6 @@
 ﻿using Radiate.Optimizers;
 using Radiate.Optimizers.Evolution;
-using Radiate.Optimizers.Evolution.Population;
+using Radiate.Optimizers.Evolution.Environment;
 
 namespace Radiate.Examples.Examples;
 
@@ -23,7 +23,7 @@ public class EvolveHelloWorld : IExample
 
         var worlds = Enumerable.Range(0, populationSize).Select(_ => new HelloWorld()).ToList();
 
-        var population = new Population<HelloWorld, BaseEvolutionEnvironment>(worlds)
+        var population = new Population<HelloWorld>(worlds)
             .AddSettings(settings =>
             {
                 settings.DynamicDistance = true;
@@ -37,14 +37,13 @@ public class EvolveHelloWorld : IExample
             .AddFitnessFunction(member => member.Chars.Zip(target)
                     .Sum(points => points.First == points.Second ? 1.0f : 0.0f));
 
-        var optimizer = new Optimizer<Population<HelloWorld, BaseEvolutionEnvironment>>(population);
+        var optimizer = new Optimizer<HelloWorld>(population);
         var model = await optimizer.Train(epoch => epoch.Index == evolutionEpochs || epoch.Fitness == 12);
-
-        var best = model.Best;
-        Console.WriteLine($"\nFinal Result: {best.Print()}");
+        
+        Console.WriteLine($"\nFinal Result: {model.Print()}");
     }
     
-    private class HelloWorld : Genome
+    private class HelloWorld : IGenome
     {
         public char[] Chars { get; set; }
     
@@ -60,8 +59,9 @@ public class EvolveHelloWorld : IExample
         }
     
         public string Print() => string.Join("", Chars);
-    
-        public override T Crossover<T, TE>(T other, TE environment, double crossoverRate)        
+        
+
+        T IGenome.Crossover<T, TE>(T other, TE environment, double crossoverRate)
         {
             var child = new HelloWorld();
             var secondParent = other as HelloWorld;
@@ -89,8 +89,8 @@ public class EvolveHelloWorld : IExample
 
             return child as T;
         }
-    
-        public override Task<double> Distance<T, TE>(T other, TE environment)
+
+        public Task<double> Distance<T, TE>(T other, TE environment)
         {
             var secondParent = other as HelloWorld;
             var total = 0.0;
@@ -101,13 +101,16 @@ public class EvolveHelloWorld : IExample
 
             return Task.FromResult(Chars.Length / total);
         }
-        
-        public override T CloneGenome<T>()
+
+        T IGenome.CloneGenome<T>()
         {
             return new HelloWorld { Chars = Chars.Select(c => c).ToArray() } as T;
         }
-    
-        public override void ResetGenome() { }
-        
+
+        public void ResetGenome() { }
+        public T Randomize<T>() where T : class
+        {
+            throw new NotImplementedException();
+        }
     }
 }

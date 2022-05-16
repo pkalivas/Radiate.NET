@@ -34,12 +34,17 @@ public class LayerTransform : ITensorSetTransform
             return value;
         }
 
-        var rows = new List<Tensor>();
-        for (var i = 0; i < options.Layer; i++)
+        var result = new List<Tensor>();
+        for (var i = 0; i < value.Shape.Height; i += options.Layer)
         {
-            rows.Add(value.Row(i));
+            var rows = new List<Tensor>();
+            for (var j = 0; j < options.Layer; j++)
+            {
+                rows.Add(value.Row(i));
+            }
+            result.Add(Tensor.Stack(rows.ToArray(), Axis.One));
         }
 
-        return Tensor.Stack(rows.ToArray(), Axis.One);
+        return Tensor.Stack(result.ToArray(), Axis.Zero);
     }
 }

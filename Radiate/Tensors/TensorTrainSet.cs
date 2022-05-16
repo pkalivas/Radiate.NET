@@ -113,6 +113,13 @@ public class TensorTrainSet
         return this;
     }
 
+    public TensorTrainSet Compile()
+    {
+        TrainingBatches();
+        TestingBatches();
+        return this;
+    }
+
     public Tensor Process(Tensor input) => TensorSetTransforms.Process(input, Options);
 
     public Tensor Process(List<float[]> input)
@@ -123,7 +130,7 @@ public class TensorTrainSet
         var stack = Tensor.Stack(dataSet, Axis.Zero);
         return TensorSetTransforms.Process(stack, Options);
     }
-
+    
     private List<Batch> TrainingBatches()
     {
         var (trainTest, options) = TensorSetTransforms.Apply(TrainTest with { }, Options, Enums.TrainTest.Train);

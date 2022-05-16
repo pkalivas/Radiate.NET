@@ -15,7 +15,7 @@ public class UnsupervisedTrainingSession : TrainingSession
         _unsupervisedModel = unsupervised;
     }
 
-    public override Task<T> Train<T>(TensorTrainSet trainingData, LossFunction lossFunction, Func<Epoch, bool> trainFunc)
+    public override async Task<T> Train<T>(TensorTrainSet trainingData, LossFunction lossFunction, Func<Epoch, Task<bool>> trainFunc)
     {
         var data = trainingData.TrainingInputs
             .SelectMany(batch => batch.Features.Select(row => row))
@@ -25,13 +25,13 @@ public class UnsupervisedTrainingSession : TrainingSession
         {
             var epoch = Fit(data);
 
-            if (trainFunc(epoch))
+            if (await trainFunc(epoch))
             {
                 break;
             }
         }
         
-        return Task.FromResult((T)_unsupervisedModel);
+        return (T)_unsupervisedModel;
     }
 
 

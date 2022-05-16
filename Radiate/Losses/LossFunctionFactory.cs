@@ -25,8 +25,7 @@ public static class LossFunctionResolver
     {
         MultiLayerPerceptron or RandomForest or KMeans => new Difference().Calculate,
         SupportVectorMachine => new Hinge().Calculate,
-        IPopulation => new Difference().Calculate,
-        _ => throw new Exception("Model not implemented for loss function.")
+        _ => new Difference().Calculate,
     };
 
 }

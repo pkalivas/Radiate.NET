@@ -1,8 +1,8 @@
-﻿namespace Radiate.Optimizers.Evolution.Population;
+﻿namespace Radiate.Optimizers.Evolution.Environment;
 
 public static class ParentSelector
 {
-    public static (Guid parentOne, Guid parentTwo) Select<T>(double inbreedRate, List<Niche> species)
+    public static (Guid parentOne, Guid parentTwo) Select(double inbreedRate, List<Niche> species)
     {
         var random = new Random();
 

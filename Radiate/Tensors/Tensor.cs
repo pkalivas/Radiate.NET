@@ -85,6 +85,18 @@ public class Tensor : IEnumerable<float>
         set => ElementsThreeD[i, j, k] = value;
     }
 
+    public Tensor[] ToRows()
+    {
+        var (height, _, _) = Shape;
+        var result = new Tensor[height];
+        for (var i = 0; i < height; i++)
+        {
+            result[i] = Row(i);
+        }
+
+        return result;
+    }
+
     public Tensor Row(int index)
     {
         if (Shape.Width == 0)

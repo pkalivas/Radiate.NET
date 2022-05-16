@@ -17,7 +17,7 @@ public abstract class TrainingSession
         Epochs = new List<Epoch>();
     }
 
-    public abstract Task<T> Train<T>(TensorTrainSet trainingData, LossFunction lossFunction, Func<Epoch, bool> trainFunc);
+    public abstract Task<T> Train<T>(TensorTrainSet trainingData, LossFunction lossFunction, Func<Epoch, Task<bool>> trainFunc) where T : class;
     
     protected List<T> GetCallbacks<T>() => CallbackResolver.Get<T>(_callbacks).ToList();
 

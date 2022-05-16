@@ -1,6 +1,5 @@
 ﻿
-namespace Radiate.Optimizers.Evolution.Population;
-
+namespace Radiate.Optimizers.Evolution.Environment;
 public class Niche
 {
     public Guid Mascot { get; set; }

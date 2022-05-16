@@ -1,16 +1,13 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using Radiate.IO.Wraps;
-using Radiate.Optimizers.Evolution.Population;
+﻿
+
+using Radiate.Optimizers.Evolution.Environment;
 
 namespace Radiate.Optimizers.Evolution;
 
- public class Population<T, TE> : IPopulation
-        where T: Genome
-        where TE: EvolutionEnvironment
+public class Population<T> : IPopulation where T : class
 {
     private PopulationSettings Settings { get; set; }
-    private Generation<T, TE> CurrentGeneration { get; set; }
+    private Generation CurrentGeneration { get; set; }
     private EvolutionEnvironment EvolutionEnvironment { get; set; }
     private Solve<T> Solver { get; set; }
     private int GenerationsUnchanged { get; set; }
@@ -18,15 +15,15 @@ namespace Radiate.Optimizers.Evolution;
     private const double Tolerance = 0.0000001;
 
 
-    public Population(IEnumerable<T> genomes)
+    public Population(IEnumerable<IGenome> genomes)
     {
         Settings = new PopulationSettings(genomes.Count());
-        CurrentGeneration = new Generation<T, TE>
+        CurrentGeneration = new Generation
         {
             Members = genomes
                 .Select(member => (
                     Id: Guid.NewGuid(),
-                    Member: new Member<T>
+                    Member: new Member
                     {
                         Fitness = 0,
                         Model = member
@@ -81,21 +78,21 @@ namespace Radiate.Optimizers.Evolution;
         return topMember.Fitness;
     }
 
-    public T Best => CurrentGeneration.GetBestMember().Model;
+    IGenome IPopulation.Best() => CurrentGeneration.GetBestMember().Model;
 
-    public Population<T, TE> AddFitnessFunction(Solve<T> solver)
+    public Population<T> AddFitnessFunction(Solve<T> solver)
     {
         Solver = solver;
         return this;
     }
 
-    public Population<T, TE> AddSettings(Action<PopulationSettings> settings)
+    public Population<T> AddSettings(Action<PopulationSettings> settings)
     {
         settings.Invoke(Settings);
         return this;
     }
 
-    public Population<T, TE> AddEnvironment(EvolutionEnvironment environment)
+    public Population<T> AddEnvironment(EvolutionEnvironment environment)
     {
         EvolutionEnvironment = environment;
         return this;

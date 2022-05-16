@@ -24,8 +24,11 @@ public class TrainDense : IExample
             .TransformTargets(Norm.OHE)
             .TransformFeatures(Norm.Standardize)
             .Shuffle()
-            .Split();
-        
+            .Split().Compile();
+
+        var o = new TensorTrainSet(pair.TensorOptions);
+        var k = o.Process(inputs);
+
         var mlp = new MultiLayerPerceptron(new GradientInfo { Gradient = Gradient.SGD })
             .AddLayer(new DenseInfo(32, Activation.ReLU))
             .AddLayer(new DenseInfo(pair.OutputCategories, Activation.Sigmoid));

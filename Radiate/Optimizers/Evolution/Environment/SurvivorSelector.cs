@@ -1,8 +1,8 @@
-﻿namespace Radiate.Optimizers.Evolution.Population;
+﻿namespace Radiate.Optimizers.Evolution.Environment;
 
 public static class SurvivorSelector
 {
-    public static List<(Guid memberId, Member<T> member)> Select<T>(Dictionary<Guid, Member<T>> members, List<Niche> species) => 
+    public static List<(Guid memberId, Member member)> Select(Dictionary<Guid, Member> members, List<Niche> species) => 
         species
             .Select(spec =>
             {

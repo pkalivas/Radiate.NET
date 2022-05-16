@@ -1,11 +1,13 @@
-﻿using Newtonsoft.Json;
-using Radiate.Activations;
+﻿using Radiate.Activations;
+using Radiate.Extensions;
 using Radiate.IO.Wraps;
-using Radiate.Optimizers.Evolution.Population;
+using Radiate.Optimizers.Evolution.Environment;
+using Radiate.Records;
+using Radiate.Tensors;
 
 namespace Radiate.Optimizers.Evolution.Neat;
 
-public class Neat : Genome
+public class Neat : IGenome, IEvolved
 {
     private readonly NeuronId[] _inputs;
     private readonly NeuronId[] _outputs;
@@ -44,8 +46,9 @@ public class Neat : Genome
         }
     }
 
-    public Neat(NeatWrap neat)
+    public Neat(ModelWrap wrap)
     {
+        var neat = wrap.NeatWrap;
         _inputs = neat.Inputs
             .Select(input => new NeuronId { Index = input.Index })
             .ToArray();
@@ -53,7 +56,7 @@ public class Neat : Genome
             .Select(output => new NeuronId { Index = output.Index })
             .ToArray();
         _nodes = neat.Nodes
-            .Select(node => node.Clone())
+            .Select(node => node)
             .ToList();
         _activation = neat.Activation;
         _edges = neat.Edges
@@ -344,35 +347,41 @@ public class Neat : Genome
         return outputs.ToArray();
     }
     
-    public NeatWrap Save() => new NeatWrap
+    public ModelWrap Save() => new ModelWrap
     {
-        Inputs = _inputs
-            .Select(input => new NeuronId { Index = input.Index })
-            .ToArray(),
-        Outputs = _outputs
-            .Select(output => new NeuronId { Index = output.Index })
-            .ToArray(),
-        Nodes = _nodes
-            .Select(node => node.Clone())
-            .ToList(),
-        Edges = _edges
-            .Select(edge => new Edge
-            {
-                Active = edge.Active,
-                Dst = new NeuronId { Index = edge.Dst.Index },
-                Id = new EdgeId { Index = edge.Id.Index },
-                Innovation = edge.Innovation,
-                Src = new NeuronId { Index = edge.Src.Index },
-                Weight = edge.Weight
-            })
-            .ToList(),
-        Activation = _activation,
-        EdgeInnovationLookup = _edgeInnovationLookup
-            .Select(pair => (Id: pair.Key, edge: new EdgeId { Index = pair.Value.Index }))
-            .ToDictionary(key => key.Id, val => val.edge),
+        ModelType = ModelType.Neat,
+        NeatWrap = new()
+        {
+            Inputs = _inputs
+                .Select(input => new NeuronId { Index = input.Index })
+                .ToArray(),
+            Outputs = _outputs
+                .Select(output => new NeuronId { Index = output.Index })
+                .ToArray(),
+            Nodes = _nodes
+                .Select(node => node)
+                .ToList(),
+            Edges = _edges
+                .Select(edge => new Edge
+                {
+                    Active = edge.Active,
+                    Dst = new NeuronId { Index = edge.Dst.Index },
+                    Id = new EdgeId { Index = edge.Id.Index },
+                    Innovation = edge.Innovation,
+                    Src = new NeuronId { Index = edge.Src.Index },
+                    Weight = edge.Weight
+                })
+                .ToList(),
+            Activation = _activation,
+            EdgeInnovationLookup = _edgeInnovationLookup
+                .Select(pair => (Id: pair.Key, edge: new EdgeId { Index = pair.Value.Index }))
+                .ToDictionary(key => key.Id, val => val.edge),   
+        }
     };
     
-    public override T Crossover<T, TE>(T other, TE environment, double crossoverRate)
+    public T Crossover<T, TE>(T other, TE environment, double crossoverRate)         
+        where T: class, IGenome
+        where TE: EvolutionEnvironment
     {
         var random = new Random();
 
@@ -430,7 +439,7 @@ public class Neat : Genome
     }
 
 
-    public override Task<double> Distance<T, TE>(T other, TE environment)
+    public Task<double> Distance<T, TE>(T other, TE environment)
     {
         var parentTwo = other as Neat;
 
@@ -442,14 +451,23 @@ public class Neat : Genome
         return Task.FromResult(2.0 - (oneScore + twoScore));
     }
 
-    public override T CloneGenome<T>() => new Neat(this) as T;
+    public T CloneGenome<T>() where T : class => new Neat(this) as T;
 
-    public override void ResetGenome()
+    public void ResetGenome()
     {
         foreach (var node in _nodes)
         {
             node.Reset();
         }
     }
-    
+
+    public T Randomize<T>() where T : class => new Neat(this._inputs.Length, this._outputs.Length, _activation) as T;
+
+    public Prediction Predict(Tensor input)
+    {
+        var output = Forward(input.ToArray());
+        var maxIndex = output.ToList().IndexOf(output.Max());
+
+        return new Prediction(output.ToTensor(), maxIndex, output[maxIndex]);
+    }
 }

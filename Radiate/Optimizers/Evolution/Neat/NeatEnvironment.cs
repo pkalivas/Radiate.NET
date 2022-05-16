@@ -1,5 +1,5 @@
 ﻿using Radiate.Activations;
-using Radiate.Optimizers.Evolution.Population;
+using Radiate.Optimizers.Evolution.Environment;
 
 namespace Radiate.Optimizers.Evolution.Neat;
 

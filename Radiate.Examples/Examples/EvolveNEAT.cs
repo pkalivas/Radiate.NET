@@ -16,7 +16,7 @@ public class EvolveNEAT : IExample
         var (inputs, answers) = await new SimpleMemory().GetDataSet();
         var networks = Enumerable.Range(0, populationSize).Select(_ => new Neat(1, 1, Activation.ExpSigmoid)).ToList();
 
-        var population = new Population<Neat, NeatEnvironment>(networks)
+        var population = new Population<Neat>(networks)
             .AddSettings(settings =>
             {
                 settings.DynamicDistance = true;
@@ -54,27 +54,26 @@ public class EvolveNEAT : IExample
                 return 1f - (total / inputs.Count);
             });
 
-        var optimizer = new Optimizer<Population<Neat, NeatEnvironment>>(population);
+        var optimizer = new Optimizer<Neat>(population);
         var pop = await optimizer.Train(epoch =>
         {
             Console.Write($"\r[{epoch.Index}] {epoch.Fitness}");
             return epoch.Index == maxEpochs;
         });
 
-        var member = pop.Best;
-
+        
         Console.WriteLine();
         foreach (var (point, idx) in inputs.Select((val, idx) => (val, idx)))
         {
-            var output = member.Forward(point);
+            var output = pop.Forward(point);
             Console.WriteLine($"Input {point[0]} Expecting {answers[idx][0]} Guess {output[0]}");
         }
         
         Console.WriteLine("\nTesting Memory...");
-        Console.WriteLine($"Input {1f} Expecting {0f} Guess {member.Forward(new float[1] { 1 })[0]}");
-        Console.WriteLine($"Input {0f} Expecting {0f} Guess {member.Forward(new float[1] { 0 })[0]}");
-        Console.WriteLine($"Input {0f} Expecting {0f} Guess {member.Forward(new float[1] { 0 })[0]}");
-        Console.WriteLine($"Input {0f} Expecting {1f} Guess {member.Forward(new float[1] { 0 })[0]}");
+        Console.WriteLine($"Input {1f} Expecting {0f} Guess {pop.Forward(new float[1] { 1 })[0]}");
+        Console.WriteLine($"Input {0f} Expecting {0f} Guess {pop.Forward(new float[1] { 0 })[0]}");
+        Console.WriteLine($"Input {0f} Expecting {0f} Guess {pop.Forward(new float[1] { 0 })[0]}");
+        Console.WriteLine($"Input {0f} Expecting {1f} Guess {pop.Forward(new float[1] { 0 })[0]}");
     }
 }
 
