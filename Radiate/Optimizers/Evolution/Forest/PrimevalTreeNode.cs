@@ -2,16 +2,16 @@
 
 public class PrimevalTreeNode
 {
+    private readonly Random _random;
+    private readonly Guid _nodeId;
+    
     public PrimevalTreeNode Parent;
     public PrimevalTreeNode LeftChild;
     public PrimevalTreeNode RightChild;
-
-    private readonly Random _random;
-    private readonly Guid _nodeId;
-    private readonly int _splitIndex;
-    private readonly int _outputCategory;
-    private readonly float _splitValue;
-    private readonly Operator _operator;
+    private int _splitIndex;
+    private int _outputCategory;
+    private float _splitValue;
+    private Operator _operator;
 
     public PrimevalTreeNode(int inputSize, int outputSize)
     {
@@ -34,6 +34,14 @@ public class PrimevalTreeNode
     }
 
     public Guid Id => _nodeId;
+
+    public void Gut(int inputSize, int outputSize)
+    {
+        _splitIndex = _random.Next(0, inputSize);
+        _outputCategory = _random.Next(0, outputSize);
+        _splitValue = _random.NextSingle();
+        _operator = (Operator)_random.Next(0, 3);
+    }
 
     public PrimevalTreeNode DeepCopy(PrimevalTreeNode parent)
     {

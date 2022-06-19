@@ -8,7 +8,8 @@ namespace Radiate.Optimizers.Evolution.Forest;
 public class PrimevalTree: IGenome, IEvolved, IOptimizerModel, IEnumerable<PrimevalTreeNode>
 {
     private PrimevalTreeNode _rootNode;
-    
+
+    private readonly Random _random = new Random();
     private readonly int _inputSize;
     private readonly int _outputSize;
     private readonly int _maxHeight;
@@ -67,9 +68,13 @@ public class PrimevalTree: IGenome, IEvolved, IOptimizerModel, IEnumerable<Prime
 
     private void Shuffle()
     {
-        var random = new Random();
-        var nodes = this.ToList().OrderBy(node => random.Next()).ToArray();
+        var nodes = this.ToList().OrderBy(node => _random.Next()).ToArray();
         _rootNode = MakeTree(null, nodes);
+    }
+
+    private void GutRandomNode()
+    {
+        var index = _random.Next(0, _rootNode.Size());
     }
     
 
@@ -141,6 +146,11 @@ public class PrimevalTree: IGenome, IEvolved, IOptimizerModel, IEnumerable<Prime
             if (random.NextDouble() < treeEnv.ShuffleRate)
             {
                 child.Shuffle();
+            }
+
+            if (random.NextDouble() < treeEnv.GutRate)
+            {
+                child.GutRandomNode();
             }
         }
 
