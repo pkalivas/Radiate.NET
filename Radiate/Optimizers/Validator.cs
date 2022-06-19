@@ -77,7 +77,7 @@ public class Validator
         var totalStepMillis = (double) predictions.Sum(step => step.Time.TotalMilliseconds) / predictions.Count;
         
         return new Epoch(0, errors.Sum(), categoricalAccuracy, 
-            regressionAccuracy, classAccuracy, 0, default, default, TimeSpan.FromMilliseconds(totalStepMillis));
+            regressionAccuracy, classAccuracy, 0, default, default);
     }
     
     private static float ClassificationAccuracy(List<Step> outs)

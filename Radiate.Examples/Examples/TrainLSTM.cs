@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Radiate.Activations;
+﻿using Radiate.Activations;
 using Radiate.Callbacks;
 using Radiate.Callbacks.Interfaces;
 using Radiate.Data;
@@ -17,9 +16,6 @@ public class TrainLSTM : IExample
 {
     public async Task Run()
     {
-        var s = new Stopwatch();
-        s.Start();
-        
         const int trainEpochs = 500;
 
         var (inputs, targets) = await new SimpleMemory().GetDataSet();
@@ -37,6 +33,7 @@ public class TrainLSTM : IExample
         
         var lstm = await optimizer.Train<MultiLayerPerceptron>(epoch => epoch.Index == trainEpochs);
         
+        Console.WriteLine();
         foreach (var (ins, outs) in pair.TrainingInputs)
         {
             foreach (var (i, j) in ins.Zip(outs))

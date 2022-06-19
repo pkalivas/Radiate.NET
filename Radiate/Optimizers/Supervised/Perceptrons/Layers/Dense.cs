@@ -15,6 +15,7 @@ public class Dense : Layer
     private readonly Tensor _bias;
     private readonly Tensor _weightGradients;
     private readonly Tensor _biasGradients;
+    private readonly Tensor _layerTensor;
 
     public Dense(DenseWrap wrap) : base(wrap.Shape)
     {
@@ -25,6 +26,7 @@ public class Dense : Layer
         _bias = wrap.Bias;
         _weightGradients = wrap.WeightGradients;
         _biasGradients = wrap.BiasGradients;
+        _layerTensor = new Tensor(Shape.Width);
     }
     
     public Dense(Shape shape, IActivationFunction activation) : base(shape)
@@ -36,6 +38,7 @@ public class Dense : Layer
         _bias = Tensor.Random(shape.Width);
         _weightGradients = new Tensor(shape.Width, shape.Height);
         _biasGradients = new Tensor(shape.Width);
+        _layerTensor = new Tensor(shape.Width);
     }
 
     public override Tensor Predict(Tensor input)
@@ -50,15 +53,14 @@ public class Dense : Layer
             throw new Exception($"Cannot pass multi-dimensional tensor to dense layer.");
         }
 
-        var result = new Tensor(Shape.Width);
         for (var i = 0; i < Shape.Width; i++)
         {
-            result[i] = _bias[i] + input
+            _layerTensor[i] = _bias[i] + input
                 .Select((inVal, idx) => _weights[i, idx] * inVal)
                 .Sum();
         }
         
-        return _activation.Activate(result);
+        return _activation.Activate(_layerTensor);
     }
     
     public override Tensor FeedForward(Tensor input)

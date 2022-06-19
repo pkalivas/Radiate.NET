@@ -2,6 +2,7 @@
 using Radiate.Callbacks.Interfaces;
 using Radiate.Data;
 using Radiate.Gradients;
+using Radiate.Losses;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Supervised.SVM;
 using Radiate.Optimizers.Supervised.SVM.Info;
@@ -31,7 +32,7 @@ public class SVMPredictor : IExample
             LearningRate = 1e-3f
         });
         
-        var optimizer = new Optimizer(svm, pair, new List<ITrainingCallback>
+        var optimizer = new Optimizer(svm, pair, Loss.Hinge, new List<ITrainingCallback>
         {
             new VerboseTrainingCallback(pair, maxEpoch, false),
             new ModelWriterCallback(),

@@ -6,6 +6,8 @@ namespace Radiate.Losses;
 
 public class CrossEntropy : ILossFunction
 {
+    public Loss LossType() => Loss.CrossEntropy;
+    
     public Cost Calculate(Tensor output, Tensor target)
     {
         var errors = output.Zip(target)

@@ -6,6 +6,8 @@ namespace Radiate.Losses;
 
 public class MeanSquaredError : ILossFunction
 {
+    public Loss LossType() => Loss.MSE;
+
     public Cost Calculate(Tensor output, Tensor target)
     {
         var errors = new List<float>();

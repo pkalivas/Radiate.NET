@@ -293,12 +293,33 @@ public static class TensorOperations
     public static List<Tensor> Standardize(IEnumerable<Tensor> data, NormalizeScalars scalars)
     {
         var (_, _, meanLookup, stdLookup) = scalars;
-        
-        return data
-            .Select(row => row
-                .Select((feature, index) => (feature - meanLookup[index]) / stdLookup[index])
-                .ToTensor())
-            .ToList();
+        var result = new List<Tensor>();
+        foreach (var feature in data)
+        {
+            if (feature.GetDimension() is 1)
+            {
+                result.Add(feature
+                    .Select((val, index) => (val - meanLookup[index]) / stdLookup[index])
+                    .ToTensor());
+            }
+
+            if (feature.GetDimension() is 2)
+            {
+                var temp = Tensor.Like(feature);
+                for (var i = 0; i < feature.Shape.Height; i++)
+                {
+                    for (var j = 0; j < feature.Shape.Width; j++)
+                    {
+                        var mean = meanLookup[j];
+                        var std = stdLookup[j];
+                        temp[i, j] = (feature[i, j] - mean) / std;
+                    }
+                }
+                result.Add(temp);
+            }
+        }
+
+        return result;
     }
     
     public static List<Tensor> OneHotEncode(List<Tensor> targets)
@@ -374,7 +395,7 @@ public static class TensorOperations
         
         return result;
     }
-    
+
     public static Tensor Apply(Tensor one, Tensor two, Func<float, float, float> func)
     {
         if (one.Shape != two.Shape)

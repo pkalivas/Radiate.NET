@@ -15,9 +15,9 @@ public class ConvNetMinst : IExample
 {
     public async Task Run()
     {
-        const int featureLimit = 500;
+        const int featureLimit = 5000;
         const int batchSize = 32;
-        const int maxEpochs = 3;
+        const int maxEpochs = 5;
         
         var (rawInputs, rawLabels) = await new Mnist(featureLimit).GetDataSet();
 

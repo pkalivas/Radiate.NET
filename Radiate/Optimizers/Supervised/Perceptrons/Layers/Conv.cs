@@ -18,6 +18,7 @@ public class Conv : Layer
     private readonly Tensor[] _filterGradients;
     private readonly Tensor _bias;
     private readonly Tensor _biasGradients;
+    private readonly Tensor _convolveTensor;
 
     public Conv(ConvWrap wrap) : base(wrap.Shape)
     {
@@ -31,6 +32,7 @@ public class Conv : Layer
         _filterGradients = wrap.FilterGradients;
         _bias = wrap.Bias;
         _biasGradients = wrap.BiasGradients;
+        _convolveTensor = new Tensor(wrap.Shape.Height, wrap.Shape.Width, wrap.Kernel.Count);
     }
     
     public Conv(Shape shape, Kernel kernel, int stride, IActivationFunction activation) : base(shape)
@@ -48,6 +50,7 @@ public class Conv : Layer
         _filterGradients = new Tensor[count];
         _bias = Tensor.Random(count);
         _biasGradients = new Tensor(count);
+        _convolveTensor = new Tensor(shape.Height, shape.Width, kernel.Count);
 
         for (var i = 0; i < count; i++)
         {
@@ -133,8 +136,7 @@ public class Conv : Layer
 
     private Tensor Convolve(List<Slice> slices)
     {
-        var output = new Tensor(Shape.Height, Shape.Width, _kernel.Count);
-
+        _convolveTensor.Zero();
         Parallel.For(0, _kernel.Count, i =>
         {
             var currentKernel = _filters[i];
@@ -142,11 +144,11 @@ public class Conv : Layer
             
             foreach (var (slice, sHeight, sWidth, _) in slices)
             {
-                output[sHeight, sWidth, i] += Tensor.Dot(slice, currentKernel) + currentBias;
+                _convolveTensor[sHeight, sWidth, i] += Tensor.Dot(slice, currentKernel) + currentBias;
             }
         });
 
-        return _activation.Activate(output);
+        return _activation.Activate(_convolveTensor);
     }
 
     private Tensor CalculateError(Tensor errors, Tensor prevOut)

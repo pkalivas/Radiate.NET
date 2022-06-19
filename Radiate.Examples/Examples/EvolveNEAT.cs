@@ -2,6 +2,7 @@
 using Radiate.Data;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Evolution;
+using Radiate.Optimizers.Evolution.Forest;
 using Radiate.Optimizers.Evolution.Neat;
 
 namespace Radiate.Examples.Examples;
@@ -10,6 +11,17 @@ public class EvolveNEAT : IExample
 {
     public async Task Run()
     {
+        var tree = new PrimevalTree(5, 3, 10);
+
+        foreach (var node in tree)
+        {
+            var t = node;
+            var y = "";
+        }
+
+        var k = "";
+        
+        
         const int maxEpochs = 500;
         const int populationSize = 100;
         

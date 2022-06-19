@@ -26,7 +26,7 @@ public class TrainDense : IExample
             .Shuffle()
             .Split()
             .Compile();
-
+        
         var mlp = new MultiLayerPerceptron(new GradientInfo { Gradient = Gradient.SGD })
             .AddLayer(new DenseInfo(32, Activation.ReLU))
             .AddLayer(new DenseInfo(pair.OutputCategories, Activation.Sigmoid));

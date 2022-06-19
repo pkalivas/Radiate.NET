@@ -5,6 +5,8 @@ namespace Radiate.Losses;
 
 public class Hinge : ILossFunction
 {
+    public Loss LossType() => Loss.Hinge;
+
     public Cost Calculate(Tensor output, Tensor target)
     {
         var result = Tensor.Like(output.Shape);

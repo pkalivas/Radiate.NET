@@ -7,7 +7,7 @@ namespace Radiate.Optimizers.Supervised.Perceptrons.Layers;
 
 public abstract class Layer
 {
-    public Shape Shape { get; set; }
+    protected Shape Shape { get; set; }
 
     protected Layer(Shape shape)
     {

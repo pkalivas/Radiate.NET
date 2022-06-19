@@ -147,7 +147,7 @@ public class MultiLayerPerceptron : ISupervised
         }
     }
 
-    public static Layer LoadLayer(LayerWrap layerWrap) => layerWrap.LayerType switch
+    private static Layer LoadLayer(LayerWrap layerWrap) => layerWrap.LayerType switch
     {
         LayerType.Conv => new Conv(layerWrap.Conv),
         LayerType.Dense => new Dense(layerWrap.Dense),

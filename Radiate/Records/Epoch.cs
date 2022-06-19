@@ -8,5 +8,4 @@ public record Epoch(int Index,
     float ClassificationAccuracy = 0f,
     float Fitness = 0f,
     DateTime StartTime = default,
-    DateTime EndTime = default,
-    TimeSpan avgStepTime = new TimeSpan());
+    DateTime EndTime = default);

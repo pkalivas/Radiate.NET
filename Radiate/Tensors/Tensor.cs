@@ -270,7 +270,7 @@ public class Tensor : IEnumerable<float>
 
     public static Tensor Random(int height, int width = 0, int depth = 0) =>
         TensorOperations.Random(height, width, depth);
-    
+
     public static Tensor Apply(Tensor ten, Func<float, float> func) => 
         TensorOperations.Apply(ten, func);
     

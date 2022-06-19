@@ -20,8 +20,9 @@ public interface IOptimizerModel { }
 
 public class Optimizer
 {
-    private readonly IOptimizerModel _optimizer;
-    private readonly Loss _loss;
+    private IOptimizerModel Model { get; set; }
+
+    private readonly ILossFunction _lossFunction;
     private readonly TensorTrainSet _tensorTrainSet;
     private readonly TrainingSession _trainingSession;
     
@@ -35,34 +36,22 @@ public class Optimizer
         : this(Load(wrap), new TensorTrainSet(wrap.TensorOptions), wrap.LossFunction) { }
     
     public Optimizer(IOptimizerModel optimizer, TensorTrainSet tensorTrainSet, IEnumerable<ITrainingCallback> callbacks)
-        : this(optimizer, tensorTrainSet, Loss.None, callbacks) { }
+        : this(optimizer, tensorTrainSet, Loss.Difference, callbacks) { }
 
-    public Optimizer(IOptimizerModel optimizer, Loss loss = Loss.None, IEnumerable<ITrainingCallback> callbacks = null) 
-        : this(optimizer, null, loss, callbacks) { }
-
-    public Optimizer(IOptimizerModel optimizer, TensorTrainSet tensorTrainSet, Loss loss = Loss.None, IEnumerable<ITrainingCallback> callbacks = null)
+    public Optimizer(IOptimizerModel optimizer, TensorTrainSet tensorTrainSet, Loss loss = Loss.Difference, IEnumerable<ITrainingCallback> callbacks = null)
     {
-        _optimizer = optimizer;
+        Model = optimizer;
+
         _tensorTrainSet = tensorTrainSet;
-        _loss = loss;
-        _trainingSession = _optimizer switch
+        _lossFunction = LossFunctionResolver.Get(loss);
+        _trainingSession = optimizer switch
         {
             IUnsupervised unsupervised => new UnsupervisedTrainingSession(unsupervised, callbacks),
             ISupervised supervised => new SupervisedTrainingSession(supervised, callbacks),
             _ => throw new Exception($"Cannot create training session for model.")
         };
-        
-        Model = _optimizer;
     }
     
-    private IOptimizerModel Model { get; set; }
-    
-    private LossFunction LossFunction => _loss switch
-    {
-        Loss.None => LossFunctionResolver.Get(_optimizer),
-        _ => LossFunctionResolver.Get(_loss)
-    };
-
     public async Task<T> Train<T>() where T : class, IOptimizerModel => await Train<T>(_ => Task.FromResult(true));
 
     public async Task<T> Train<T>(Func<Epoch, bool> trainFunc) where T : class, IOptimizerModel =>
@@ -70,7 +59,7 @@ public class Optimizer
 
     private async Task<T> Train<T>(Func<Epoch, Task<bool>> trainFunc) where T : class, IOptimizerModel
     {
-        Model = await _trainingSession.Train(_tensorTrainSet, trainFunc, LossFunction);
+        Model = await _trainingSession.Train(_tensorTrainSet, trainFunc, _lossFunction.Calculate);
         
         await _trainingSession.CompleteTraining(this, _tensorTrainSet);
         
@@ -108,7 +97,7 @@ public class Optimizer
     public OptimizerWrap Save() => new()
     {
         TensorOptions = _tensorTrainSet.TensorOptions,
-        LossFunction = _loss,
+        LossFunction = _lossFunction.LossType(),
         ModelWrap = Model switch
         {
             MultiLayerPerceptron perceptron => perceptron.Save(),
@@ -122,7 +111,7 @@ public class Optimizer
 
     private Validation Validate(List<Batch> batches)
     {
-        var validator = new Validator(LossFunction);
+        var validator = new Validator(_lossFunction.Calculate);
         
         return Model switch
         {
