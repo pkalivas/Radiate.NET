@@ -64,6 +64,13 @@ public class PrimevalTree: IGenome, IEvolved, IOptimizerModel, IEnumerable<Prime
     {
         _rootNode = MakeTree(null, this.ToArray());
     }
+
+    private void Shuffle()
+    {
+        var random = new Random();
+        var nodes = this.ToList().OrderBy(node => random.Next()).ToArray();
+        _rootNode = MakeTree(null, nodes);
+    }
     
 
     private PrimevalTreeNode BiasedLevelNode()
@@ -133,7 +140,7 @@ public class PrimevalTree: IGenome, IEvolved, IOptimizerModel, IEnumerable<Prime
 
             if (random.NextDouble() < treeEnv.ShuffleRate)
             {
-                child.Shu
+                child.Shuffle();
             }
         }
 
