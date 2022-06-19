@@ -7,16 +7,16 @@ namespace Radiate.IO.Streams;
 
 public static class ModelReader
 {
-    public static Optimizer<T> FromJson<T>(string optimizer) where T : class
+    public static Optimizer FromJson(string optimizer)
     {
         var model = JsonConvert.DeserializeObject<OptimizerWrap>(optimizer);
-        return Optimizer<T>.Load(model);
+        return new Optimizer(model);
     }
 
-    public static async Task<Optimizer<T>> FromStream<T>(Stream stream) where T : class
+    public static async Task<Optimizer> FromStream(Stream stream)
     {
         var reader = new StreamReader(stream);
         var model = await reader.ReadToEndAsync();
-        return FromJson<T>(model);
+        return FromJson(model);
     }
 }

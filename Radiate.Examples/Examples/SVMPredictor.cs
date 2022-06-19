@@ -31,13 +31,13 @@ public class SVMPredictor : IExample
             LearningRate = 1e-3f
         });
         
-        var optimizer = new Optimizer<SupportVectorMachine>(svm, pair, new List<ITrainingCallback>
+        var optimizer = new Optimizer(svm, pair, new List<ITrainingCallback>
         {
             new VerboseTrainingCallback(pair, maxEpoch, false),
             new ModelWriterCallback(),
             new ConfusionMatrixCallback(),
         });
 
-        await optimizer.Train(epoch => epoch.Index == maxEpoch);
+        await optimizer.Train<SupportVectorMachine>(epoch => epoch.Index == maxEpoch);
     }
 }

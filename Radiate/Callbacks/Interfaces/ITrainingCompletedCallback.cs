@@ -6,5 +6,5 @@ namespace Radiate.Callbacks.Interfaces;
 
 public interface ITrainingCompletedCallback : ITrainingCallback
 {
-    Task CompleteTraining<T>(Optimizer<T> optimizer, List<Epoch> epochs, TensorTrainSet tensorSet) where T : class;
+    Task CompleteTraining(Optimizer optimizer, TensorTrainSet tensorSet);
 }

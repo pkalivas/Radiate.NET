@@ -37,13 +37,13 @@ public class EvolveHelloWorld : IExample
             .AddFitnessFunction(member => member.Chars.Zip(target)
                     .Sum(points => points.First == points.Second ? 1.0f : 0.0f));
 
-        var optimizer = new Optimizer<HelloWorld>(population);
-        var model = await optimizer.Train(epoch => epoch.Index == evolutionEpochs || epoch.Fitness == 12);
+        var optimizer = new Optimizer(population);
+        var model = await optimizer.Train<HelloWorld>(epoch => epoch.Index == evolutionEpochs || epoch.Fitness == 12);
         
         Console.WriteLine($"\nFinal Result: {model.Print()}");
     }
     
-    private class HelloWorld : IGenome
+    private class HelloWorld : IGenome, IOptimizerModel
     {
         public char[] Chars { get; set; }
     

@@ -54,8 +54,8 @@ public class EvolveNEAT : IExample
                 return 1f - (total / inputs.Count);
             });
 
-        var optimizer = new Optimizer<Neat>(population);
-        var pop = await optimizer.Train(epoch =>
+        var optimizer = new Optimizer(population);
+        var pop = await optimizer.Train<Neat>(epoch =>
         {
             Console.Write($"\r[{epoch.Index}] {epoch.Fitness}");
             return epoch.Index == maxEpochs;

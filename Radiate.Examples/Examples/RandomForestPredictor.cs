@@ -23,13 +23,13 @@ public class RandomForestPredictor : IExample
             .Batch(rawFeatures.Count);
         
         var forest = new RandomForest(numTrees, new ForestInfo(minSampleSplit, maxDepth));
-        var optimizer = new Optimizer<RandomForest>(forest, pair, new List<ITrainingCallback>
+        var optimizer = new Optimizer(forest, pair, new List<ITrainingCallback>
         {
             new VerboseTrainingCallback(pair),
             new ModelWriterCallback(),
             new ConfusionMatrixCallback()
         });
 
-        await optimizer.Train();
+        await optimizer.Train<RandomForest>();
     }
 }

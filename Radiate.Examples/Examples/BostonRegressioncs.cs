@@ -27,12 +27,13 @@ public class BostonRegression : IExample
         var linearRegressor = new MultiLayerPerceptron()
             .AddLayer(new DenseInfo(outputSize, Activation.Linear));
         
-        var optimizer = new Optimizer<MultiLayerPerceptron>(linearRegressor, featureTargetPair, Loss.MSE, new List<ITrainingCallback>()
+        var optimizer = new Optimizer(linearRegressor, featureTargetPair, Loss.MSE, new List<ITrainingCallback>()
         {
             new VerboseTrainingCallback(featureTargetPair, maxEpochs, false)
         });
 
-        await optimizer.Train(epoch => maxEpochs == epoch.Index || Math.Abs(epoch.Loss) < .1);
+        await optimizer.Train<MultiLayerPerceptron>(epoch => maxEpochs == epoch.Index || Math.Abs(epoch.Loss) < .1);
+        
     }
 
    

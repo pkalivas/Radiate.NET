@@ -30,12 +30,12 @@ public class TrainLSTM : IExample
             .AddLayer(new LSTMInfo(16, 16))
             .AddLayer(new DenseInfo(1, Activation.Sigmoid));
 
-        var optimizer = new Optimizer<MultiLayerPerceptron>(mlp, pair, Loss.MSE, new ITrainingCompletedCallback[]
+        var optimizer = new Optimizer(mlp, pair, Loss.MSE, new ITrainingCompletedCallback[]
         {
             new VerboseTrainingCallback(pair, trainEpochs, false),
         });
         
-        var lstm = await optimizer.Train(epoch => epoch.Index == trainEpochs);
+        var lstm = await optimizer.Train<MultiLayerPerceptron>(epoch => epoch.Index == trainEpochs);
         
         foreach (var (ins, outs) in pair.TrainingInputs)
         {

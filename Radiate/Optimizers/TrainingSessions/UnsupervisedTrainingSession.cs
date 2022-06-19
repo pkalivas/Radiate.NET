@@ -15,15 +15,16 @@ public class UnsupervisedTrainingSession : TrainingSession
         _unsupervisedModel = unsupervised;
     }
 
-    public override async Task<T> Train<T>(TensorTrainSet trainingData, LossFunction lossFunction, Func<Epoch, Task<bool>> trainFunc)
+    public override async Task<IOptimizerModel> Train(TensorTrainSet trainingData, Func<Epoch, Task<bool>> trainFunc, LossFunction lossFunction)
     {
+        var index = 0;
         var data = trainingData.TrainingInputs
             .SelectMany(batch => batch.Features.Select(row => row))
             .ToArray();
 
         while (true)
         {
-            var epoch = Fit(data);
+            var epoch = Fit(index++, data);
 
             if (await trainFunc(epoch))
             {
@@ -31,20 +32,19 @@ public class UnsupervisedTrainingSession : TrainingSession
             }
         }
         
-        return (T)_unsupervisedModel;
+        return _unsupervisedModel;
     }
 
 
-    private Epoch Fit(Tensor[] inputs)
+    private Epoch Fit(int index, Tensor[] inputs)
     {
         foreach (var callback in GetCallbacks<IEpochStartedCallback>())
         {
             callback.EpochStarted();
         }
 
-        var loss = _unsupervisedModel.Step(inputs, Epochs.Count);
-        var epoch = new Epoch(Epochs.Count + 1, loss);
-        Epochs.Add(epoch);
+        var loss = _unsupervisedModel.Step(inputs, index);
+        var epoch = new Epoch(index, loss);
         
         foreach (var callback in GetCallbacks<IEpochCompletedCallback>())
         {

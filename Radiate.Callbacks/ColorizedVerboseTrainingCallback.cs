@@ -47,7 +47,7 @@ public class ColorizedVerboseTrainingCallback : IEpochStartedCallback,
         }
     }
 
-    public async Task CompleteTraining<T>(Optimizer<T> optimizer, List<Epoch> epochs, TensorTrainSet tensorSet) where T : class
+    public async Task CompleteTraining(Optimizer optimizer, TensorTrainSet tensorSet)
     {
         _signal.Release();
         await _displayTableTask;

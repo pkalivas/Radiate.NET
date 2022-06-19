@@ -1,5 +1,5 @@
-﻿using Radiate.Callbacks.Interfaces;
-using Radiate.Callbacks.Resolver;
+﻿using Radiate.Callbacks;
+using Radiate.Callbacks.Interfaces;
 using Radiate.Losses;
 using Radiate.Records;
 using Radiate.Tensors;
@@ -9,16 +9,23 @@ namespace Radiate.Optimizers.TrainingSessions;
 public abstract class TrainingSession
 {
     private readonly IEnumerable<ITrainingCallback> _callbacks;
-    public readonly List<Epoch> Epochs;
 
     protected TrainingSession(IEnumerable<ITrainingCallback> callbacks)
     {
-        _callbacks = callbacks;
-        Epochs = new List<Epoch>();
+        _callbacks = callbacks ?? new List<ITrainingCallback>();
     }
 
-    public abstract Task<T> Train<T>(TensorTrainSet trainingData, LossFunction lossFunction, Func<Epoch, Task<bool>> trainFunc) where T : class;
+    public abstract Task<IOptimizerModel> Train(TensorTrainSet trainingData, Func<Epoch, Task<bool>> trainFunc,
+        LossFunction lossFunction);
     
     protected List<T> GetCallbacks<T>() => CallbackResolver.Get<T>(_callbacks).ToList();
+
+    public async Task CompleteTraining(Optimizer optimizer, TensorTrainSet tensorTrainSet)
+    {
+        foreach (var callback in GetCallbacks<ITrainingCompletedCallback>())
+        {
+            await callback.CompleteTraining(optimizer, tensorTrainSet);
+        }
+    }
 
 }

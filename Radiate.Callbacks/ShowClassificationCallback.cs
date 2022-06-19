@@ -7,7 +7,7 @@ namespace Radiate.Callbacks;
 
 public class ShowClassificationCallback : ITrainingCompletedCallback
 {
-    public Task CompleteTraining<T>(Optimizer<T> optimizer, List<Epoch> epochs, TensorTrainSet tensorSet) where T : class
+    public Task CompleteTraining(Optimizer optimizer, TensorTrainSet tensorSet)
     {
         Console.WriteLine("\nTraining");
         var (trainIns, trainOuts) = tensorSet.RawTrainingInputs();

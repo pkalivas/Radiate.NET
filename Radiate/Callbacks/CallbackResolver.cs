@@ -1,6 +1,6 @@
 ﻿using Radiate.Callbacks.Interfaces;
 
-namespace Radiate.Callbacks.Resolver;
+namespace Radiate.Callbacks;
 
 public static class CallbackResolver
 {

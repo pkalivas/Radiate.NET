@@ -16,11 +16,12 @@ public class EvolutionTrainingSession : TrainingSession
         _population = population;
     }
 
-    public override async Task<T> Train<T>(TensorTrainSet trainingData, LossFunction lossFunction, Func<Epoch, Task<bool>> trainFunc) where T : class
+    public override async Task<IOptimizerModel> Train(TensorTrainSet trainingData, Func<Epoch, Task<bool>> trainFunc, LossFunction lossFunction)
     {
+        var index = 0;
         while (true)
         {
-            var epoch = await Fit();
+            var epoch = await Fit(index++);
 
             if (await trainFunc(epoch))
             {
@@ -30,10 +31,10 @@ public class EvolutionTrainingSession : TrainingSession
 
         var bestMember = _population.Best(); 
         bestMember.ResetGenome();
-        return (T)bestMember;
+        return bestMember as IOptimizerModel;
     }
 
-    private async Task<Epoch> Fit()
+    private async Task<Epoch> Fit(int index)
     {
         foreach (var callback in GetCallbacks<IEpochStartedCallback>())
         {
@@ -43,9 +44,7 @@ public class EvolutionTrainingSession : TrainingSession
         var startTime = DateTime.UtcNow;
         var fitness = await _population.Step();
         var endTime = DateTime.UtcNow;
-        var epoch = new Epoch(Epochs.Count + 1, 0f, 0f, 0f, 0f, fitness, startTime, endTime);
-        
-        Epochs.Add(epoch);
+        var epoch = new Epoch(index, 0f, 0f, 0f, 0f, fitness, startTime, endTime);
         
         foreach (var callback in GetCallbacks<IEpochCompletedCallback>())
         {

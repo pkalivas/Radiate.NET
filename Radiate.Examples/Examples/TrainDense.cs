@@ -24,22 +24,19 @@ public class TrainDense : IExample
             .TransformTargets(Norm.OHE)
             .TransformFeatures(Norm.Standardize)
             .Shuffle()
-            .Split().Compile();
-
-        var o = new TensorTrainSet(pair.TensorOptions);
-        var k = o.Process(inputs);
+            .Split()
+            .Compile();
 
         var mlp = new MultiLayerPerceptron(new GradientInfo { Gradient = Gradient.SGD })
             .AddLayer(new DenseInfo(32, Activation.ReLU))
             .AddLayer(new DenseInfo(pair.OutputCategories, Activation.Sigmoid));
 
-        var optimizer = new Optimizer<MultiLayerPerceptron>(mlp, pair, Loss.MSE, new List<ITrainingCallback>()
+        var optimizer = new Optimizer(mlp, pair, Loss.MSE, new List<ITrainingCallback>()
         {
-            new ColorizedVerboseTrainingCallback(pair, maxEpoch, false),
-            // new VerboseTrainingCallback(pair, maxEpoch, false),
+            new VerboseTrainingCallback(pair, maxEpoch, false),
             new ConfusionMatrixCallback()
         });
         
-        await optimizer.Train(epoch => epoch.Index == maxEpoch);
+        await optimizer.Train<MultiLayerPerceptron>(epoch => epoch.Index == maxEpoch);
     }
 }

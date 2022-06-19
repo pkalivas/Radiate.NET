@@ -4,7 +4,7 @@ using Radiate.Optimizers.Evolution.Environment;
 
 namespace Radiate.Optimizers.Evolution;
 
-public class Population<T> : IPopulation where T : class
+public class Population<T> : IPopulation where T : class, IOptimizerModel
 {
     private PopulationSettings Settings { get; set; }
     private Generation CurrentGeneration { get; set; }

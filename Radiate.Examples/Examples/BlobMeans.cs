@@ -17,11 +17,11 @@ public class BlobMeans : IExample
         var pair = new TensorTrainSet(rawInputs, rawLabels).Split().Batch(1);
         
         var kMeans = new KMeans(pair.OutputCategories);
-        var optimizer = new Optimizer<KMeans>(kMeans, pair, new List<ITrainingCallback>
+        var optimizer = new Optimizer(kMeans, pair, new List<ITrainingCallback>
         {
             new VerboseTrainingCallback(pair, maxEpoch),
         });
         
-        await optimizer.Train(epoch => epoch.Index == maxEpoch || epoch.Loss == 0);
+        await optimizer.Train<KMeans>(epoch => epoch.Index == maxEpoch || epoch.Loss == 0);
     }
 }

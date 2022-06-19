@@ -35,12 +35,12 @@ public class ConvNetMinst : IExample
             .AddLayer(new DenseInfo(64, Activation.Sigmoid))
             .AddLayer(new DenseInfo(pair.OutputCategories, Activation.SoftMax));
         
-        var optimizer = new Optimizer<MultiLayerPerceptron>(neuralNetwork, pair, new List<ITrainingCallback>
+        var optimizer = new Optimizer(neuralNetwork, pair, new List<ITrainingCallback>
         {
             new VerboseTrainingCallback(pair, maxEpochs),
             new ConfusionMatrixCallback()
         });
         
-        await optimizer.Train(epoch => maxEpochs == epoch.Index);
+        await optimizer.Train<MultiLayerPerceptron>(epoch => maxEpochs == epoch.Index);
     }
 }

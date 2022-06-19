@@ -7,7 +7,7 @@ using Radiate.Tensors;
 
 namespace Radiate.Optimizers.Evolution.Neat;
 
-public class Neat : IGenome, IEvolved
+public class Neat : IGenome, IEvolved, IOptimizerModel
 {
     private readonly NeuronId[] _inputs;
     private readonly NeuronId[] _outputs;

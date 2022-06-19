@@ -15,7 +15,7 @@ public class ModelWriterCallback : ITrainingCompletedCallback
         _ext = ext;
     }
 
-    public async Task CompleteTraining<T>(Optimizer<T> optimizer, List<Epoch> epochs, TensorTrainSet _) where T : class
+    public async Task CompleteTraining(Optimizer optimizer, TensorTrainSet _)
     {
         var directory = new DirectoryInfo(Directory.GetCurrentDirectory());
         while (directory != null && !directory.GetDirectories("Saves").Any())

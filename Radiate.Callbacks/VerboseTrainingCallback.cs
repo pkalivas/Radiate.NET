@@ -125,7 +125,7 @@ public class VerboseTrainingCallback : IEpochStartedCallback,
         _previousTime = DateTime.Now;
     }
 
-    public Task CompleteTraining<T>(Optimizer<T> optimizer, List<Epoch> epochs, TensorTrainSet tensorSet) where T: class
+    public Task CompleteTraining(Optimizer optimizer, TensorTrainSet tensorSet)
     {
         var validation = optimizer.ValidationScores();
         

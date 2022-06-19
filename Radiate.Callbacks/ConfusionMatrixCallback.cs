@@ -7,7 +7,7 @@ namespace Radiate.Callbacks;
 
 public class ConfusionMatrixCallback : ITrainingCompletedCallback
 {
-    public Task CompleteTraining<T>(Optimizer<T> optimizer, List<Epoch> epochs, TensorTrainSet trainSet) where T : class
+    public Task CompleteTraining(Optimizer optimizer, TensorTrainSet trainSet)
     {
         var result = new Tensor(trainSet.OutputCategories, trainSet.OutputCategories);
         var (trainIns, trainOuts) = trainSet.RawTrainingInputs();

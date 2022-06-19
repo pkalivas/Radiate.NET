@@ -1,5 +1,4 @@
 ﻿using Radiate.Callbacks.Interfaces;
-using Radiate.Callbacks.Resolver;
 using Radiate.Extensions;
 using Radiate.IO.Wraps;
 using Radiate.Losses;
@@ -17,67 +16,71 @@ using Radiate.Tensors;
 
 namespace Radiate.Optimizers;
 
-public class Optimizer<T> where T: class
-{
-    private readonly T _optimizer;
-    private readonly TensorTrainSet _tensorTrainSet;
-    private readonly Population<T> _population;
-    private readonly Loss _loss;
-    private readonly IEnumerable<ITrainingCallback> _callbacks;
+public interface IOptimizerModel { }
 
-    public Optimizer(Population<T> population, TensorTrainSet tensorTrainSet = null)
+public class Optimizer
+{
+    private readonly IOptimizerModel _optimizer;
+    private readonly Loss _loss;
+    private readonly TensorTrainSet _tensorTrainSet;
+    private readonly TrainingSession _trainingSession;
+    
+    public Optimizer(IPopulation population, TensorTrainSet tensorTrainSet = null)
     {
-        _population = population;
         _tensorTrainSet = tensorTrainSet?.Compile();
-        _callbacks = new List<ITrainingCallback>();
+        _trainingSession = new EvolutionTrainingSession(population, new List<ITrainingCallback>());
     }
 
-    public Optimizer(T optimizer, TensorTrainSet tensorTrainSet, IEnumerable<ITrainingCallback> callbacks)
+    public Optimizer(OptimizerWrap wrap) 
+        : this(Load(wrap), new TensorTrainSet(wrap.TensorOptions), wrap.LossFunction) { }
+    
+    public Optimizer(IOptimizerModel optimizer, TensorTrainSet tensorTrainSet, IEnumerable<ITrainingCallback> callbacks)
         : this(optimizer, tensorTrainSet, Loss.None, callbacks) { }
 
-    public Optimizer(T optimizer, Loss loss = Loss.None, IEnumerable<ITrainingCallback> callbacks = null) 
+    public Optimizer(IOptimizerModel optimizer, Loss loss = Loss.None, IEnumerable<ITrainingCallback> callbacks = null) 
         : this(optimizer, null, loss, callbacks) { }
 
-    public Optimizer(T optimizer, TensorTrainSet tensorTrainSet, Loss loss = Loss.None,
-        IEnumerable<ITrainingCallback> callbacks = null)
+    public Optimizer(IOptimizerModel optimizer, TensorTrainSet tensorTrainSet, Loss loss = Loss.None, IEnumerable<ITrainingCallback> callbacks = null)
     {
         _optimizer = optimizer;
         _tensorTrainSet = tensorTrainSet;
         _loss = loss;
-        _callbacks = callbacks ?? new List<ITrainingCallback>();
+        _trainingSession = _optimizer switch
+        {
+            IUnsupervised unsupervised => new UnsupervisedTrainingSession(unsupervised, callbacks),
+            ISupervised supervised => new SupervisedTrainingSession(supervised, callbacks),
+            _ => throw new Exception($"Cannot create training session for model.")
+        };
+        
         Model = _optimizer;
     }
     
-    private T Model { get; set; }
-
-    public async Task<T> Train() => await Train(_ => Task.FromResult(true));
-
-    public async Task<T> Train(Func<Epoch, bool> trainFunc) =>
-        await Train(epoch => Task.Run(() => trainFunc(epoch)));
-
-    public async Task<T> Train(Func<Epoch, Task<bool>> trainFunc)
+    private IOptimizerModel Model { get; set; }
+    
+    private LossFunction LossFunction => _loss switch
     {
-        var lossFunction = _loss switch
-        {
-            Loss.None => LossFunctionResolver.Get(_optimizer),
-            _ => LossFunctionResolver.Get(_loss)
-        };
-        
-        var trainingSession = GetTrainingSession();
-        Model = await trainingSession.Train<T>(_tensorTrainSet, lossFunction, trainFunc);
-        
-        foreach (var callback in CallbackResolver.Get<ITrainingCompletedCallback>(_callbacks))
-        {
-            await callback.CompleteTraining(this, trainingSession.Epochs, _tensorTrainSet);
-        }
+        Loss.None => LossFunctionResolver.Get(_optimizer),
+        _ => LossFunctionResolver.Get(_loss)
+    };
 
-        return Model;
+    public async Task<T> Train<T>() where T : class, IOptimizerModel => await Train<T>(_ => Task.FromResult(true));
+
+    public async Task<T> Train<T>(Func<Epoch, bool> trainFunc) where T : class, IOptimizerModel =>
+        await Train<T>(epoch => Task.Run(() => trainFunc(epoch)));
+
+    private async Task<T> Train<T>(Func<Epoch, Task<bool>> trainFunc) where T : class, IOptimizerModel
+    {
+        Model = await _trainingSession.Train(_tensorTrainSet, trainFunc, LossFunction);
+        
+        await _trainingSession.CompleteTraining(this, _tensorTrainSet);
+        
+        return Model as T;
     }
     
     public Prediction Predict(float[] input)
     {
         var processedInput = _tensorTrainSet.Process(input.ToTensor());
-        return _optimizer switch
+        return Model switch
         {
             ISupervised supervised => supervised.Predict(processedInput),
             IUnsupervised unsupervised => unsupervised.Predict(processedInput),
@@ -86,7 +89,7 @@ public class Optimizer<T> where T: class
         };
     }
 
-    public Prediction ProcessedPredict(float[] input) => _optimizer switch
+    public Prediction ProcessedPredict(float[] input) => Model switch
     {
         ISupervised supervised => supervised.Predict(input.ToTensor()),
         IUnsupervised unsupervised => unsupervised.Predict(input.ToTensor()),
@@ -116,65 +119,26 @@ public class Optimizer<T> where T: class
             _ => throw new Exception("Cannot save optimizer")
         }
     };
-    
-    private TrainingSession GetTrainingSession() => _optimizer switch
-    {
-        IUnsupervised unsupervised => new UnsupervisedTrainingSession(unsupervised, _callbacks),
-        ISupervised supervised => new SupervisedTrainingSession(supervised, _callbacks),
-        _ => new EvolutionTrainingSession(_population, _callbacks),
-    };
 
     private Validation Validate(List<Batch> batches)
     {
-        var validator = new Validator(_loss switch
-        {
-            Loss.None => LossFunctionResolver.Get(_optimizer),
-            _ => LossFunctionResolver.Get(_loss)
-        });
+        var validator = new Validator(LossFunction);
         
-        return _optimizer switch
+        return Model switch
         {
             ISupervised supervised => validator.Validate(supervised, batches),
             IUnsupervised unsupervised => validator.Validate(unsupervised, batches),
             _ => throw new Exception("Cannot validate model.")
         };
     }
-    
-    public static Optimizer<T> Load(OptimizerWrap wrap, IEnumerable<ITrainingCallback> callbacks = null) 
-    {
-        var modelWrap = wrap.ModelWrap;
-        var trainSet = new TensorTrainSet(wrap.TensorOptions);
-        
-        switch (modelWrap.ModelType)
-        {
-            case ModelType.MultiLayerPerceptron:
-            {
-                var perceptron = new MultiLayerPerceptron(modelWrap);
-                return new Optimizer<T>(perceptron as T, trainSet, wrap.LossFunction, callbacks);
-            }
-            case ModelType.RandomForest:
-            {
-                var forest = new RandomForest(modelWrap);
-                return new Optimizer<T>(forest as T, trainSet, wrap.LossFunction, callbacks);
-            }
-            case ModelType.SVM:
-            {
-                var vectorMachine = new SupportVectorMachine(modelWrap);
-                return new Optimizer<T>(vectorMachine as T, trainSet, wrap.LossFunction, callbacks);
-            }
-            case ModelType.KMeans:
-            {
-                var kMeans = new KMeans(modelWrap);
-                return new Optimizer<T>(kMeans as T, trainSet, wrap.LossFunction, callbacks);
-            }
-            case ModelType.Neat:
-            {
-                var neat = new Neat(modelWrap);
-                return new Optimizer<T>(neat as T, trainSet, Loss.None, callbacks);
-            }
-            default:
-                return null;
-        }
-    }
 
+    private static IOptimizerModel Load(OptimizerWrap wrap) => wrap.ModelWrap.ModelType switch
+    {
+        ModelType.MultiLayerPerceptron => new MultiLayerPerceptron(wrap.ModelWrap),
+        ModelType.RandomForest => new RandomForest(wrap.ModelWrap),
+        ModelType.SVM => new SupportVectorMachine(wrap.ModelWrap),
+        ModelType.KMeans => new KMeans(wrap.ModelWrap),
+        ModelType.Neat => new Neat(wrap.ModelWrap),
+        _ => null
+    };
 }

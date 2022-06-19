@@ -15,24 +15,25 @@ public class SupervisedTrainingSession : TrainingSession
         _supervisedModel = supervisedModel;
     }
 
-    public override async Task<T> Train<T>(TensorTrainSet trainingData, LossFunction lossFunction, Func<Epoch, Task<bool>> trainFunc)
+    public override async Task<IOptimizerModel> Train(TensorTrainSet trainingData, Func<Epoch, Task<bool>> trainFunc, LossFunction lossFunction)
     {
+        var index = 0;
         var batches = trainingData.TrainingInputs;
         
         while (true)
         {
-            var epoch = Fit(batches, lossFunction);
+            var epoch = Fit(index++, batches, lossFunction);
 
             if (await trainFunc(epoch))
             {
                 break;
             }
         }
-        
-        return (T) _supervisedModel;
+
+        return _supervisedModel;
     }
 
-    private Epoch Fit(List<Batch> batches, LossFunction lossFunction)
+    private Epoch Fit(int index, List<Batch> batches, LossFunction lossFunction)
     {
         foreach (var callback in GetCallbacks<IEpochStartedCallback>())
         {
@@ -50,14 +51,13 @@ public class SupervisedTrainingSession : TrainingSession
                 .Select(pair => lossFunction(pair.Prediction.Result, pair.Target))
                 .ToList();
             
-            _supervisedModel.Update(batchErrors, Epochs.Count);
+            _supervisedModel.Update(batchErrors, index);
             
             predictions.AddRange(batchPredictions);
             epochErrors.AddRange(batchErrors.Select(err => err.Loss));
         }
 
-        var epoch = Validator.ValidateEpoch(epochErrors, predictions) with { Index = Epochs.Count + 1 };
-        Epochs.Add(epoch);
+        var epoch = Validator.ValidateEpoch(epochErrors, predictions) with { Index = index };
 
         foreach (var callback in GetCallbacks<IEpochCompletedCallback>())
         {
