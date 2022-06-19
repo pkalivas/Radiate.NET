@@ -4,7 +4,6 @@ using Radiate.Extensions;
 using Radiate.IO.Wraps;
 using Radiate.Losses;
 using Radiate.Optimizers.Evolution;
-using Radiate.Optimizers.Evolution.Environment;
 using Radiate.Optimizers.Evolution.Neat;
 using Radiate.Optimizers.Supervised;
 using Radiate.Optimizers.Supervised.Forest;
