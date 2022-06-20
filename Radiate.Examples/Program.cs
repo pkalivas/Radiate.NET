@@ -18,6 +18,8 @@ class Program
                       "[7] KMeans\n" + 
                       "[8] RandomForest\n" + 
                       "[9] SupportVectorMachine\n" +
+                      "[10] Evolve Tree\n" +
+                      "[11] Evolve Forest\n" +
                       ":: ";
 
         while (true)
@@ -79,6 +81,16 @@ class Program
         if (choice == 9)
         {
             await new SVMPredictor().Run();
+        }
+
+        if (choice == 10)
+        {
+            await new EvolveTree().Run();
+        }
+
+        if (choice == 11)
+        {
+            await new EvolveForest().Run();
         }
     }
 }

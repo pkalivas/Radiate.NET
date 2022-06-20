@@ -57,6 +57,11 @@ public class TensorTrainSet
         .Distinct()
         .Count();
 
+    public float[] OutputCategoriesList => TrainTest.Targets
+        .SelectMany(val => val)
+        .Distinct()
+        .ToArray();
+
     public Shape InputShape => TrainingBatches().First().Features.First().Shape;
     
     public TensorTrainSet Batch(int batchSize)

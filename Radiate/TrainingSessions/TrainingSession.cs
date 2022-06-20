@@ -1,10 +1,11 @@
 ﻿using Radiate.Callbacks;
 using Radiate.Callbacks.Interfaces;
 using Radiate.Losses;
+using Radiate.Optimizers;
 using Radiate.Records;
 using Radiate.Tensors;
 
-namespace Radiate.Optimizers.TrainingSessions;
+namespace Radiate.TrainingSessions;
 
 public abstract class TrainingSession
 {

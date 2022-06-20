@@ -7,5 +7,7 @@ public enum ModelType
     SVM = 2,
     KMeans = 3,
     Neat = 4,
-    Other = 5
+    SeralTree = 5,
+    SeralForest = 6,
+    Other = 7
 }

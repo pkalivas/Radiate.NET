@@ -3,6 +3,8 @@ namespace Radiate.Optimizers.Evolution.Environment;
 
 public class PopulationSettings
 {
+    public PopulationSettings() { }
+    
     public PopulationSettings(int size)
     {
         Size = size;

@@ -1,11 +1,14 @@
-﻿using Radiate.Activations;
-using Radiate.Callbacks.Interfaces;
+﻿using Radiate.Callbacks.Interfaces;
 using Radiate.Losses;
+using Radiate.Optimizers;
 using Radiate.Optimizers.Evolution;
+using Radiate.Optimizers.Evolution.Environment;
+using Radiate.Optimizers.Evolution.Forest;
+using Radiate.Optimizers.Evolution.Neat;
 using Radiate.Records;
 using Radiate.Tensors;
 
-namespace Radiate.Optimizers.TrainingSessions;
+namespace Radiate.TrainingSessions;
 
 public class EvolutionTrainingSession : TrainingSession
 {
@@ -14,6 +17,17 @@ public class EvolutionTrainingSession : TrainingSession
     public EvolutionTrainingSession(IPopulation population, IEnumerable<ITrainingCallback> callbacks) : base(callbacks)
     {
         _population = population;
+    }
+
+    public EvolutionTrainingSession(IGenome genome, IEnumerable<ITrainingCallback> callbacks) : base(callbacks)
+    {
+        _population = genome switch
+        {
+            SeralTree tree => new Population<SeralTree>(tree),
+            Neat neat => new Population<Neat>(neat),
+            SeralForest forest => new Population<SeralForest>(forest),
+            _ => throw new Exception("Cannot create evolution training session")
+        };
     }
 
     public override async Task<IOptimizerModel> Train(TensorTrainSet trainingData, Func<Epoch, Task<bool>> trainFunc, LossFunction lossFunction)

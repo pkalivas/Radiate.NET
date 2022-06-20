@@ -15,5 +15,4 @@ public interface IGenome
     public T CloneGenome<T>() where T : class;
 
     public void ResetGenome();
-    public T Randomize<T>() where T : class;
 }

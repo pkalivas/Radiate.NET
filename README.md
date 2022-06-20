@@ -12,7 +12,9 @@
     - MaxPooling Layer
 4. **KMeans Clustering**
 5. **Evolution Engine**
-    - Evolve any object which implements the Genome base class. Implementation of [NEAT](http://nn.cs.utexas.edu/downloads/papers/stanley.ec02.pdf) for evolving NeuralNetworks is included.
+    - Evolve any object which implements the Genome base class. 
+      - Implementation of [NEAT](http://nn.cs.utexas.edu/downloads/papers/stanley.ec02.pdf) for evolving NeuralNetworks is included.
+      - Implementation of evolutionarily generated RandomForest/DecisionTree.
 
 ## Callbacks
 Similar to [Keras Callbacks](https://keras.io/api/callbacks/). Hook into the training loop with custom code. Create an object that implements any or all of the following:
@@ -36,28 +38,51 @@ Functional feature engineering with ```TensorTrainSet```. Transform input data (
 8. TransformTargets - Transform the target data. Options same as above.
 
 ## Model saving and loading
-Save an ```Optimizer<T>``` model like
+Save an ```Optimizer``` model like
 ```c#
-var optimizer = new Optimizer<RandomForest>(forest, tensorTrainSet);
-var wrapped = optimizer.Save();
+ const int numTrees = 10;
+  const int maxDepth = 10;
+  const int minSampleSplit = 2;
+  
+  var (rawFeatures, rawLabels) = await new IrisFlowers().GetDataSet();
+  var pair = new TensorTrainSet(rawFeatures, rawLabels)
+      .Shuffle()
+      .Split()
+      .Batch(rawFeatures.Count);
+  
+  var forest = new RandomForest(numTrees, new ForestInfo(minSampleSplit, maxDepth));
+  var optimizer = new Optimizer(forest, pair, new List<ITrainingCallback>
+  {
+      new VerboseTrainingCallback(pair),
+      new ModelWriterCallback(),
+      new ConfusionMatrixCallback()
+  });
+
+  await optimizer.Train<RandomForest>();
+  
+  // Generate a json serializable object.
+  var wrappedModel = optimizer.Save();
+  
+  // The same model can be loaded back in for prediction/additional training.
+  var newOptimizer = new Optimizer(wrappedModel);
 ```
-The ```Optimizer<T>``` is not Json serializable, but the ```OptimizerWrap``` is, so the ```Optimizer<T>``` must be converted to a concrete object before serializing.
+The ```Optimizer``` is not Json serializable, but the ```OptimizerWrap``` is, so the ```Optimizer``` must be converted to a concrete object before serializing.
 
 ```OptimizerWrap``` contains three items:
 1. TensorTrainSet options, the options used to transform the input features/targets. During predicion the Optimizer<T> uses these options to transform the input vector so it matches the trained features in order to get accurate predictions.
 2. LossFunction, the loss function used during training. If you save a model mid training, the loss function is needed when loading back in the model to continue training.
 3. ModelWrap, the machine learning model being trained/used for prediction.
 
-The ```Optimizer<T>``` can also be converted to a json string or a memory stream like so:
+The ```Optimizer``` can also be converted to a json string or a memory stream like so:
 ```c#
-var optimizer = new Optimizer<RandomForest>(forest, tensorTrainSet);
-var jsonString = ModelWriter.ToJson<RandomForest>(optimizer);
-var stream = ModelWriter.ToStream<RandomForest>(optimizer);
+var optimizer = new Optimizer(forest, tensorTrainSet);
+var jsonString = ModelWriter.ToJson(optimizer);
+var stream = ModelWriter.ToStream(optimizer);
 ```
 Loading in an ```Opimizer<T>``` from the above options:
 ```c#
-var optimizer = ModelReader.FromJson<RandomForest>(jsonString);
-var optimizer = ModelReader.FromStream<RandomForest>(stream);
+var optimizer = ModelReader.FromJson(jsonString);
+var optimizer = ModelReader.FromStream(stream);
 ```
 
 ## Make predictions

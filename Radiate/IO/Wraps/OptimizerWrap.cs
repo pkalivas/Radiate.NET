@@ -19,4 +19,6 @@ public class ModelWrap
     public SVMWrap SVMWrap { get; init; }
     public KMeansWrap KMeansWrap { get; init; }
     public NeatWrap NeatWrap { get; set; }
+    public SeralTreeWrap SeralTreeWrap { get; init; }
+    public SeralForestWrap SeralForestWrap { get; init; }
 }

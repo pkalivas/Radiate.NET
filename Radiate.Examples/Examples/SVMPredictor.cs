@@ -38,7 +38,7 @@ public class SVMPredictor : IExample
             new ModelWriterCallback(),
             new ConfusionMatrixCallback(),
         });
-
+        
         await optimizer.Train<SupportVectorMachine>(epoch => epoch.Index == maxEpoch);
     }
 }

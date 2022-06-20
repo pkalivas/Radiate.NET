@@ -460,9 +460,7 @@ public class Neat : IGenome, IEvolved, IOptimizerModel
             node.Reset();
         }
     }
-
-    public T Randomize<T>() where T : class => new Neat(this._inputs.Length, this._outputs.Length, _activation) as T;
-
+    
     public Prediction Predict(Tensor input)
     {
         var output = Forward(input.ToArray());

@@ -34,6 +34,7 @@ public class EvolveHelloWorld : IExample
                 settings.CleanPct = .9;
                 settings.StagnationLimit = 15;
             })
+            .AddEnvironment(new BaseEvolutionEnvironment())
             .AddFitnessFunction(member => member.Chars.Zip(target)
                     .Sum(points => points.First == points.Second ? 1.0f : 0.0f));
 
@@ -108,9 +109,11 @@ public class EvolveHelloWorld : IExample
         }
 
         public void ResetGenome() { }
-        public T Randomize<T>() where T : class
+
+        public T Randomize<T>(EvolutionEnvironment environment) where T : class, IGenome
         {
             throw new NotImplementedException();
         }
+
     }
 }

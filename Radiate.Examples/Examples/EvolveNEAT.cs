@@ -11,26 +11,14 @@ public class EvolveNEAT : IExample
 {
     public async Task Run()
     {
-        var tree = new PrimevalTree(5, 3, 10);
-
-        foreach (var node in tree)
-        {
-            var t = node;
-            var y = "";
-        }
-
-        var k = "";
-        
-        
         const int maxEpochs = 500;
-        const int populationSize = 100;
         
         var (inputs, answers) = await new SimpleMemory().GetDataSet();
-        var networks = Enumerable.Range(0, populationSize).Select(_ => new Neat(1, 1, Activation.ExpSigmoid)).ToList();
 
-        var population = new Population<Neat>(networks)
+        var population = new Population<Neat>()
             .AddSettings(settings =>
             {
+                settings.Size = 100;
                 settings.DynamicDistance = true;
                 settings.SpeciesTarget = 5;
                 settings.SpeciesDistance = .5;
@@ -41,6 +29,8 @@ public class EvolveNEAT : IExample
             })
             .AddEnvironment(new NeatEnvironment
             {
+                InputSize = 1,
+                OutputSize = 1,
                 RecurrentNeuronRate = .95f,
                 ReactivateRate = .2f,
                 WeightMutateRate = .8f,
@@ -48,6 +38,7 @@ public class EvolveNEAT : IExample
                 NewNodeRate = .14f,
                 EditWeights = .1f,
                 WeightPerturb = 1.5f,
+                OutputLayerActivation = Activation.ExpSigmoid,
                 ActivationFunctions = new List<Activation>
                 {
                     Activation.ExpSigmoid,
@@ -88,13 +79,3 @@ public class EvolveNEAT : IExample
         Console.WriteLine($"Input {0f} Expecting {1f} Guess {pop.Forward(new float[1] { 0 })[0]}");
     }
 }
-
-//
-// var total = 0.0f;
-// foreach (var points in inputs.Zip(answers))
-// {
-//     var output = member.Forward(points.First);
-//     total += (float) Math.Pow((output[0] - points.Second[0]), 2);
-// }
-//             
-// return 4.0f - total;

@@ -1,4 +1,5 @@
 ﻿using Radiate.Losses;
+using Radiate.Optimizers.Evolution;
 using Radiate.Optimizers.Supervised;
 using Radiate.Optimizers.Unsupervised;
 using Radiate.Records;
@@ -17,7 +18,7 @@ public class Validator
         _lossFunction = lossFunction;
     }
 
-    public Validation Validate(ISupervised supervised, List<Batch> data)
+    public Validation Validate(IOptimizerModel model, List<Batch> data)
     {
         var iterationLoss = new List<float>();
         var predictions = new List<Step>();
@@ -27,7 +28,14 @@ public class Validator
             foreach (var (feature, target) in inputs.Zip(answers))
             {
                 var startTime = DateTime.Now;
-                var prediction = supervised.Predict(feature);
+                var prediction = model switch
+                {
+                    IEvolved evolved => evolved.Predict(feature),
+                    ISupervised supervised => supervised.Predict(feature),
+                    IUnsupervised unsupervised => unsupervised.Predict(feature),
+                    _ => throw new Exception("Cannot validate model")
+                };
+                
                 var stepTime = DateTime.Now - startTime;
                 var (_, loss) = _lossFunction(prediction.Result, target);
             
@@ -42,33 +50,7 @@ public class Validator
 
         return new Validation(iterationLoss.Sum(), classAcc, regAcc, categoricalAccuracy);
     }
-
-    public Validation Validate(IUnsupervised unsupervised, List<Batch> data)
-    {
-        var iterationLoss = new List<float>();
-        var predictions = new List<Step>();
-        
-        foreach (var (inputs, answers) in data)
-        {
-            foreach (var (feature, target) in inputs.Zip(answers))
-            {
-                var startTime = DateTime.Now;
-                var prediction = unsupervised.Predict(feature);
-                var stepTime = DateTime.Now - startTime;
-                var (_, loss) = _lossFunction(prediction.Result, target);
-            
-                iterationLoss.Add(loss);
-                predictions.Add(new Step(prediction, target, stepTime));   
-            }
-        }
-
-        var categoricalAccuracy = CategoricalAccuracy(predictions);
-        var classAcc = ClassificationAccuracy(predictions);
-        var regAcc = RegressionAccuracy(predictions);
-
-        return new Validation(iterationLoss.Sum(), classAcc, regAcc, categoricalAccuracy);
-    }
-
+    
     public static Epoch ValidateEpoch(List<float> errors, List<Step> predictions)
     {
         var categoricalAccuracy = CategoricalAccuracy(predictions);

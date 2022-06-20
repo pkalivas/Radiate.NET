@@ -3,16 +3,18 @@ using Radiate.Extensions;
 using Radiate.IO.Wraps;
 using Radiate.Losses;
 using Radiate.Optimizers.Evolution;
+using Radiate.Optimizers.Evolution.Environment;
+using Radiate.Optimizers.Evolution.Forest;
 using Radiate.Optimizers.Evolution.Neat;
 using Radiate.Optimizers.Supervised;
 using Radiate.Optimizers.Supervised.Forest;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.SVM;
-using Radiate.Optimizers.TrainingSessions;
 using Radiate.Optimizers.Unsupervised;
 using Radiate.Optimizers.Unsupervised.Clustering;
 using Radiate.Records;
 using Radiate.Tensors;
+using Radiate.TrainingSessions;
 
 namespace Radiate.Optimizers;
 
@@ -26,10 +28,11 @@ public class Optimizer
     private readonly TensorTrainSet _tensorTrainSet;
     private readonly TrainingSession _trainingSession;
     
-    public Optimizer(IPopulation population, TensorTrainSet tensorTrainSet = null)
+    public Optimizer(IPopulation population, TensorTrainSet tensorTrainSet = null, IEnumerable<ITrainingCallback> callbacks = null)
     {
         _tensorTrainSet = tensorTrainSet?.Compile();
-        _trainingSession = new EvolutionTrainingSession(population, new List<ITrainingCallback>());
+        _lossFunction = new Difference();
+        _trainingSession = new EvolutionTrainingSession(population, callbacks);
     }
 
     public Optimizer(OptimizerWrap wrap) 
@@ -48,7 +51,8 @@ public class Optimizer
         {
             IUnsupervised unsupervised => new UnsupervisedTrainingSession(unsupervised, callbacks),
             ISupervised supervised => new SupervisedTrainingSession(supervised, callbacks),
-            _ => throw new Exception($"Cannot create training session for model.")
+            IGenome genome => new EvolutionTrainingSession(genome, callbacks),
+            _ => throw new Exception("Cannot create training session")
         };
     }
     
@@ -105,6 +109,8 @@ public class Optimizer
             SupportVectorMachine vectorMachine => vectorMachine.Save(),
             KMeans means => means.Save(),
             Neat neat => neat.Save(),
+            SeralTree tree => tree.Save(),
+            SeralForest forest => forest.Save(),
             _ => throw new Exception("Cannot save optimizer")
         }
     };
@@ -112,13 +118,7 @@ public class Optimizer
     private Validation Validate(List<Batch> batches)
     {
         var validator = new Validator(_lossFunction.Calculate);
-        
-        return Model switch
-        {
-            ISupervised supervised => validator.Validate(supervised, batches),
-            IUnsupervised unsupervised => validator.Validate(unsupervised, batches),
-            _ => throw new Exception("Cannot validate model.")
-        };
+        return validator.Validate(Model, batches);
     }
 
     private static IOptimizerModel Load(OptimizerWrap wrap) => wrap.ModelWrap.ModelType switch
@@ -128,6 +128,8 @@ public class Optimizer
         ModelType.SVM => new SupportVectorMachine(wrap.ModelWrap),
         ModelType.KMeans => new KMeans(wrap.ModelWrap),
         ModelType.Neat => new Neat(wrap.ModelWrap),
+        ModelType.SeralTree => new SeralTree(wrap.ModelWrap),
+        ModelType.SeralForest => new SeralForest(wrap.ModelWrap),
         _ => null
     };
 }
