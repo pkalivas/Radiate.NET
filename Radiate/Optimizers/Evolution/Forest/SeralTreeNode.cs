@@ -27,7 +27,7 @@ public class SeralTreeNode
     {
         _splitIndex = _random.Next(0, inputSize);
         _outputCategory = outputCategories[_random.Next(0, outputCategories.Length)];
-        _splitValue = _random.NextSingle();
+        _splitValue = (_random.NextSingle() * 2) - 1;
         _operator = (Operator)_random.Next(0, 3);
         
         Id = $"{_splitIndex}_{_outputCategory}_{_operator}";
