@@ -40,31 +40,26 @@ Functional feature engineering with ```TensorTrainSet```. Transform input data (
 ## Model saving and loading
 Save an ```Optimizer``` model like
 ```c#
- const int numTrees = 10;
-  const int maxDepth = 10;
-  const int minSampleSplit = 2;
-  
-  var (rawFeatures, rawLabels) = await new IrisFlowers().GetDataSet();
-  var pair = new TensorTrainSet(rawFeatures, rawLabels)
-      .Shuffle()
-      .Split()
-      .Batch(rawFeatures.Count);
-  
-  var forest = new RandomForest(numTrees, new ForestInfo(minSampleSplit, maxDepth));
-  var optimizer = new Optimizer(forest, pair, new List<ITrainingCallback>
-  {
-      new VerboseTrainingCallback(pair),
-      new ModelWriterCallback(),
-      new ConfusionMatrixCallback()
-  });
+const int numTrees = 10;
+const int maxDepth = 10;
+const int minSampleSplit = 2;
 
-  await optimizer.Train<RandomForest>();
-  
-  // Generate a json serializable object.
-  var wrappedModel = optimizer.Save();
-  
-  // The same model can be loaded back in for prediction/additional training.
-  var newOptimizer = new Optimizer(wrappedModel);
+var (rawFeatures, rawLabels) = await new IrisFlowers().GetDataSet();
+var pair = new TensorTrainSet(rawFeatures, rawLabels)
+   .Shuffle()
+   .Split()
+   .Batch(rawFeatures.Count);
+
+var forest = new RandomForest(numTrees, new ForestInfo(minSampleSplit, maxDepth));
+var optimizer = new Optimizer(forest, pair);
+
+await optimizer.Train<RandomForest>();
+
+// Generate a json serializable object.
+var wrappedModel = optimizer.Save();
+
+// The same model can be loaded back in for prediction/additional training.
+var newOptimizer = new Optimizer(wrappedModel);
 ```
 The ```Optimizer``` is not Json serializable, but the ```OptimizerWrap``` is, so the ```Optimizer``` must be converted to a concrete object before serializing.
 
@@ -146,13 +141,13 @@ var neuralNetwork = new MultiLayerPerceptron()
     .AddLayer(new DenseInfo(64, Activation.Sigmoid))
     .AddLayer(new DenseInfo(pair.OutputCategories, Activation.SoftMax));
 
-var optimizer = new Optimizer<MultiLayerPerceptron>(neuralNetwork, pair, new List<ITrainingCallback>
+var optimizer = new Optimizer(neuralNetwork, pair, new List<ITrainingCallback>
 {
     new VerboseTrainingCallback(pair, maxEpochs),
     new ConfusionMatrixCallback()
 });
 
-await optimizer.Train(epoch => maxEpochs == epoch.Index);
+await optimizer.Train<MultiLayerPerceptron>(epoch => maxEpochs == epoch.Index);
 ```
 
 **Random Forest on Iris Flowers dataset**
@@ -171,14 +166,14 @@ var pair = new TensorTrainSet(rawFeatures, rawLabels)
     .Batch(rawFeatures.Count);
 
 var forest = new RandomForest(numTrees, new ForestInfo(minSampleSplit, maxDepth));
-var optimizer = new Optimizer<RandomForest>(forest, pair, new List<ITrainingCallback>
+var optimizer = new Optimizer(forest, pair, new List<ITrainingCallback>
 {
     new VerboseTrainingCallback(pair),
     new ModelWriterCallback(),
     new ConfusionMatrixCallback()
 });
 
-await optimizer.Train();
+await optimizer.Train<RandomForest>();
 ```
 
 ## More
