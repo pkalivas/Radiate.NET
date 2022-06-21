@@ -21,6 +21,18 @@ public class TensorTrainSet
         TrainTest = new TrainTestSplit(inputs, answers);
     }
 
+    public TensorTrainSet(IEnumerable<float[]> features)
+    {
+        Options = new TensorTrainOptions();
+        TrainTest = new TrainTestSplit(features.Select(row => row.ToTensor()).ToList(), new List<Tensor>());
+    }
+
+    public TensorTrainSet(Tensor features)
+    {
+        Options = new TensorTrainOptions();
+        TrainTest = new TrainTestSplit(features.ToRows().ToList(), new List<Tensor>());
+    }
+
     public TensorTrainSet(TensorTrainOptions options)
     {
         Options = options;
@@ -149,7 +161,7 @@ public class TensorTrainSet
                 .Take(batchSize)
                 .ToArray();
         
-            var batchTargets = trainTest.Targets
+            var batchTargets = !trainTest.Targets.Any() ? Array.Empty<Tensor>() : trainTest.Targets
                 .Skip(i)
                 .Take(batchSize)
                 .ToArray();
@@ -174,7 +186,7 @@ public class TensorTrainSet
                 .Take(1)
                 .ToArray();
             
-            var batchTargets = trainTest.Targets
+            var batchTargets = !trainTest.Targets.Any() ? Array.Empty<Tensor>() :trainTest.Targets
                 .Skip(i)
                 .Take(1)
                 .ToArray();

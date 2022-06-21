@@ -1,5 +1,6 @@
 ﻿using Radiate.Extensions;
 using Radiate.Records;
+using Radiate.Tensors.Enums;
 
 namespace Radiate.Tensors;
 
@@ -142,6 +143,30 @@ public static class TensorOperations
         }
         
         return ten;
+    }
+
+    public static Tensor FromColumns(IEnumerable<IEnumerable<float>> columns)
+    {
+        var width = columns.Count();
+        var height = columns.Select(col => col.Count()).Distinct().Single();
+        
+        var dataArray = columns
+            .Select(indic => indic.ToArray())
+            .ToArray();
+        
+        var result = new List<Tensor>();
+        for (var i = 0; i < height; i++)
+        {
+            var inner = new float[width];
+            for (var j = 0; j < width; j++)
+            {
+                inner[j] = dataArray[j][i];
+            }
+            
+            result.Add(inner.ToTensor());
+        }
+
+        return Tensor.Stack(result.ToArray(), Axis.Zero);
     }
     
     public static Tensor Fill(Shape shape, float value)

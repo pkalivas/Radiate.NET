@@ -26,7 +26,11 @@ public class ShuffleTransform : ITensorSetTransform
             {
                 indexLookup.Add(idx);
                 newTrainFeatures.Add(trainFeatures[idx]);
-                newTrainTargets.Add(trainTargets[idx]);
+
+                if (trainTargets.Any())
+                {
+                    newTrainTargets.Add(trainTargets[idx]);
+                }
             }
         }
         

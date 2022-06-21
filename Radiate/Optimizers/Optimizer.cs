@@ -61,7 +61,7 @@ public class Optimizer
     public async Task<T> Train<T>(Func<Epoch, bool> trainFunc) where T : class, IOptimizerModel =>
         await Train<T>(epoch => Task.Run(() => trainFunc(epoch)));
 
-    private async Task<T> Train<T>(Func<Epoch, Task<bool>> trainFunc) where T : class, IOptimizerModel
+    public async Task<T> Train<T>(Func<Epoch, Task<bool>> trainFunc) where T : class, IOptimizerModel
     {
         Model = await _trainingSession.Train(_tensorTrainSet, trainFunc, _lossFunction.Calculate);
         

@@ -19,7 +19,7 @@ public class SplitTransform : ITensorSetTransform
             ? trainFeatures.Skip(splitIndex).ToList() 
             : trainFeatures.Take(splitIndex).ToList();
         
-        var targets = train is TrainTest.Train
+        var targets = !trainTargets.Any() ? new List<Tensor>() : train is TrainTest.Train
             ? trainTargets.Skip(splitIndex).ToList()
             : trainTargets.Take(splitIndex).ToList();
         

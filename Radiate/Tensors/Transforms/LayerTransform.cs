@@ -21,7 +21,11 @@ public class LayerTransform : ITensorSetTransform
         for (var i = 0; i < trainFeatures.Count - layer - 1; i++)
         {
             newFeatures.Add(trainFeatures.Skip(i).Take(layer).SelectMany(val => val).ToTensor());
-            newTargets.Add(trainTargets.Skip(i + layer).Take(1).SelectMany(val => val).ToTensor());
+
+            if (trainTargets.Any())
+            {
+                newTargets.Add(trainTargets.Skip(i + layer).Take(1).SelectMany(val => val).ToTensor());
+            }
         }
 
         return (new TrainTestSplit(newFeatures, newTargets), options);

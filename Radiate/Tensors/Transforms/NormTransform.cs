@@ -32,7 +32,7 @@ public class NormTransform : ITensorSetTransform
             trainTest = trainTest with { Features = newFeatures };
         }
 
-        if (options.TargetNorm is not Norm.None)
+        if (options.TargetNorm is not Norm.None && trainTargets.Any())
         {
             var scalars = train is TrainTest.Test ? options.TargetScalars : options.TargetNorm switch
             {

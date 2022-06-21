@@ -268,6 +268,9 @@ public class Tensor : IEnumerable<float>
     public static Tensor Fill(Shape shape, float value) =>
         TensorOperations.Fill(shape, value);
 
+    public static Tensor FromColumns(IEnumerable<IEnumerable<float>> columns) =>
+        TensorOperations.FromColumns(columns);
+
     public static Tensor Random(int height, int width = 0, int depth = 0) =>
         TensorOperations.Random(height, width, depth);
 
