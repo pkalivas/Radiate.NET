@@ -44,6 +44,8 @@ public class SeralTree: IGenome, IEvolved, IOptimizerModel, IEnumerable<SeralTre
         _size = tree._size;
     }
 
+    public IEnumerable<string> GetNodeIds() => this.Select(node => node.Id);
+
     public ModelWrap Save()
     {
         var rootId = Guid.NewGuid();
