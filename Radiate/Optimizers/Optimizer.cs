@@ -22,7 +22,7 @@ public interface IOptimizerModel { }
 
 public class Optimizer
 {
-    private IOptimizerModel Model { get; set; }
+    public IOptimizerModel Model { get; private set; }
 
     private readonly ILossFunction _lossFunction;
     private readonly TensorTrainSet _tensorTrainSet;

@@ -18,5 +18,4 @@ public static class CallbackResolver
 
         return result;
     }
-    
 }
