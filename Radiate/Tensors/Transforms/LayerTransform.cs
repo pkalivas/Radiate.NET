@@ -38,15 +38,11 @@ public class LayerTransform : ITensorSetTransform
             return value;
         }
 
+        var rows = value.ToRows();
         var result = new List<Tensor>();
-        for (var i = 0; i < value.Shape.Height; i += options.Layer)
+        for (var i = 0; i < value.Shape.Height - options.Layer; i++)
         {
-            var rows = new List<Tensor>();
-            for (var j = 0; j < options.Layer; j++)
-            {
-                rows.Add(value.Row(i));
-            }
-            result.Add(Tensor.Stack(rows.ToArray(), Axis.One));
+            result.Add(rows.Skip(i).Take(options.Layer).SelectMany(val => val).ToTensor());
         }
 
         return Tensor.Stack(result.ToArray(), Axis.Zero);

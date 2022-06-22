@@ -33,6 +33,12 @@ public class TensorTrainSet
         TrainTest = new TrainTestSplit(features.ToRows().ToList(), new List<Tensor>());
     }
 
+    public TensorTrainSet(IEnumerable<Tensor> features, IEnumerable<Tensor> targets)
+    {
+        Options = new TensorTrainOptions();
+        TrainTest = new TrainTestSplit(features.ToList(), targets.ToList());
+    }
+
     public TensorTrainSet(TensorTrainOptions options)
     {
         Options = options;
@@ -44,7 +50,7 @@ public class TensorTrainSet
 
     public List<Batch> TestingInputs => TestBatchCache.Any() ? TestBatchCache : TestingBatches();
 
-    public List<Batch> BatchAll => TrainingInputs.Concat(TestingBatches()).ToList();
+    public List<Batch> BatchAll => TrainingInputs.Concat(TestingInputs).ToList();
 
     public (List<float[]>, List<float[]>) RawTrainingInputs()
     {
@@ -63,7 +69,43 @@ public class TensorTrainSet
         var result = split.Apply(swapped.Item1, Options, Enums.TrainTest.Test);
         return (result.Item1.Features.Select(row => row.ToArray()).ToList(), result.Item1.Targets.Select(row => row.ToArray()).ToList());
     }
+
+    public List<(float[] feature, float[] target)> InputsToArrayRow(TrainTest trainTest = Enums.TrainTest.Train)
+    {
+        var result = new List<(float[], float[])>();
+        var batches = trainTest switch
+        {
+            Enums.TrainTest.Train => TrainingInputs,
+            Enums.TrainTest.Test => TestingInputs
+        };
+
+        foreach (var (feature, target) in batches)
+        {
+            result.AddRange(feature.Zip(target)
+                .Select(pair => (pair.First.ToArray(), pair.Second.ToArray())));
+        }
+
+        return result;
+    }
     
+    public List<(Tensor feature, Tensor target)> InputsToTensorRow(TrainTest trainTest = Enums.TrainTest.Train)
+    {
+        var result = new List<(Tensor, Tensor)>();
+        var batches = trainTest switch
+        {
+            Enums.TrainTest.Train => TrainingInputs,
+            Enums.TrainTest.Test => TestingInputs
+        };
+        
+        foreach (var (feature, target) in batches)
+        {
+            result.AddRange(feature.Zip(target)
+                .Select(pair => (pair.First, pair.Second)));
+        }
+
+        return result;
+    }
+
     public int OutputCategories => TrainTest.Targets
         .SelectMany(val => val)
         .Distinct()
@@ -74,7 +116,9 @@ public class TensorTrainSet
         .Distinct()
         .ToArray();
 
-    public Shape InputShape => TrainingBatches().First().Features.First().Shape;
+    public Shape InputShape => TrainingInputs.First().Features.First().Shape;
+
+    public Shape OutputShape => TrainingInputs.FirstOrDefault()?.Targets.FirstOrDefault()?.Shape;
     
     public TensorTrainSet Batch(int batchSize)
     {
