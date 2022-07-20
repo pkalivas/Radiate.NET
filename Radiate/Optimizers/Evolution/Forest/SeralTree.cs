@@ -7,9 +7,9 @@ using Radiate.Tensors;
 
 namespace Radiate.Optimizers.Evolution.Forest;
 
-public class SeralTree: IGenome, IEvolved, IOptimizerModel, IEnumerable<SeralTreeNode>
+public class SeralTree : IGenome, IEvolved, IOptimizerModel, IEnumerable<SeralTreeNode>
 {
-    private readonly Random _random = new Random();
+    private readonly Random _random = new();
 
     private SeralTreeNode _rootNode;
     private int _height;
