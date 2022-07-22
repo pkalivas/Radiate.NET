@@ -37,7 +37,7 @@ public class Generation
         await Speciate(populationControl.Distance, evolutionEnvironment);
     }
     
-    public Generation CreateNextGeneration(PopulationSettings popSettings, EvolutionEnvironment envSettings)
+    public Generation CreateNextGeneration(PassDownControl popSettings, EvolutionEnvironment envSettings)
     {
         var newMembers = SurvivorSelector.Select(Members, Species)
             .Select(pair =>

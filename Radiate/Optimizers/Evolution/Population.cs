@@ -1,4 +1,5 @@
-﻿using Radiate.Optimizers.Evolution.Interfaces;
+﻿using Radiate.Optimizers.Evolution.Info;
+using Radiate.Optimizers.Evolution.Interfaces;
 using Radiate.Records;
 
 namespace Radiate.Optimizers.Evolution;
@@ -7,33 +8,127 @@ public class Population<T> : IPopulation where T : class, IGenome
 {
     private const double DistanceMultiplier = 100.0;
     private const double Tolerance = 0.0000001;
+
+    private PopulationControl _populationControl;
+    private StagnationControl _stagnationControl;
+    private Generation _generation;
+    private readonly PassDownControl _passDownControl;
+    private readonly EvolutionEnvironment _evolutionEnvironment;
+    private readonly Solve<T> _fitnessFunction;
     
-    private PopulationSettings PopulationSettings { get; set; } = new();
     private Generation CurrentGeneration { get; set; }
-    private EvolutionEnvironment EvolutionEnvironment { get; set; }
     private InnovationCounter InnovationCounter { get; set; } = new();
-    private PopulationControl PopulationControl { get; set; }
-    private Solve<T> Solver { get; set; }
 
     public Population() { }
 
-    public Population(T genome)
+    public Population(PopulationInfo<T> info) : this(info, new List<T>()) { }
+    
+    public Population(T genome) : this(new(), new []{ genome }) { }
+
+    public Population(PopulationInfo<T> info, T genome) : this(info, new[] { genome }) { }
+    
+    public Population(PopulationInfo<T> info, IEnumerable<T> genomes)
     {
-        CurrentGeneration = new Generation
-        {
-            Members = new Dictionary<Guid, Member>
-            {
-                { Guid.NewGuid(), new Member { Fitness = 0, Model = genome } }
-            }
-        };
+        var popSettings = info.PopulationSettings ?? new();
+        
+        _populationControl = new(popSettings.DynamicDistance, popSettings.SpeciesDistance, popSettings.SpeciesTarget);
+        _stagnationControl = new(popSettings.CleanPct, popSettings.StagnationLimit);
+        _passDownControl = new(popSettings.InbreedRate, popSettings.CrossoverRate, popSettings.Size);
+        _fitnessFunction = info.FitnessFunc;
+        _evolutionEnvironment = info.EvolutionEnvironment;
+        _generation = CreateSeedGeneration(genomes);
     }
+    
+
+    // public Population(T genome)
+    // {
+    //     // CurrentGeneration = new Generation
+    //     // {
+    //     //     Members = new Dictionary<Guid, Member>
+    //     //     {
+    //     //         { Guid.NewGuid(), new Member { Fitness = 0, Model = genome } }
+    //     //     }
+    //     // };
+    // }
 
     public Population(IEnumerable<IGenome> genomes)
     {
-        PopulationSettings = new PopulationSettings(genomes.Count());
-        CurrentGeneration = new Generation
+        // PopulationSettings = new PopulationSettings(genomes.Count());
+        // CurrentGeneration = new Generation
+        // {
+        //     Members = genomes
+        //         .Select(member => (
+        //             Id: Guid.NewGuid(),
+        //             Member: new Member
+        //             {
+        //                 Fitness = 0,
+        //                 Model = member
+        //             }
+        //         ))
+        //         .ToDictionary(key => key.Id, val => val.Member),
+        //     Species = new List<Niche>()
+        // };
+    }
+    
+    public Population<T> AddFitnessFunction(Solve<T> solver)
+    {
+        // Solver = solver;
+        return this;
+    }
+
+    public Population<T> AddSettings(Action<PopulationSettings> settings) 
+    {
+        // settings.Invoke(PopulationSettings);
+        //
+        // if (CurrentGeneration is null && EvolutionEnvironment is not null)
+        // {
+        //     DelayedInit<T>();
+        // }
+        //
+        return this;
+    }
+
+    public Population<T> AddEnvironment(EvolutionEnvironment environment)
+    {
+        // EvolutionEnvironment = environment;
+        //
+        // if (CurrentGeneration is null && PopulationSettings is not null)
+        // {
+        //     DelayedInit<T>();
+        // }
+        //
+        return this;
+    }
+
+    public async Task<Generation> Evolve(int index)
+    {
+        // if (CurrentGeneration is null || EvolutionEnvironment is null)
+        // {
+        //     throw new Exception($"Cannot evolve a generation with no EvolutionEnvironment");
+        // }
+        
+        await _generation.Step(_fitnessFunction, _populationControl, _evolutionEnvironment);
+        
+        return _generation;
+    }
+
+    public float PassDown()
+    {
+        var topMember = _generation.GetBestMember();
+
+        _populationControl = AdjustDistance();
+        _stagnationControl = AdjustStagnation(topMember.Fitness);
+
+        _generation = _generation.CreateNextGeneration(_passDownControl, _evolutionEnvironment);
+
+        return topMember.Fitness;
+    }
+
+    public Generation CreateSeedGeneration(IEnumerable<IGenome> genomes)
+    {
+        return new Generation
         {
-            Members = genomes
+            Members = (genomes.Any() ? DefaultGenomes() : genomes)
                 .Select(member => (
                     Id: Guid.NewGuid(),
                     Member: new Member
@@ -46,107 +141,42 @@ public class Population<T> : IPopulation where T : class, IGenome
             Species = new List<Niche>()
         };
     }
-    
-    public Population<T> AddFitnessFunction(Solve<T> solver)
-    {
-        Solver = solver;
-        return this;
-    }
-
-    public Population<T> AddSettings(Action<PopulationSettings> settings) 
-    {
-        settings.Invoke(PopulationSettings);
-
-        if (CurrentGeneration is null && EvolutionEnvironment is not null)
-        {
-            DelayedInit<T>();
-        }
-        
-        return this;
-    }
-
-    public Population<T> AddEnvironment(EvolutionEnvironment environment)
-    {
-        EvolutionEnvironment = environment;
-        
-        if (CurrentGeneration is null && PopulationSettings is not null)
-        {
-            DelayedInit<T>();
-        }
-        
-        return this;
-    }
-
-    public async Task<Generation> Evolve(int index)
-    {
-        if (CurrentGeneration is null || EvolutionEnvironment is null)
-        {
-            throw new Exception($"Cannot evolve a generation with no EvolutionEnvironment");
-        }
-
-        if (index == 0)
-        {
-            PopulationControl = new PopulationControl(PopulationSettings.SpeciesDistance);
-        }
-        
-        await CurrentGeneration.Step(Solver, PopulationControl, EvolutionEnvironment);
-        
-        return CurrentGeneration;
-    }
-
-    public float PassDown()
-    {
-        var topMember = CurrentGeneration.GetBestMember();
-        if (PopulationSettings.DynamicDistance)
-        {
-            AdjustDistance();
-        }
-
-        AdjustStagnation(topMember.Fitness);
-
-        CurrentGeneration = CurrentGeneration.CreateNextGeneration(PopulationSettings, EvolutionEnvironment);
-
-        return topMember.Fitness;
-    }
 
     IGenome IPopulation.Best() => CurrentGeneration.GetBestMember().Model;
 
-    private void AdjustStagnation(float fitness)
+    private StagnationControl AdjustStagnation(float fitness)
     {
-        var (_, _, stagnationCount, prevFit) = PopulationControl;
-
-        if (stagnationCount >= PopulationSettings.StagnationLimit)
+        var (cleanPercent, stagnationLimit, stagnationCount, previousFitness) = _stagnationControl;
+        var newStagnationControl = _stagnationControl with { };
+        
+        if (stagnationCount >= stagnationLimit)
         {
-            CurrentGeneration.CleanPopulation(PopulationSettings.CleanPct);
-            PopulationControl = PopulationControl with
-            {
-                StagnationCount = 0,
-                PreviousFitness = prevFit
-            };
+            CurrentGeneration.CleanPopulation(cleanPercent);
+            newStagnationControl = _stagnationControl with { StagnationCount = 0 };
         }
-        else if (Math.Abs(prevFit - fitness) < Tolerance)
+        else if (Math.Abs(previousFitness - fitness) < Tolerance)
         {
-            PopulationControl = PopulationControl with
-            {
-                StagnationCount = stagnationCount + 1, 
-                PreviousFitness = fitness
-            };
+            newStagnationControl = _stagnationControl with { StagnationCount = stagnationCount + 1 };
         }
         else
         {
-            PopulationControl = PopulationControl with
-            {
-                StagnationCount = 0, 
-                PreviousFitness = fitness
-            };
+            newStagnationControl = _stagnationControl with { StagnationCount = 0 };
         }
+
+        return newStagnationControl with { PreviousFitness = fitness };
     }
     
-    private void AdjustDistance()
+    private PopulationControl AdjustDistance()
     {
-        var (distance, precision, _, _) = PopulationControl;
+        var (dynamicDistance, distance, target, precision) = _populationControl;
+        var newControl = _populationControl with { };
 
-        if (CurrentGeneration.Species.Count < PopulationSettings.SpeciesTarget)
+        if (!dynamicDistance)
+        {
+            return newControl;
+        }
+        
+        if (CurrentGeneration.Species.Count < target)
         {
             var newDistance = distance - precision;
             while (newDistance <= 0)
@@ -155,31 +185,35 @@ public class Population<T> : IPopulation where T : class, IGenome
                 newDistance = distance - precision;
             }
 
-            // Settings.SpeciesDistance -= precision;
-            PopulationControl = PopulationControl with
+            newControl = newControl with
             {
                 Distance = Math.Round(newDistance, 5)
             };
         }
-        else if (CurrentGeneration.Species.Count > PopulationSettings.SpeciesTarget)
+        else if (CurrentGeneration.Species.Count > target)
         {
             var newDistance = distance + precision;
 
-            // Settings.SpeciesDistance += precision;
-            PopulationControl = PopulationControl with
+            newControl = newControl with
             {
-                Distance = Math.Round(newDistance, 5),
+                Distance = Math.Round(newDistance, 5)
             };
         }
-    }
 
-    private void DelayedInit<T>() where T : class, IGenome
+        return newControl;
+    }
+    
+    private IEnumerable<T> DefaultGenomes() => Enumerable.Range(0, _passDownControl.Size)
+        .Select(_ => _evolutionEnvironment.GenerateGenome<T>())
+        .ToList();
+
+    private Generation DelayedInit<T>() where T : class, IGenome
     {
-        var genomes = Enumerable.Range(0, PopulationSettings.Size)
-            .Select(_ => EvolutionEnvironment.GenerateGenome<T>())
+        var genomes = Enumerable.Range(0, _passDownControl.Size)
+            .Select(_ => _evolutionEnvironment.GenerateGenome<T>())
             .ToList();
 
-        CurrentGeneration = new Generation
+        return new Generation
         {
             Members = genomes
                 .Select(member => (
