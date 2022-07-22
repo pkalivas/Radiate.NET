@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Threading;
 using Radiate.Optimizers.Evolution.Interfaces;
+using Radiate.Records;
 
 namespace Radiate.Optimizers.Evolution;
 
@@ -16,51 +17,8 @@ public class Generation
         MascotMembers = new Dictionary<Guid, Member>();
         Species = new List<Niche>();
     }
-
-    public async Task Speciate(double distance, EvolutionEnvironment settings)
-    {
-        var retainedSpecies = new HashSet<Guid>();
-
-        foreach (var (id, member) in Members)
-        {
-            var found = false;
-            foreach (var species in Species)
-            {
-                var speciesMember = MascotMembers[species.Mascot].Model;
-                var memberDistance = await member.Model.Distance(speciesMember, settings);
-
-                if (memberDistance < distance)
-                {
-                    species.Members.Add((id, member.Fitness));
-                    retainedSpecies.Add(species.NicheId);
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found)
-            {
-                var newSpecies = new Niche(id, member.Fitness);
-                Species.Add(newSpecies);
-                retainedSpecies.Add(newSpecies.NicheId);
-                MascotMembers[id] = member;
-            }
-        }
-
-        foreach (var species in Species.Where(species => !retainedSpecies.Contains(species.NicheId)))
-        {
-            MascotMembers.Remove(species.NicheId);
-        }
-
-        Species = Species.Where(spec => retainedSpecies.Contains(spec.NicheId)).ToList();
-
-        foreach (var species in Species)
-        {
-            species.CalcTotalAdjustedFitness();
-        }
-    }
     
-    public Member Step<T>(Solve<T> problem) where T : class
+    public async Task Step<T>(Solve<T> problem, PopulationControl populationControl, EvolutionEnvironment evolutionEnvironment) where T : class
     {
         var newMembers = new ConcurrentBag<(Guid memberId, float memberFitness)>();
         Parallel.ForEach(Members.Keys, member =>
@@ -76,7 +34,7 @@ public class Generation
             }
         }
 
-        return GetBestMember();
+        await Speciate(populationControl.Distance, evolutionEnvironment);
     }
     
     public Generation CreateNextGeneration(PopulationSettings popSettings, EvolutionEnvironment envSettings)
@@ -162,4 +120,47 @@ public class Generation
             .OrderBy(val => val.Innovation)
             .ToList()
     };
+    
+    private async Task Speciate(double distance, EvolutionEnvironment settings)
+    {
+        var retainedSpecies = new HashSet<Guid>();
+
+        foreach (var (id, member) in Members)
+        {
+            var found = false;
+            foreach (var species in Species)
+            {
+                var speciesMember = MascotMembers[species.Mascot].Model;
+                var memberDistance = await member.Model.Distance(speciesMember, settings);
+
+                if (memberDistance < distance)
+                {
+                    species.Members.Add((id, member.Fitness));
+                    retainedSpecies.Add(species.NicheId);
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                var newSpecies = new Niche(id, member.Fitness);
+                Species.Add(newSpecies);
+                retainedSpecies.Add(newSpecies.NicheId);
+                MascotMembers[id] = member;
+            }
+        }
+
+        foreach (var species in Species.Where(species => !retainedSpecies.Contains(species.NicheId)))
+        {
+            MascotMembers.Remove(species.NicheId);
+        }
+
+        Species = Species.Where(spec => retainedSpecies.Contains(spec.NicheId)).ToList();
+
+        foreach (var species in Species)
+        {
+            species.CalcTotalAdjustedFitness();
+        }
+    }
 }

@@ -3,6 +3,7 @@ namespace Radiate.Optimizers.Evolution.Interfaces;
 
 public interface IPopulation
 {
-    Task<float> Step(int index);
+    Task<Generation> Evolve(int index);
+    float PassDown();
     IGenome Best();
 }

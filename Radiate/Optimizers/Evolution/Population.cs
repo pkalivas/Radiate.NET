@@ -1,22 +1,19 @@
-﻿
-
-using System.Globalization;
-using Radiate.Optimizers.Evolution.Interfaces;
+﻿using Radiate.Optimizers.Evolution.Interfaces;
 using Radiate.Records;
 
 namespace Radiate.Optimizers.Evolution;
 
 public class Population<T> : IPopulation where T : class, IGenome
 {
-    private PopulationSettings Settings { get; set; } = new();
+    private const double DistanceMultiplier = 100.0;
+    private const double Tolerance = 0.0000001;
+    
+    private PopulationSettings PopulationSettings { get; set; } = new();
     private Generation CurrentGeneration { get; set; }
     private EvolutionEnvironment EvolutionEnvironment { get; set; }
     private InnovationCounter InnovationCounter { get; set; } = new();
     private PopulationControl PopulationControl { get; set; }
     private Solve<T> Solver { get; set; }
-
-    private double DistanceMultiplier { get; set; } = 100.0;
-    private const double Tolerance = 0.0000001;
 
     public Population() { }
 
@@ -33,7 +30,7 @@ public class Population<T> : IPopulation where T : class, IGenome
 
     public Population(IEnumerable<IGenome> genomes)
     {
-        Settings = new PopulationSettings(genomes.Count());
+        PopulationSettings = new PopulationSettings(genomes.Count());
         CurrentGeneration = new Generation
         {
             Members = genomes
@@ -58,7 +55,7 @@ public class Population<T> : IPopulation where T : class, IGenome
 
     public Population<T> AddSettings(Action<PopulationSettings> settings) 
     {
-        settings.Invoke(Settings);
+        settings.Invoke(PopulationSettings);
 
         if (CurrentGeneration is null && EvolutionEnvironment is not null)
         {
@@ -72,7 +69,7 @@ public class Population<T> : IPopulation where T : class, IGenome
     {
         EvolutionEnvironment = environment;
         
-        if (CurrentGeneration is null && Settings is not null)
+        if (CurrentGeneration is null && PopulationSettings is not null)
         {
             DelayedInit<T>();
         }
@@ -80,7 +77,7 @@ public class Population<T> : IPopulation where T : class, IGenome
         return this;
     }
 
-    public async Task<float> Step(int index)
+    public async Task<Generation> Evolve(int index)
     {
         if (CurrentGeneration is null || EvolutionEnvironment is null)
         {
@@ -89,21 +86,25 @@ public class Population<T> : IPopulation where T : class, IGenome
 
         if (index == 0)
         {
-            PopulationControl = new PopulationControl(Settings.SpeciesDistance);
+            PopulationControl = new PopulationControl(PopulationSettings.SpeciesDistance);
         }
         
-        var topMember = CurrentGeneration.Step(Solver);
-
-        await CurrentGeneration.Speciate(Settings.SpeciesDistance, EvolutionEnvironment);
+        await CurrentGeneration.Step(Solver, PopulationControl, EvolutionEnvironment);
         
-        if (Settings.DynamicDistance)
+        return CurrentGeneration;
+    }
+
+    public float PassDown()
+    {
+        var topMember = CurrentGeneration.GetBestMember();
+        if (PopulationSettings.DynamicDistance)
         {
             AdjustDistance();
         }
 
         AdjustStagnation(topMember.Fitness);
 
-        CurrentGeneration = CurrentGeneration.CreateNextGeneration(Settings, EvolutionEnvironment);
+        CurrentGeneration = CurrentGeneration.CreateNextGeneration(PopulationSettings, EvolutionEnvironment);
 
         return topMember.Fitness;
     }
@@ -114,9 +115,9 @@ public class Population<T> : IPopulation where T : class, IGenome
     {
         var (_, _, stagnationCount, prevFit) = PopulationControl;
 
-        if (stagnationCount >= Settings.StagnationLimit)
+        if (stagnationCount >= PopulationSettings.StagnationLimit)
         {
-            CurrentGeneration.CleanPopulation(Settings.CleanPct);
+            CurrentGeneration.CleanPopulation(PopulationSettings.CleanPct);
             PopulationControl = PopulationControl with
             {
                 StagnationCount = 0,
@@ -145,7 +146,7 @@ public class Population<T> : IPopulation where T : class, IGenome
     {
         var (distance, precision, _, _) = PopulationControl;
 
-        if (CurrentGeneration.Species.Count < Settings.SpeciesTarget)
+        if (CurrentGeneration.Species.Count < PopulationSettings.SpeciesTarget)
         {
             var newDistance = distance - precision;
             while (newDistance <= 0)
@@ -154,17 +155,17 @@ public class Population<T> : IPopulation where T : class, IGenome
                 newDistance = distance - precision;
             }
 
-            Settings.SpeciesDistance -= precision;
+            // Settings.SpeciesDistance -= precision;
             PopulationControl = PopulationControl with
             {
                 Distance = Math.Round(newDistance, 5)
             };
         }
-        else if (CurrentGeneration.Species.Count > Settings.SpeciesTarget)
+        else if (CurrentGeneration.Species.Count > PopulationSettings.SpeciesTarget)
         {
             var newDistance = distance + precision;
 
-            Settings.SpeciesDistance += precision;
+            // Settings.SpeciesDistance += precision;
             PopulationControl = PopulationControl with
             {
                 Distance = Math.Round(newDistance, 5),
@@ -174,7 +175,7 @@ public class Population<T> : IPopulation where T : class, IGenome
 
     private void DelayedInit<T>() where T : class, IGenome
     {
-        var genomes = Enumerable.Range(0, Settings.Size)
+        var genomes = Enumerable.Range(0, PopulationSettings.Size)
             .Select(_ => EvolutionEnvironment.GenerateGenome<T>())
             .ToList();
 

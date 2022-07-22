@@ -6,7 +6,7 @@ namespace Radiate.Callbacks;
 
 public class GenerationCallback : IGenerationEvolvedCallback
 {
-    public void GenerationEvolved(Generation generation, PopulationControl populationControl)
+    public void GenerationEvolved(Generation generation)
     {
         var report = generation.GetReport();
 

@@ -56,7 +56,10 @@ public class EvolutionTrainingSession : TrainingSession
         }
 
         var startTime = DateTime.UtcNow;
-        var fitness = await _population.Step(index);
+        
+        var currentGeneration = await _population.Evolve(index);
+        var fitness = _population.PassDown();
+        
         var endTime = DateTime.UtcNow;
         var epoch = new Epoch(index, 0f, 0f, 0f, 0f, fitness, startTime, endTime);
         
