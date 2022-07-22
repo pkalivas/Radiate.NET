@@ -1,6 +1,8 @@
 ﻿using Radiate.Optimizers;
 using Radiate.Optimizers.Evolution;
 using Radiate.Optimizers.Evolution.Interfaces;
+using Radiate.Records;
+using Radiate.Tensors;
 
 namespace Radiate.Examples.Examples;
 
@@ -44,7 +46,7 @@ public class EvolveHelloWorld : IExample
         Console.WriteLine($"\nFinal Result: {model.Print()}");
     }
     
-    private class HelloWorld : IGenome, IOptimizerModel
+    private class HelloWorld : IGenome
     {
         public char[] Chars { get; set; }
     
@@ -109,11 +111,10 @@ public class EvolveHelloWorld : IExample
         }
 
         public void ResetGenome() { }
-
-        public T Randomize<T>(EvolutionEnvironment environment) where T : class, IGenome
+        
+        public Prediction Predict(Tensor input)
         {
             throw new NotImplementedException();
         }
-
     }
 }

@@ -1,8 +1,11 @@
 ﻿using Radiate.Activations;
+using Radiate.Callbacks;
+using Radiate.Callbacks.Interfaces;
 using Radiate.Data;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Evolution;
 using Radiate.Optimizers.Evolution.Neat;
+using Radiate.Tensors;
 
 namespace Radiate.Examples.Examples;
 
@@ -10,14 +13,15 @@ public class EvolveNEAT : IExample
 {
     public async Task Run()
     {
-        const int maxEpochs = 50;
+        RandomGenerator.RandomGenerator.Seed = null;
+        const int maxEpochs = 500;
         
         var (inputs, answers) = await new SimpleMemory().GetDataSet();
 
         var population = new Population<Neat>()
             .AddSettings(settings =>
             {
-                settings.Size = 50;
+                settings.Size = 100;
                 settings.DynamicDistance = true;
                 settings.SpeciesTarget = 5;
                 settings.SpeciesDistance = .5;
@@ -56,7 +60,10 @@ public class EvolveNEAT : IExample
                 return 1f - (total / inputs.Count);
             });
 
-        var optimizer = new Optimizer(population);
+        var optimizer = new Optimizer(population, null, new List<ITrainingCallback>
+        {
+            new GenerationCallback()
+        });
         var pop = await optimizer.Train<Neat>(epoch =>
         {
             Console.Write($"\r[{epoch.Index}] {epoch.Fitness}");
@@ -64,7 +71,6 @@ public class EvolveNEAT : IExample
         });
 
         
-        Console.WriteLine($"\n{Allele.InnovationCount}");
         Console.WriteLine();
         foreach (var (point, idx) in inputs.Select((val, idx) => (val, idx)))
         {

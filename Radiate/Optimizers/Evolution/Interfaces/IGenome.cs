@@ -1,6 +1,9 @@
-﻿namespace Radiate.Optimizers.Evolution.Interfaces;
+﻿using Radiate.Records;
+using Radiate.Tensors;
 
-public interface IGenome
+namespace Radiate.Optimizers.Evolution.Interfaces;
+
+public interface IGenome : IOptimizerModel
 {
     public T Crossover<T, TE>(T other, TE environment, double crossoverRate)
         where T: class, IGenome

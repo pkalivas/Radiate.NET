@@ -4,9 +4,8 @@ using Radiate.Tensors;
 
 namespace Radiate.Optimizers.Supervised.Interfaces;
 
-public interface ISupervised : IOptimizerModel
+public interface ISupervised : IOptimizerModel, IPredictionModel
 {
-    Prediction Predict(Tensor input);
     List<Step> Step(Tensor[] features, Tensor[] targets);
     void Update(List<Cost> errors, int epochCount);
     ModelWrap Save();

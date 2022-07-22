@@ -109,9 +109,8 @@ public class Generation
         {
             newMembers[Guid.NewGuid()] = new Member { Fitness = 0, Model = child };
         }
-
-        var ra = RandomGenerator.RandomGenerator.Next;
-        Species = Species.Select(niche => niche.Reset(ra)).ToList();
+        
+        Species = Species.Select(niche => niche.Reset()).ToList();
 
         return new Generation
         {
@@ -152,4 +151,15 @@ public class Generation
     public Member GetBestMember() => 
         Members.Values
             .Aggregate(Members.Values.First(), (best, current) => current.Fitness > best.Fitness ? current : best);
+
+    public GenerationReport GetReport() => new GenerationReport
+    {
+        NumMembers = Members.Count,
+        NumNiche = Species.Count,
+        TopFitness = GetBestMember().Fitness,
+        NicheReports = Species
+            .Select(spec => spec.GetReport())
+            .OrderBy(val => val.Innovation)
+            .ToList()
+    };
 }

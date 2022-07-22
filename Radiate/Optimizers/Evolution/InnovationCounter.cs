@@ -11,8 +11,10 @@ public class InnovationCounter
         Count = RandomGenerator.RandomGenerator.Seed ?? 0;
     }
 
-    public static void Increment()
+    public static int Increment()
     {
         Interlocked.Increment(ref Count);
+
+        return Count;
     }
 }

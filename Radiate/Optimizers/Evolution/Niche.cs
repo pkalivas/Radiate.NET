@@ -1,7 +1,7 @@
 ﻿
 namespace Radiate.Optimizers.Evolution;
 
-public class Niche
+public class Niche : Allele
 {
     public Guid Mascot { get; set; }
     public List<(Guid memberId, double fitness)> Members { get; set; }
@@ -20,9 +20,9 @@ public class Niche
         NicheId = Guid.NewGuid();
     }
 
-    public Niche Reset(Random random)
+    public Niche Reset()
     {
-        var randomIdx = random.Next(Members.Count);
+        var randomIdx = Random.Next(Members.Count);
         var newMascot = Members[randomIdx];
 
         return new Niche
@@ -53,4 +53,14 @@ public class Niche
 
         TotalAdjustedFitness = tempTotal;
     }
+
+    public NicheReport GetReport() => new NicheReport
+    {
+        Innovation = InnovationId,
+        Id = NicheId,
+        Mascot = Mascot,
+        Age = Age,
+        AdjustedFitness = TotalAdjustedFitness,
+        NumMembers = Members.Count
+    };
 }

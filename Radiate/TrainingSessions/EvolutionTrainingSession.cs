@@ -45,7 +45,7 @@ public class EvolutionTrainingSession : TrainingSession
 
         var bestMember = _population.Best(); 
         bestMember.ResetGenome();
-        return bestMember as IOptimizerModel;
+        return bestMember;
     }
 
     private async Task<Epoch> Fit(int index)
@@ -56,7 +56,7 @@ public class EvolutionTrainingSession : TrainingSession
         }
 
         var startTime = DateTime.UtcNow;
-        var fitness = await _population.Step();
+        var fitness = await _population.Step(index);
         var endTime = DateTime.UtcNow;
         var epoch = new Epoch(index, 0f, 0f, 0f, 0f, fitness, startTime, endTime);
         

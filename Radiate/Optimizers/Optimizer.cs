@@ -22,6 +22,11 @@ namespace Radiate.Optimizers;
 
 public interface IOptimizerModel { }
 
+public interface IPredictionModel
+{
+    public Prediction Predict(Tensor input);
+}
+
 public class Optimizer
 {
     public IOptimizerModel Model { get; private set; }
@@ -75,22 +80,24 @@ public class Optimizer
     public Prediction Predict(float[] input)
     {
         var processedInput = _tensorTrainSet.Process(input.ToTensor());
-        return Model switch
+
+        if (Model is IPredictionModel predictionModel)
         {
-            ISupervised supervised => supervised.Predict(processedInput),
-            IUnsupervised unsupervised => unsupervised.Predict(processedInput),
-            IEvolved evolved => evolved.Predict(processedInput),
-            _ => throw new Exception("Cannot predict optimizer")
-        };
+            return predictionModel.Predict(processedInput);
+        }
+        
+        throw new Exception("Model is not of type IPredictionModel.");
     }
 
-    public Prediction ProcessedPredict(float[] input) => Model switch
+    public Prediction ProcessedPredict(float[] input)
     {
-        ISupervised supervised => supervised.Predict(input.ToTensor()),
-        IUnsupervised unsupervised => unsupervised.Predict(input.ToTensor()),
-        IEvolved evolved => evolved.Predict(input.ToTensor()),
-        _ => throw new Exception("Cannot predict optimizer")
-    };
+        if (Model is IPredictionModel predictionModel)
+        {
+            return predictionModel.Predict(input.ToTensor());
+        }
+
+        throw new Exception("Model is not of type IPredictionModel.");
+    }
 
     public Validation ValidationScores() => Validate(_tensorTrainSet.TestingInputs);
     
