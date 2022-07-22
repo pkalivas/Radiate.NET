@@ -35,7 +35,7 @@ public class Neat : IGenome, IEvolved, IOptimizerModel
             _outputs[i] = MakeNode(NeuronType.Output, activation, NeuronDirection.Forward);
         }
 
-        var random = new Random();
+        var random = RandomGenerator.RandomGenerator.Next;
         foreach (var input in _inputs)
         {
             foreach (var output in _outputs)

@@ -43,9 +43,7 @@ public class SeralTree : IGenome, IEvolved, IOptimizerModel, IEnumerable<SeralTr
         _height = tree._height;
         _size = tree._size;
     }
-
-    public IEnumerable<string> GetNodeIds() => this.Select(node => node.Id);
-
+    
     public ModelWrap Save()
     {
         var rootId = Guid.NewGuid();
@@ -72,7 +70,7 @@ public class SeralTree : IGenome, IEvolved, IOptimizerModel, IEnumerable<SeralTr
 
     private void Shuffle()
     {
-        var nodes = this.ToList().OrderBy(node => _random.Next()).ToArray();
+        var nodes = this.ToList().OrderBy(_ => _random.Next()).ToArray();
         _rootNode = MakeTree(null, nodes);
     }
 

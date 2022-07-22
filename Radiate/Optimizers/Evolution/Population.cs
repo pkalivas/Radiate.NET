@@ -1,5 +1,6 @@
 ﻿
 
+using System.Globalization;
 using Radiate.Optimizers.Evolution.Environment;
 
 namespace Radiate.Optimizers.Evolution;
@@ -10,8 +11,10 @@ public class Population<T> : IPopulation where T : class, IOptimizerModel, IGeno
     private Generation CurrentGeneration { get; set; }
     private EvolutionEnvironment EvolutionEnvironment { get; set; }
     private Solve<T> Solver { get; set; }
+    
     private int GenerationsUnchanged { get; set; }
     private double PreviousFitness { get; set; }
+    private double DistanceMultiplier { get; set; } = 100.0;
     private const double Tolerance = 0.0000001;
 
     public Population() { }
@@ -44,6 +47,36 @@ public class Population<T> : IPopulation where T : class, IOptimizerModel, IGeno
                 .ToDictionary(key => key.Id, val => val.Member),
             Species = new List<Niche>()
         };
+    }
+    
+    public Population<T> AddFitnessFunction(Solve<T> solver)
+    {
+        Solver = solver;
+        return this;
+    }
+
+    public Population<T> AddSettings(Action<PopulationSettings> settings) 
+    {
+        settings.Invoke(Settings);
+
+        if (CurrentGeneration is null && EvolutionEnvironment is not null)
+        {
+            DelayedInit<T>();
+        }
+        
+        return this;
+    }
+
+    public Population<T> AddEnvironment(EvolutionEnvironment environment)
+    {
+        EvolutionEnvironment = environment;
+        
+        if (CurrentGeneration is null && Settings is not null)
+        {
+            DelayedInit<T>();
+        }
+        
+        return this;
     }
 
     public async Task<float> Step()
@@ -97,37 +130,35 @@ public class Population<T> : IPopulation where T : class, IOptimizerModel, IGeno
 
     IGenome IPopulation.Best() => CurrentGeneration.GetBestMember().Model;
 
-    public Population<T> AddFitnessFunction(Solve<T> solver)
+    private void AdjustDistance()
     {
-        Solver = solver;
-        return this;
-    }
+        var adjustment = 10.0 / DistanceMultiplier;
+        var newDistance = Settings.SpeciesDistance - adjustment;
 
-    public Population<T> AddSettings(Action<PopulationSettings> settings) 
-    {
-        settings.Invoke(Settings);
-
-        if (CurrentGeneration is null && EvolutionEnvironment is not null)
+        if (newDistance < 0)
         {
-            DelayedInit<T>();
+            DistanceMultiplier *= 10.0;
+            adjustment = 10.0 / DistanceMultiplier;
+            newDistance = Settings.SpeciesDistance - adjustment;
+        }
+
+        if (newDistance < 0)
+        {
+            throw new Exception($"Cannot move species distance below 0. Multiplier " +
+                                $"{DistanceMultiplier} Adjustment {adjustment} Distance {newDistance}");
         }
         
-        return this;
-    }
-
-    public Population<T> AddEnvironment(EvolutionEnvironment environment)
-    {
-        EvolutionEnvironment = environment;
-        
-        if (CurrentGeneration is null && Settings is not null)
+        if (CurrentGeneration.Species.Count < Settings.SpeciesTarget)
         {
-            DelayedInit<T>();
+            Settings.SpeciesDistance -= adjustment;
         }
-        
-        return this;
+        else if (CurrentGeneration.Species.Count > Settings.SpeciesTarget)
+        {
+            Settings.SpeciesDistance += adjustment;
+        }
     }
 
-    private void DelayedInit<T>() where T: class, IGenome
+    private void DelayedInit<T>() where T : class, IGenome
     {
         var genomes = Enumerable.Range(0, Settings.Size)
             .Select(_ => EvolutionEnvironment.GenerateGenome<T>())

@@ -1,5 +1,6 @@
 ﻿
 namespace Radiate.Optimizers.Evolution.Environment;
+
 public class Niche
 {
     public Guid Mascot { get; set; }
@@ -34,9 +35,7 @@ public class Niche
         };
     }
 
-    public Guid BestMember() => Members
-        .OrderByDescending(mem => mem.fitness)
-        .First().memberId;
+    public Guid BestMember() => Members.MaxBy(mem => mem.fitness).memberId;
 
     public void CalcTotalAdjustedFitness()
     {
