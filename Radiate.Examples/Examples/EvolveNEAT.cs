@@ -2,7 +2,6 @@
 using Radiate.Data;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Evolution;
-using Radiate.Optimizers.Evolution.Forest;
 using Radiate.Optimizers.Evolution.Neat;
 
 namespace Radiate.Examples.Examples;
@@ -11,14 +10,14 @@ public class EvolveNEAT : IExample
 {
     public async Task Run()
     {
-        const int maxEpochs = 500;
+        const int maxEpochs = 50;
         
         var (inputs, answers) = await new SimpleMemory().GetDataSet();
 
         var population = new Population<Neat>()
             .AddSettings(settings =>
             {
-                settings.Size = 100;
+                settings.Size = 50;
                 settings.DynamicDistance = true;
                 settings.SpeciesTarget = 5;
                 settings.SpeciesDistance = .5;
@@ -65,6 +64,7 @@ public class EvolveNEAT : IExample
         });
 
         
+        Console.WriteLine($"\n{Allele.InnovationCount}");
         Console.WriteLine();
         foreach (var (point, idx) in inputs.Select((val, idx) => (val, idx)))
         {

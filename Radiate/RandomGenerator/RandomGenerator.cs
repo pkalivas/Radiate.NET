@@ -4,7 +4,15 @@ namespace Radiate.RandomGenerator;
 
 public static class RandomGenerator
 {
-    public static int Seed { get; set; }
+    private static readonly ThreadLocal<Random> RandomPool = new(() => Seed is null 
+        ? new Random() 
+        : new Random(Seed!.Value));
 
-    public static Random Next => Seed is 0 ? new Random() : new Random(Seed);
+    public static int? Seed { get; set; }
+
+    public static Random Next => Seed is null 
+        ? new Random() 
+        : new Random(Seed!.Value);
+
+    public static Random Global => RandomPool.Value;
 }

@@ -11,7 +11,8 @@ public class Population<T> : IPopulation where T : class, IOptimizerModel, IGeno
     private Generation CurrentGeneration { get; set; }
     private EvolutionEnvironment EvolutionEnvironment { get; set; }
     private Solve<T> Solver { get; set; }
-    
+
+    private int GenerationIndex = 0;
     private int GenerationsUnchanged { get; set; }
     private double PreviousFitness { get; set; }
     private double DistanceMultiplier { get; set; } = 100.0;
@@ -85,44 +86,49 @@ public class Population<T> : IPopulation where T : class, IOptimizerModel, IGeno
         {
             throw new Exception($"Cannot evolve a generation with no EvolutionEnvironment");
         }
+
+        if (GenerationIndex == 0)
+        {
+            Allele.Reset();
+        }
         
         var topMember = CurrentGeneration.Step(Solver);
 
         await CurrentGeneration.Speciate(Settings.SpeciesDistance, EvolutionEnvironment);
-        
-        if (Settings.DynamicDistance)
-        {
-            if (CurrentGeneration.Species.Count < Settings.SpeciesTarget)
-            {
-                Settings.SpeciesDistance -= .1;
-            }
-            else if (CurrentGeneration.Species.Count > Settings.SpeciesTarget)
-            {
-                Settings.SpeciesDistance += .1;
-            }
-        
-            if (Settings.SpeciesDistance < .01)
-            {
-                Settings.SpeciesDistance = .01;
-            }
-        }
-        
-        if (GenerationsUnchanged >= Settings.StagnationLimit)
-        {
-            CurrentGeneration.CleanPopulation(Settings.CleanPct);
-            GenerationsUnchanged = 0;
-        }
-        else if (Math.Abs(PreviousFitness - topMember.Fitness) < Tolerance)
-        {
-            GenerationsUnchanged++;
-        }
-        else
-        {
-            GenerationsUnchanged = 0;
-        }
+        //
+        // if (Settings.DynamicDistance)
+        // {
+        //     if (CurrentGeneration.Species.Count < Settings.SpeciesTarget)
+        //     {
+        //         Settings.SpeciesDistance -= .1;
+        //     }
+        //     else if (CurrentGeneration.Species.Count > Settings.SpeciesTarget)
+        //     {
+        //         Settings.SpeciesDistance += .1;
+        //     }
+        //
+        //     if (Settings.SpeciesDistance < .01)
+        //     {
+        //         Settings.SpeciesDistance = .01;
+        //     }
+        // }
+        //
+        // if (GenerationsUnchanged >= Settings.StagnationLimit)
+        // {
+        //     CurrentGeneration.CleanPopulation(Settings.CleanPct);
+        //     GenerationsUnchanged = 0;
+        // }
+        // else if (Math.Abs(PreviousFitness - topMember.Fitness) < Tolerance)
+        // {
+        //     GenerationsUnchanged++;
+        // }
+        // else
+        // {
+        //     GenerationsUnchanged = 0;
+        // }
 
         CurrentGeneration = CurrentGeneration.CreateNextGeneration(Settings, EvolutionEnvironment);
-        
+        GenerationIndex++;
         PreviousFitness = topMember.Fitness;
 
         return topMember.Fitness;

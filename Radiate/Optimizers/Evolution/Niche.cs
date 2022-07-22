@@ -20,9 +20,9 @@ public class Niche
         NicheId = Guid.NewGuid();
     }
 
-    public Niche Reset()
+    public Niche Reset(Random random)
     {
-        var randomIdx = new Random().Next(Members.Count);
+        var randomIdx = random.Next(Members.Count);
         var newMascot = Members[randomIdx];
 
         return new Niche

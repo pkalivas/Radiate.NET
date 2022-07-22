@@ -20,7 +20,6 @@ public class NeatEnvironment : EvolutionEnvironment
 
     public override T GenerateGenome<T>()
     {
-        var random = new Random();
         return new Neat(InputSize, OutputSize, OutputLayerActivation) as T;
     }
 }

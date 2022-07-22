@@ -19,7 +19,7 @@ public class Neuron
 
     public Neuron() { }
 
-    public Neuron(NeuronId id, NeuronType neuronType, Activation activation, NeuronDirection direction)
+    public Neuron(NeuronId id, NeuronType neuronType, Activation activation, NeuronDirection direction, float bias)
     {
         Id = id;
         Outgoing = new List<EdgeId>();
@@ -32,7 +32,7 @@ public class Neuron
         CurrentState = 0;
         Error = 0;
         PreviousState = 0;
-        Bias = (float) new Random().NextDouble();
+        Bias = bias;
     }
 
     public void AddIncoming(Edge edge)

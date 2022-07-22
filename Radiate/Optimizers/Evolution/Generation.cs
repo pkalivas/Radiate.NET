@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Threading;
 using Radiate.Optimizers.Evolution.Interfaces;
 
 namespace Radiate.Optimizers.Evolution;
@@ -8,8 +9,7 @@ public class Generation
     public Dictionary<Guid, Member> Members { get; set; }
     public Dictionary<Guid, Member> MascotMembers { get; set; }
     public List<Niche> Species { get; set; }
-
-
+    
     public Generation()
     {
         Members = new Dictionary<Guid, Member>();
@@ -110,7 +110,8 @@ public class Generation
             newMembers[Guid.NewGuid()] = new Member { Fitness = 0, Model = child };
         }
 
-        Species = Species.Select(niche => niche.Reset()).ToList();
+        var ra = RandomGenerator.RandomGenerator.Next;
+        Species = Species.Select(niche => niche.Reset(ra)).ToList();
 
         return new Generation
         {

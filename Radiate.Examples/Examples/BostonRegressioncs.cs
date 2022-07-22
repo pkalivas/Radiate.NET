@@ -15,6 +15,7 @@ public class BostonRegression : IExample
 {
     public async Task Run()
     {
+        RandomGenerator.RandomGenerator.Seed = 2;
         const int outputSize = 1;
         const int maxEpochs = 200;
         

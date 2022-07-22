@@ -7,7 +7,7 @@ using Radiate.Tensors;
 
 namespace Radiate.Optimizers.Evolution.Neat;
 
-public class Neat : IGenome, IEvolved, IOptimizerModel
+public class Neat : Allele, IGenome, IEvolved, IOptimizerModel
 {
     private readonly NeuronId[] _inputs;
     private readonly NeuronId[] _outputs;
@@ -35,12 +35,11 @@ public class Neat : IGenome, IEvolved, IOptimizerModel
             _outputs[i] = MakeNode(NeuronType.Output, activation, NeuronDirection.Forward);
         }
 
-        var random = new Random();
         foreach (var input in _inputs)
         {
             foreach (var output in _outputs)
             {
-                var weight = random.NextDouble() * 2 - 1;
+                var weight = Random.NextDouble() * 2 - 1;
                 MakeEdge(input, output, (float) weight);
             }
         }
@@ -111,7 +110,7 @@ public class Neat : IGenome, IEvolved, IOptimizerModel
     private void AddNode(Activation activation, NeuronDirection direction)
     {
         var newNodeId = MakeNode(NeuronType.Hidden, activation, direction);
-        var currentEdge = _edges[new Random().Next(_edges.Count)];
+        var currentEdge = _edges[Random.Next(_edges.Count)];
 
         MakeEdge(currentEdge.Src, newNodeId, 1.0f);
         MakeEdge(newNodeId, currentEdge.Dst, currentEdge.Weight);
@@ -126,14 +125,14 @@ public class Neat : IGenome, IEvolved, IOptimizerModel
 
         if (ValidConnection(sending, receiving))
         {
-            MakeEdge(sending, receiving, (float) new Random().NextDouble());
+            MakeEdge(sending, receiving, (float) Random.NextDouble());
         }
     }
 
     private NeuronId MakeNode(NeuronType neuronType, Activation activation, NeuronDirection direction)
     {
         var nodeId = new NeuronId { Index = _nodes.Count };
-        _nodes.Add(new Neuron(nodeId, neuronType, activation, direction));
+        _nodes.Add(new Neuron(nodeId, neuronType, activation, direction, (float) Random.NextDouble()));
         return nodeId;
     }
 
@@ -200,12 +199,11 @@ public class Neat : IGenome, IEvolved, IOptimizerModel
 
     private NeuronId RandomNodeNotOfType(NeuronType neuronType)
     {
-        var random = new Random();
-        var node = _nodes[random.Next(_nodes.Count)];
+        var node = _nodes[Random.Next(_nodes.Count)];
 
         while (node.NeuronType == neuronType)
         {
-            node = _nodes[random.Next(_nodes.Count)];
+            node = _nodes[Random.Next(_nodes.Count)];
         }
 
         return node.Id;
@@ -214,20 +212,19 @@ public class Neat : IGenome, IEvolved, IOptimizerModel
 
     private void EditWeights(float editable, float size)
     {
-        var random = new Random();
         foreach (var edge in _edges)
         {
-            var shouldEdit = random.NextDouble() < editable;
+            var shouldEdit = Random.NextDouble() < editable;
             var weightValue = shouldEdit 
-                ? (float) random.NextDouble() 
-                : edge.Weight * ((float) random.NextDouble() * size - size);
+                ? (float) Random.NextDouble() 
+                : edge.Weight * ((float) Random.NextDouble() * size - size);
             edge.UpdateWeight(weightValue, _nodes);
         }
 
         foreach (var node in _nodes)
         {
-            var shouldEdit = random.NextDouble() < editable;
-            node.Bias = shouldEdit ? (float) random.NextDouble() : node.Bias * ((float) random.NextDouble() * size - size);
+            var shouldEdit = Random.NextDouble() < editable;
+            node.Bias = shouldEdit ? (float) Random.NextDouble() : node.Bias * ((float) Random.NextDouble() * size - size);
         }
     }
 
@@ -383,13 +380,11 @@ public class Neat : IGenome, IEvolved, IOptimizerModel
         where T: class, IGenome
         where TE: EvolutionEnvironment
     {
-        var random = new Random();
-
         var child = CloneGenome<Neat>();
         var parentTwo = other as Neat;
         var neatEnv = environment as NeatEnvironment;
 
-        if (random.NextDouble() < crossoverRate)
+        if (Random.NextDouble() < crossoverRate)
         {
             foreach (var edge in child._edges)
             {
@@ -397,12 +392,12 @@ public class Neat : IGenome, IEvolved, IOptimizerModel
                 {
                     var parentEdge = parentTwo._edges.Single(pedge => pedge.Innovation == edge.Innovation);
 
-                    if (random.NextDouble() < .5)
+                    if (Random.NextDouble() < .5)
                     {
                         edge.UpdateWeight(parentEdge.Weight, child._nodes);
                     }
 
-                    if ((!edge.Active || !parentEdge.Active) && random.NextDouble() < neatEnv.ReactivateRate)
+                    if ((!edge.Active || !parentEdge.Active) && Random.NextDouble() < neatEnv.ReactivateRate)
                     {
                         edge.Enable(child._nodes);
                     }
@@ -411,15 +406,15 @@ public class Neat : IGenome, IEvolved, IOptimizerModel
         }
         else
         {
-            if (random.NextDouble() < neatEnv.WeightMutateRate)
+            if (Random.NextDouble() < neatEnv.WeightMutateRate)
             {
                 child.EditWeights(neatEnv.EditWeights, neatEnv.WeightPerturb);
             }
 
-            if (random.NextDouble() < neatEnv.NewNodeRate)
+            if (Random.NextDouble() < neatEnv.NewNodeRate)
             {
-                var actFunction = neatEnv.ActivationFunctions[random.Next(neatEnv.ActivationFunctions.Count)];
-                if (random.NextDouble() < neatEnv.RecurrentNeuronRate)
+                var actFunction = neatEnv.ActivationFunctions[Random.Next(neatEnv.ActivationFunctions.Count)];
+                if (Random.NextDouble() < neatEnv.RecurrentNeuronRate)
                 {
                     child.AddNode(actFunction, NeuronDirection.Recurrent);
                 }
@@ -429,7 +424,7 @@ public class Neat : IGenome, IEvolved, IOptimizerModel
                 }
             }
 
-            if (random.NextDouble() < neatEnv.NewEdgeRate)
+            if (Random.NextDouble() < neatEnv.NewEdgeRate)
             {
                 child.AddEdge();
             }
