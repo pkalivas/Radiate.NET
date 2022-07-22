@@ -1,7 +1,7 @@
 ﻿using Radiate.Extensions;
 using Radiate.IO.Wraps;
-using Radiate.Optimizers.Evolution.Environment;
 using Radiate.Optimizers.Evolution.Forest.Info;
+using Radiate.Optimizers.Evolution.Interfaces;
 using Radiate.Records;
 using Radiate.Tensors;
 

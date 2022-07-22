@@ -1,6 +1,7 @@
 ﻿using Radiate.Extensions;
 using Radiate.Gradients;
 using Radiate.IO.Wraps;
+using Radiate.Optimizers.Supervised.Interfaces;
 using Radiate.Optimizers.Supervised.SVM.Info;
 using Radiate.Records;
 using Radiate.Tensors;

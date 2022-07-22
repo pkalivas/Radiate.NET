@@ -1,7 +1,10 @@
 ﻿using Radiate.Losses;
 using Radiate.Optimizers.Evolution;
+using Radiate.Optimizers.Evolution.Interfaces;
 using Radiate.Optimizers.Supervised;
+using Radiate.Optimizers.Supervised.Interfaces;
 using Radiate.Optimizers.Unsupervised;
+using Radiate.Optimizers.Unsupervised.Interfaces;
 using Radiate.Records;
 using Radiate.Tensors;
 

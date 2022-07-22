@@ -1,5 +1,4 @@
-﻿using Radiate.Optimizers.Evolution.Environment;
-using Radiate.Optimizers.Evolution.Forest.Info;
+﻿using Radiate.Optimizers.Evolution.Forest.Info;
 
 namespace Radiate.Optimizers.Evolution.Forest;
 

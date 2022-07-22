@@ -1,7 +1,7 @@
 ﻿
 
 using System.Globalization;
-using Radiate.Optimizers.Evolution.Environment;
+using Radiate.Optimizers.Evolution.Interfaces;
 
 namespace Radiate.Optimizers.Evolution;
 

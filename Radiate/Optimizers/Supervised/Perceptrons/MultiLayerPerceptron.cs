@@ -1,6 +1,7 @@
 ﻿using Radiate.Activations;
 using Radiate.Gradients;
 using Radiate.IO.Wraps;
+using Radiate.Optimizers.Supervised.Interfaces;
 using Radiate.Optimizers.Supervised.Perceptrons.Info;
 using Radiate.Optimizers.Supervised.Perceptrons.Layers;
 using Radiate.Records;

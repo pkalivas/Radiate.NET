@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
+using Radiate.Optimizers.Evolution.Interfaces;
 
-namespace Radiate.Optimizers.Evolution.Environment;
+namespace Radiate.Optimizers.Evolution;
 
 public class Generation
 {

@@ -2,7 +2,7 @@
 using Radiate.Records;
 using Radiate.Tensors;
 
-namespace Radiate.Optimizers.Supervised;
+namespace Radiate.Optimizers.Supervised.Interfaces;
 
 public interface ISupervised : IOptimizerModel
 {

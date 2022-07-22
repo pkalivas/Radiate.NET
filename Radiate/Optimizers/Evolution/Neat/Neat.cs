@@ -1,7 +1,7 @@
 ﻿using Radiate.Activations;
 using Radiate.Extensions;
 using Radiate.IO.Wraps;
-using Radiate.Optimizers.Evolution.Environment;
+using Radiate.Optimizers.Evolution.Interfaces;
 using Radiate.Records;
 using Radiate.Tensors;
 
@@ -35,7 +35,7 @@ public class Neat : IGenome, IEvolved, IOptimizerModel
             _outputs[i] = MakeNode(NeuronType.Output, activation, NeuronDirection.Forward);
         }
 
-        var random = RandomGenerator.RandomGenerator.Next;
+        var random = new Random();
         foreach (var input in _inputs)
         {
             foreach (var output in _outputs)

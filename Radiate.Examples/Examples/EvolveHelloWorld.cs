@@ -1,6 +1,6 @@
 ﻿using Radiate.Optimizers;
 using Radiate.Optimizers.Evolution;
-using Radiate.Optimizers.Evolution.Environment;
+using Radiate.Optimizers.Evolution.Interfaces;
 
 namespace Radiate.Examples.Examples;
 

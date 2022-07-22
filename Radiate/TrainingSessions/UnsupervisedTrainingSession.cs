@@ -2,6 +2,7 @@
 using Radiate.Losses;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Unsupervised;
+using Radiate.Optimizers.Unsupervised.Interfaces;
 using Radiate.Records;
 using Radiate.Tensors;
 

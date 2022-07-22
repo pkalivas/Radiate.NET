@@ -1,4 +1,4 @@
-﻿namespace Radiate.Optimizers.Evolution.Environment;
+﻿namespace Radiate.Optimizers.Evolution;
 
 public static class SurvivorSelector
 {

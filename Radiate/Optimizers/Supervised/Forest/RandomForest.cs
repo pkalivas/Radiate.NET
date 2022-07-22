@@ -1,6 +1,7 @@
 ﻿using Radiate.Extensions;
 using Radiate.IO.Wraps;
 using Radiate.Optimizers.Supervised.Forest.Info;
+using Radiate.Optimizers.Supervised.Interfaces;
 using Radiate.Records;
 using Radiate.Tensors;
 using Radiate.Tensors.Enums;

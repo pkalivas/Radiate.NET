@@ -1,8 +1,4 @@
-﻿
-using Radiate.Records;
-using Radiate.Tensors;
-
-namespace Radiate.Optimizers.Evolution.Environment;
+﻿namespace Radiate.Optimizers.Evolution.Interfaces;
 
 public interface IGenome
 {

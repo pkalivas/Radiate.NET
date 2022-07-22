@@ -1,5 +1,6 @@
 ﻿using Radiate.Extensions;
 using Radiate.IO.Wraps;
+using Radiate.Optimizers.Unsupervised.Interfaces;
 using Radiate.Records;
 using Radiate.Tensors;
 
