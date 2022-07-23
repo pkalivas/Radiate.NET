@@ -6,7 +6,7 @@ class Program
 {
     static void Main(string[] args)
     {
-        RandomGenerator.RandomGenerator.Seed = 5;
+        RandomGenerator.RandomGenerator.Seed = null;
         
         var options = "\n[0] Stop\n" +
                       "[1] Evolve NEAT\n" +

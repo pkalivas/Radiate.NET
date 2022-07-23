@@ -15,7 +15,7 @@ public class GenerationCallback : IGenerationEvolvedCallback
     //     _maxEpoch = maxEpoch;
     // }
     
-    public void GenerationEvolved(Generation generation)
+    public void GenerationEvolved(int index, Generation generation)
     {
         if (!_init)
         {
@@ -26,7 +26,7 @@ public class GenerationCallback : IGenerationEvolvedCallback
         
         var report = generation.GetReport();
 
-        var top = $"{"Generation",-15} {report.GenerationNum}\n" +
+        var top = $"{"Generation",-15} {index}\n" +
                   $"{"Member Count",-15} {report.NumMembers}\n" +
                   $"{"Niche Count",-15} {report.NumNiche}\n" +
                   $"{"Fitness",-15} {report.TopFitness}\n" +

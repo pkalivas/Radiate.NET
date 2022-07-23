@@ -27,7 +27,7 @@ public class Population<T> : IPopulation where T : class, IGenome
         _generation = CreateSeedGeneration(genomes, popSettings, environment);
     }
 
-    public async Task<Generation> Evolve(int index) => await _generation.Step(_fitnessFunction);
+    public async Task<Generation> Evolve() => await _generation.Step(_fitnessFunction);
 
     public float PassDown()
     {

@@ -14,8 +14,6 @@ public class Generation
     private readonly PassDownControl _passDownControl;
     private readonly EvolutionEnvironment _evolutionEnvironment;
     
-    private int _generationNumber = 0;
-
     public Generation(Dictionary<Guid, Member> members, PopulationSettings popSettings, EvolutionEnvironment evolutionEnvironment)
     {
         _members = members;
@@ -89,7 +87,6 @@ public class Generation
             .Select(spec => (spec.Mascot, _members[spec.Mascot]))
             .ToDictionary(key => key.Mascot, val => val.Item2);
         _members = newMembers;
-        _generationNumber++;
     }
 
     private void CleanPopulation(double pct)
@@ -124,7 +121,6 @@ public class Generation
 
     public GenerationReport GetReport() => new()
     {
-        GenerationNum = _generationNumber,
         NumMembers = _members.Count,
         NumNiche = _species.Count,
         TopFitness = GetBestMember().Fitness,

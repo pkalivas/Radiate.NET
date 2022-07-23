@@ -56,11 +56,11 @@ public class EvolutionTrainingSession : TrainingSession
         }
 
         var startTime = DateTime.UtcNow;
-        var currentGeneration = await _population.Evolve(index);
+        var currentGeneration = await _population.Evolve();
 
         foreach (var callback in GetCallbacks<IGenerationEvolvedCallback>())
         {
-            callback.GenerationEvolved(currentGeneration);
+            callback.GenerationEvolved(index, currentGeneration);
         }
         
         var fitness = _population.PassDown();

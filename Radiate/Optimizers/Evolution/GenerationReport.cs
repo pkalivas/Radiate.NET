@@ -2,7 +2,6 @@
 
 public class GenerationReport
 {
-    public int GenerationNum { get; set; }
     public int NumMembers { get; set; }
     public int NumNiche { get; set; }
     public float TopFitness { get; set; }
