@@ -1,4 +1,6 @@
-﻿using Radiate.Optimizers;
+﻿using Radiate.Callbacks;
+using Radiate.Callbacks.Interfaces;
+using Radiate.Optimizers;
 using Radiate.Optimizers.Evolution;
 using Radiate.Optimizers.Evolution.Info;
 using Radiate.Optimizers.Evolution.Interfaces;
@@ -42,7 +44,10 @@ public class EvolveHelloWorld : IExample
                     .Sum(points => points.First == points.Second ? 1.0f : 0.0f));
 
         var population = new Population<HelloWorld>(info, worlds);
-        var optimizer = new Optimizer(population);
+        var optimizer = new Optimizer(population, null, new List<ITrainingCallback>
+        {
+            new GenerationCallback()
+        });
         var model = await optimizer.Train<HelloWorld>(epoch => epoch.Index == evolutionEpochs || epoch.Fitness == 12);
         
         Console.WriteLine($"\nFinal Result: {model.Print()}");

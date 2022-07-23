@@ -186,8 +186,6 @@ public class SeralTree : Allele, IGenome, IPredictionModel, IEnumerable<SeralTre
 
     public T Crossover<T, TE>(T other, TE environment, double crossoverRate) where T : class, IGenome where TE : EvolutionEnvironment
     {
-        var random = new Random();
-
         var child = CloneGenome<SeralTree>();
         var parentTwo = other as SeralTree;
         var treeEnv = environment as ForestEnvironment;
@@ -200,43 +198,43 @@ public class SeralTree : Allele, IGenome, IPredictionModel, IEnumerable<SeralTre
             nodeTwo = parentTwo.BiasedLevelNode();
         }
 
-        if (random.NextDouble() < crossoverRate)
+        if (Random.NextDouble() < crossoverRate)
         {
             Replace(nodeOne, nodeTwo);
         }
         else
         {
-            if (random.NextDouble() < treeEnv.NodeAddRate)
+            if (Random.NextDouble() < treeEnv.NodeAddRate)
             {
                 child.AddRandom(treeEnv);
             }
 
-            if (random.NextDouble() < treeEnv.ShuffleRate)
+            if (Random.NextDouble() < treeEnv.ShuffleRate)
             {
                 child.Shuffle();
             }
 
-            if (random.NextDouble() < treeEnv.GutRate)
+            if (Random.NextDouble() < treeEnv.GutRate)
             {
                 child.GutRandomNode(treeEnv);
             }
 
-            if (random.NextDouble() < treeEnv.SplitValueMutateRate)
+            if (Random.NextDouble() < treeEnv.SplitValueMutateRate)
             {
                 child.MutateSplitValue(treeEnv);
             }
 
-            if (random.NextDouble() < treeEnv.SplitIndexMutateRate)
+            if (Random.NextDouble() < treeEnv.SplitIndexMutateRate)
             {
                 child.MutateSplitIndex(treeEnv);
             }
 
-            if (random.NextDouble() < treeEnv.OutputCategoryMutateRate)
+            if (Random.NextDouble() < treeEnv.OutputCategoryMutateRate)
             {
                 child.MutateOutputCategory(treeEnv);
             }
 
-            if (random.NextDouble() < treeEnv.OperatorMutateRate)
+            if (Random.NextDouble() < treeEnv.OperatorMutateRate)
             {
                 child.MutateOperator(treeEnv);
             }

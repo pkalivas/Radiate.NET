@@ -6,9 +6,9 @@ namespace Radiate.Optimizers.Evolution;
 
 public class Generation
 {
-    private Dictionary<Guid, Member> Members { get; set; }
-    private Dictionary<Guid, Member> MascotMembers { get; set; }
-    private List<Niche> Species { get; set; }
+    private Dictionary<Guid, Member> _members;
+    private Dictionary<Guid, Member> _mascotMembers;
+    private List<Niche> _species;
     private PopulationControl _populationControl;
     private StagnationControl _stagnationControl;
     private readonly PassDownControl _passDownControl;
@@ -18,29 +18,29 @@ public class Generation
 
     public Generation(Dictionary<Guid, Member> members, PopulationSettings popSettings, EvolutionEnvironment evolutionEnvironment)
     {
-        Members = members;
-        Species = new List<Niche>();
-        MascotMembers = new();
+        _members = members;
+        _species = new List<Niche>();
+        _mascotMembers = new();
         _populationControl = new(popSettings.DynamicDistance, popSettings.SpeciesDistance, popSettings.SpeciesTarget,
             popSettings.COne, popSettings.CTwo, popSettings.CThree);
         _stagnationControl = new(popSettings.CleanPct, popSettings.StagnationLimit);
-        _passDownControl = new(popSettings.InbreedRate, popSettings.CrossoverRate, popSettings.Size);
+        _passDownControl = new(popSettings.InbreedRate, popSettings.CrossoverRate, popSettings.Size ?? members.Count);
         _evolutionEnvironment = evolutionEnvironment;
     }
     
     public async Task<Generation> Step<T>(Solve<T> problem) where T : class
     {
         var newMembers = new ConcurrentBag<(Guid memberId, float memberFitness)>();
-        Parallel.ForEach(Members.Keys, member =>
+        Parallel.ForEach(_members.Keys, member =>
         {
-            newMembers.Add((member, problem(Members[member].Model as T)));
+            newMembers.Add((member, problem(_members[member].Model as T)));
         });
         
         foreach (var (key, val) in newMembers)
         {
-            if (Members.ContainsKey(key))
+            if (_members.ContainsKey(key))
             {
-                Members[key].Fitness = val;
+                _members[key].Fitness = val;
             }
         }
 
@@ -55,12 +55,12 @@ public class Generation
         AdjustStagnation();
 
         var (inbreedRate, crossoverRate, size) = _passDownControl;
-        var newMembers = SurvivorSelector.Select(Members, Species)
+        var newMembers = SurvivorSelector.Select(_members, _species)
             .Select(pair =>
             {
                 var model = pair.member.Model;
                 model.ResetGenome();
-                return (pair.memberId, member: new Member { Fitness = 0, Model = model });
+                return pair with { member = new Member { Fitness = 0, Model = model } };
             })
             .ToDictionary(key => key.memberId, val => val.member);
         
@@ -68,9 +68,9 @@ public class Generation
         var childTasks = new ConcurrentBag<IGenome>();
         Parallel.For(0, childNum, _ =>
         {
-            var (parentOneId, parentTwoId) = ParentSelector.Select(inbreedRate, Species);
-            var parentOne = Members[parentOneId];
-            var parentTwo = Members[parentTwoId];
+            var (parentOneId, parentTwoId) = ParentSelector.Select(inbreedRate, _species);
+            var parentOne = _members[parentOneId];
+            var parentTwo = _members[parentTwoId];
         
             var newGenomeTask = parentOne.Fitness > parentTwo.Fitness 
                 ? parentOne.Model.Crossover(parentTwo.Model, _evolutionEnvironment, crossoverRate) 
@@ -84,18 +84,18 @@ public class Generation
             newMembers[Guid.NewGuid()] = new Member { Fitness = 0, Model = child };
         }
         
-        Species.ForEach(niche => niche.Reset());
-        MascotMembers = Species
-            .Select(spec => (spec.Mascot, Members[spec.Mascot]))
+        _species.ForEach(niche => niche.Reset());
+        _mascotMembers = _species
+            .Select(spec => (spec.Mascot, _members[spec.Mascot]))
             .ToDictionary(key => key.Mascot, val => val.Item2);
-        Members = newMembers;
+        _members = newMembers;
         _generationNumber++;
     }
 
     private void CleanPopulation(double pct)
     {
         var toRemove = new List<Guid>();
-        foreach (var species in Species)
+        foreach (var species in _species)
         {
             if (species.Members.Count == 1)
             {
@@ -114,23 +114,23 @@ public class Generation
 
         foreach (var memId in toRemove)
         {
-            Members.Remove(memId);
+            _members.Remove(memId);
         }
     }
 
     public Member GetBestMember() => 
-        Members.Values
-            .Aggregate(Members.Values.First(), (best, current) => current.Fitness > best.Fitness ? current : best);
+        _members.Values
+            .Aggregate(_members.Values.First(), (best, current) => current.Fitness > best.Fitness ? current : best);
 
     public GenerationReport GetReport() => new()
     {
         GenerationNum = _generationNumber,
-        NumMembers = Members.Count,
-        NumNiche = Species.Count,
+        NumMembers = _members.Count,
+        NumNiche = _species.Count,
         TopFitness = GetBestMember().Fitness,
         StagnationCount = _stagnationControl.StagnationCount,
         Distance = _populationControl.Distance,
-        NicheReports = Species
+        NicheReports = _species
             .Select(spec => spec.GetReport())
             .OrderBy(val => val.Age)
             .ToList()
@@ -140,12 +140,12 @@ public class Generation
     {
         var retainedSpecies = new HashSet<Guid>();
 
-        foreach (var (id, member) in Members)
+        foreach (var (id, member) in _members)
         {
             var found = false;
-            foreach (var species in Species)
+            foreach (var species in _species)
             {
-                var speciesMember = MascotMembers[species.Mascot].Model;
+                var speciesMember = _mascotMembers[species.Mascot].Model;
                 var memberDistance = await member.Model.Distance(speciesMember, _populationControl);
 
                 if (memberDistance < _populationControl.Distance)
@@ -160,20 +160,20 @@ public class Generation
             if (!found)
             {
                 var newSpecies = new Niche(id, member.Fitness);
-                Species.Add(newSpecies);
+                _species.Add(newSpecies);
                 retainedSpecies.Add(newSpecies.NicheId);
-                MascotMembers[id] = member;
+                _mascotMembers[id] = member;
             }
         }
 
-        foreach (var species in Species.Where(species => !retainedSpecies.Contains(species.NicheId)))
+        foreach (var species in _species.Where(species => !retainedSpecies.Contains(species.NicheId)))
         {
-            MascotMembers.Remove(species.NicheId);
+            _mascotMembers.Remove(species.Mascot);
         }
 
-        Species = Species.Where(spec => retainedSpecies.Contains(spec.NicheId)).ToList();
+        _species = _species.Where(spec => retainedSpecies.Contains(spec.NicheId)).ToList();
 
-        foreach (var species in Species)
+        foreach (var species in _species)
         {
             species.CalcTotalAdjustedFitness();
         }
@@ -212,7 +212,7 @@ public class Generation
             return;
         }
         
-        if (Species.Count < target)
+        if (_species.Count < target)
         {
             var newDistance = distance - precision;
             while (newDistance <= 0)
@@ -226,7 +226,7 @@ public class Generation
                 Distance = Math.Round(newDistance, 5)
             };
         }
-        else if (Species.Count > target)
+        else if (_species.Count > target)
         {
             var newDistance = distance + precision;
 

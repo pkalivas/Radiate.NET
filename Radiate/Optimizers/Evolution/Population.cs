@@ -42,7 +42,7 @@ public class Population<T> : IPopulation where T : class, IGenome
     {
         var population = genomes.Any() 
             ? genomes 
-            : Enumerable.Range(0, popSettings.Size)
+            : Enumerable.Range(0, popSettings.Size!.Value)
                 .Select(_ => evolutionEnvironment.GenerateGenome<T>())
                 .ToList();
 

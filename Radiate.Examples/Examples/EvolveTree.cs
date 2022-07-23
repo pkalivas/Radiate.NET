@@ -14,6 +14,7 @@ public class EvolveTree : IExample
 {
     public async Task Run()
     {
+        // RandomGenerator.RandomGenerator.Seed = 5;
         var (rawInputs, rawLabels) = await new BreastCancer().GetDataSet();
 
         var pair = new TensorTrainSet(rawInputs, rawLabels)
