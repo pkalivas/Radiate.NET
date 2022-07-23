@@ -56,7 +56,6 @@ public class EvolutionTrainingSession : TrainingSession
         }
 
         var startTime = DateTime.UtcNow;
-        
         var currentGeneration = await _population.Evolve(index);
 
         foreach (var callback in GetCallbacks<IGenerationEvolvedCallback>())
@@ -65,9 +64,12 @@ public class EvolutionTrainingSession : TrainingSession
         }
         
         var fitness = _population.PassDown();
-        
-        var endTime = DateTime.UtcNow;
-        var epoch = new Epoch(index, 0f, 0f, 0f, 0f, fitness, startTime, endTime);
+        var epoch = new Epoch(index)
+        {
+            Fitness = fitness,
+            StartTime = startTime,
+            EndTime = DateTime.Now
+        };
         
         foreach (var callback in GetCallbacks<IEpochCompletedCallback>())
         {

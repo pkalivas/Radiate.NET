@@ -11,7 +11,7 @@ public static class DistanceCalculator
             : (parentTwo, parentOne);
         var largestCount = (double) largestParent.Count;
 
-        if (largestCount < 20.0)
+        if (largestCount < EvolutionConstants.InnovationMax)
         {
             largestCount = 1.0;
         }

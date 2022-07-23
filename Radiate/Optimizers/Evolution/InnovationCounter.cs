@@ -4,17 +4,17 @@ namespace Radiate.Optimizers.Evolution;
 
 public static class InnovationCounter
 {
-    public static int Count;
+    private static int _count;
 
     public static void Init()
     {
-        Count = RandomGenerator.RandomGenerator.Seed ?? 0;
+        _count = RandomGenerator.RandomGenerator.Seed ?? 0;
     }
 
     public static int Increment()
     {
-        Interlocked.Increment(ref Count);
+        Interlocked.Increment(ref _count);
 
-        return Count;
+        return _count;
     }
 }

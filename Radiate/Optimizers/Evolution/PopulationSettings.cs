@@ -5,11 +5,6 @@ public class PopulationSettings
 {
     public PopulationSettings() { }
     
-    public PopulationSettings(int size)
-    {
-        Size = size;
-    }
-    
     public int? Size { get; set; }
     public bool DynamicDistance { get; set; } = true;
     public double SpeciesDistance { get; set; } = .5;
