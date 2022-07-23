@@ -6,7 +6,6 @@ namespace Radiate.Optimizers.Evolution;
 public abstract class EvolutionEnvironment
 {
     public abstract void Reset();
-    public virtual string ToJson() => "";
     public abstract T GenerateGenome<T>() where T: class, IGenome;
 }
 
