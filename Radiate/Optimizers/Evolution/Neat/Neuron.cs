@@ -34,7 +34,7 @@ public class Neuron
         PreviousState = 0;
         Bias = bias;
     }
-
+    
     public void AddIncoming(Edge edge)
     {
         Incoming.Add(new NeuronLink

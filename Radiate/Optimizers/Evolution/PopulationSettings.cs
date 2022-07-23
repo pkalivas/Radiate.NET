@@ -18,4 +18,7 @@ public class PopulationSettings
     public int StagnationLimit { get; set; } = 15;
     public double CleanPct { get; set; } = .9;
     public int SpeciesTarget { get; set; } = 5;
+    public double COne { get; set; } = 1.0;
+    public double CTwo { get; set; } = 1.0;
+    public double CThree { get; set; } = 0.4;
 }

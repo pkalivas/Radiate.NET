@@ -7,14 +7,13 @@ using Radiate.Tensors;
 
 namespace Radiate.Optimizers.Evolution.Forest;
 
-public class SeralTree : IGenome, IEvolved, IOptimizerModel, IEnumerable<SeralTreeNode>
+public class SeralTree : Allele, IGenome, IPredictionModel, IEnumerable<SeralTreeNode>
 {
-    private readonly Random _random = new();
-
     private SeralTreeNode _rootNode;
     private int _height;
     private int _size;
-    
+    private Dictionary<int, float> _innovationWeightLookup;
+
     public SeralTree(SeralForestInfo info)
     {
         var (inputSize, outputs, maxHeight, _) = info;
@@ -25,6 +24,8 @@ public class SeralTree : IGenome, IEvolved, IOptimizerModel, IEnumerable<SeralTr
         _rootNode = MakeTree(null, nodes);
         _height = _rootNode.Height();
         _size = nodes.Length;
+        _innovationWeightLookup = this.GroupBy(val => val.InnovationId)
+            .ToDictionary(key => key.Key, val => val.Sum(node => node.Weight));
     }
 
     public SeralTree(ModelWrap wrap)
@@ -35,13 +36,16 @@ public class SeralTree : IGenome, IEvolved, IOptimizerModel, IEnumerable<SeralTr
         _rootNode = new SeralTreeNode(treeWrap.RootId, nodeLookup);
         _height = _rootNode.Height();
         _size = nodeLookup.Count;
+        _innovationWeightLookup = this.GroupBy(val => val.InnovationId)
+            .ToDictionary(key => key.Key, val => val.Sum(node => node.Weight));
     }
 
-    public SeralTree(SeralTree tree)
+    public SeralTree(SeralTree tree) : base(tree.InnovationId)
     {
         _rootNode = tree._rootNode.DeepCopy(null);
         _height = tree._height;
         _size = tree._size;
+        _innovationWeightLookup = tree._innovationWeightLookup.ToDictionary(key => key.Key, val => val.Value);
     }
     
     public ModelWrap Save()
@@ -60,7 +64,7 @@ public class SeralTree : IGenome, IEvolved, IOptimizerModel, IEnumerable<SeralTr
 
     private void AddRandom(ForestEnvironment treeEnv)
     {
-        _rootNode = SeralTreeNode.AddNewNode(_random, _rootNode, new SeralTreeNode(treeEnv.InputSize, treeEnv.OutputCategories));
+        _rootNode = SeralTreeNode.AddNewNode(Random, _rootNode, new SeralTreeNode(treeEnv.InputSize, treeEnv.OutputCategories));
     }
 
     private void Balance()
@@ -70,13 +74,13 @@ public class SeralTree : IGenome, IEvolved, IOptimizerModel, IEnumerable<SeralTr
 
     private void Shuffle()
     {
-        var nodes = this.ToList().OrderBy(_ => _random.Next()).ToArray();
+        var nodes = this.ToList().OrderBy(_ => Random.Next()).ToArray();
         _rootNode = MakeTree(null, nodes);
     }
 
     private void GutRandomNode(ForestEnvironment treeEnv)
     {
-        var index = _random.Next(0, _size);
+        var index = Random.Next(0, _size);
         this.ToArray()[index].Gut(treeEnv.InputSize, treeEnv.OutputCategories);
     }
     
@@ -84,7 +88,7 @@ public class SeralTree : IGenome, IEvolved, IOptimizerModel, IEnumerable<SeralTr
     {
         foreach (var node in this)
         {
-            if (_random.NextDouble() < treeEnv.SplitValueMutateRate)
+            if (Random.NextDouble() < treeEnv.SplitValueMutateRate)
             {
                 node.MutateSplitValue();
             }
@@ -95,7 +99,7 @@ public class SeralTree : IGenome, IEvolved, IOptimizerModel, IEnumerable<SeralTr
     {
         foreach (var node in this)
         {
-            if (_random.NextDouble() < treeEnv.SplitIndexMutateRate)
+            if (Random.NextDouble() < treeEnv.SplitIndexMutateRate)
             {
                 node.MutateSplitIndex(treeEnv.InputSize);
             }
@@ -106,7 +110,7 @@ public class SeralTree : IGenome, IEvolved, IOptimizerModel, IEnumerable<SeralTr
     {
         foreach (var node in this)
         {
-            if (_random.NextDouble() < treeEnv.OutputCategoryMutateRate)
+            if (Random.NextDouble() < treeEnv.OutputCategoryMutateRate)
             {
                 node.MutateOutputCategory(treeEnv.OutputCategories);
             }
@@ -117,7 +121,7 @@ public class SeralTree : IGenome, IEvolved, IOptimizerModel, IEnumerable<SeralTr
     {
         foreach (var node in this)
         {
-            if (_random.NextDouble() < treeEnv.OperatorMutateRate)
+            if (Random.NextDouble() < treeEnv.OperatorMutateRate)
             {
                 node.MutateOperator();
             }
@@ -126,12 +130,12 @@ public class SeralTree : IGenome, IEvolved, IOptimizerModel, IEnumerable<SeralTr
 
     private SeralTreeNode BiasedLevelNode()
     {
-        var index = _random.Next(0, _size);
+        var index = Random.Next(0, _size);
     
         var levels = this.Select(node => node.Depth()).ToArray();
         var filtered = this.Where(node => node.Depth() == levels[index]).ToArray();
 
-        var nodeIndex = _random.Next(0, filtered.Count());
+        var nodeIndex = Random.Next(0, filtered.Count());
         return filtered[nodeIndex];
     }
 
@@ -240,18 +244,16 @@ public class SeralTree : IGenome, IEvolved, IOptimizerModel, IEnumerable<SeralTr
         
         child.ResetGenome();
 
+        child._innovationWeightLookup = child.GroupBy(val => val.InnovationId)
+            .ToDictionary(key => key.Key, val => val.Sum(node => node.Weight));
+
         return child as T;
     }
 
-    public Task<double> Distance<T, TE>(T other, TE environment)
+    public async Task<double> Distance<T>(T other, PopulationControl populationControl)
     {
         var parentTwo = other as SeralTree;
-        var parentTwoLookup = parentTwo.Select(val => val.Id).ToHashSet();
-
-        var totalSame = this.Where(node => parentTwoLookup.Contains(node.Id)).Sum(node => 1.0);
-        var totalNodesInBoth = _size + parentTwoLookup.Count;
-
-        return Task.FromResult(totalSame / (double)totalNodesInBoth);
+        return await DistanceCalculator.Distance(_innovationWeightLookup, parentTwo._innovationWeightLookup, populationControl);
     }
 
     public T CloneGenome<T>() where T : class => new SeralTree(this) as T;

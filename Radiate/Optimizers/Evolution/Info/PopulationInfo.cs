@@ -7,8 +7,9 @@ public record PopulationInfo<T>(
 {
     public PopulationInfo<T> AddSettings(Action<PopulationSettings> settings)
     {
-        settings.Invoke(PopulationSettings);
-        return this with { PopulationSettings = PopulationSettings };
+        var currentSettings = PopulationSettings ?? new();
+        settings.Invoke(currentSettings);
+        return this with { PopulationSettings = currentSettings };
     }
 
     public PopulationInfo<T> AddEnvironment(EvolutionEnvironment environment) => 

@@ -1,5 +1,4 @@
-﻿using Radiate.Optimizers;
-using Radiate.Records;
+﻿using Radiate.Records;
 
 namespace Radiate.Callbacks.Interfaces;
 

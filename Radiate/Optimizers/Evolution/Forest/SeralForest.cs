@@ -7,7 +7,7 @@ using Radiate.Tensors;
 
 namespace Radiate.Optimizers.Evolution.Forest;
 
-public class SeralForest : IGenome, IEvolved, IOptimizerModel
+public class SeralForest : Allele, IGenome, IPredictionModel
 {
     private readonly SeralTree[] _trees;
     private readonly SeralForestInfo _info;
@@ -20,7 +20,7 @@ public class SeralForest : IGenome, IEvolved, IOptimizerModel
             .ToArray();
     }
 
-    public SeralForest(SeralForest forest)
+    public SeralForest(SeralForest forest) : base(forest.InnovationId)
     {
         _info = forest._info with { };
         _trees = forest._trees.Select(tree => tree.CloneGenome<SeralTree>()).ToArray();
@@ -48,21 +48,19 @@ public class SeralForest : IGenome, IEvolved, IOptimizerModel
 
     public T Crossover<T, TE>(T other, TE environment, double crossoverRate) where T : class, IGenome where TE : EvolutionEnvironment
     {
-        var random = new Random();
-
         var child = CloneGenome<SeralForest>();
         var parentTwo = other as SeralForest;
         var treeEnv = environment as ForestEnvironment;
 
         for (var i = 0; i < _info.NumTrees; i++)
         {
-            if (random.NextDouble() < crossoverRate)
+            if (Random.NextDouble() < crossoverRate)
             {
                 child._trees[i] = child._trees[i].Crossover(parentTwo._trees[i], treeEnv, crossoverRate);
             }
             else
             {
-                var index = random.Next(0, _info.NumTrees);
+                var index = Random.Next(0, _info.NumTrees);
                 child._trees[i] = child._trees[i].Crossover(child._trees[index], treeEnv, crossoverRate);
             }
         }
@@ -70,13 +68,13 @@ public class SeralForest : IGenome, IEvolved, IOptimizerModel
         return child as T;
     }
 
-    public async Task<double> Distance<T, TE>(T other, TE environment)
+    public async Task<double> Distance<T>(T other, PopulationControl populationControl)
     {
         var parentTwo = other as SeralForest;
         var result = 0.0;
         foreach (var (one, two) in _trees.Zip(parentTwo._trees))
         {
-            result += await one.Distance(two, environment);
+            result += await one.Distance(two, populationControl);
         }
 
         return result;

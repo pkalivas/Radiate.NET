@@ -1,10 +1,9 @@
 ﻿
 namespace Radiate.Optimizers.Evolution.Interfaces;
 
-public interface IPopulation
+public interface IPopulation : IOptimizerModel
 {
     Task<Generation> Evolve(int index);
     float PassDown();
-    Generation CreateSeedGeneration(IEnumerable<IGenome> genomes);
     IGenome Best();
 }

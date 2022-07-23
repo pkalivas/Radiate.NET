@@ -59,22 +59,14 @@ public class Neat : Allele, IGenome, IPredictionModel
             .ToList();
         _activation = neat.Activation;
         _edges = neat.Edges
-            .Select(edge => new Edge
-            {
-                Active = edge.Active,
-                Dst = new NeuronId { Index = edge.Dst.Index },
-                Id = new EdgeId { Index = edge.Id.Index },
-                Innovation = edge.Innovation,
-                Src = new NeuronId { Index = edge.Src.Index },
-                Weight = edge.Weight
-            })
+            .Select(edge => new Edge(edge))
             .ToList();
         _edgeInnovationLookup = neat.EdgeInnovationLookup
             .Select(pair => (Id: pair.Key, edge: new EdgeId { Index = pair.Value.Index }))
             .ToDictionary(key => key.Id, val => val.edge);
     }
     
-    private Neat(Neat neat)
+    private Neat(Neat neat) : base(neat.InnovationId)
     {
         _inputs = neat._inputs
             .Select(input => new NeuronId { Index = input.Index })
@@ -87,15 +79,7 @@ public class Neat : Allele, IGenome, IPredictionModel
             .ToList();
         _activation = neat._activation;
         _edges = neat._edges
-            .Select(edge => new Edge
-            {
-                Active = edge.Active,
-                Dst = new NeuronId { Index = edge.Dst.Index },
-                Id = new EdgeId { Index = edge.Id.Index },
-                Innovation = edge.Innovation,
-                Src = new NeuronId { Index = edge.Src.Index },
-                Weight = edge.Weight
-            })
+            .Select(edge => new Edge(edge))
             .ToList();
         _edgeInnovationLookup = neat._edgeInnovationLookup
             .Select(pair => (Id: pair.Key, edge: new EdgeId { Index = pair.Value.Index }))
@@ -434,16 +418,14 @@ public class Neat : Allele, IGenome, IPredictionModel
     }
 
 
-    public Task<double> Distance<T, TE>(T other, TE environment)
+    public async Task<double> Distance<T>(T other, PopulationControl populationControl)
     {
         var parentTwo = other as Neat;
-
-        var similar = _edgeInnovationLookup.Keys.Count(innov => parentTwo._edgeInnovationLookup.ContainsKey(innov));
-
-        var oneScore = similar / _edges.Count;
-        var twoScore = similar / parentTwo._edges.Count;
-
-        return Task.FromResult(2.0 - (oneScore + twoScore));
+        
+        var parentOneLookup = _edges.ToDictionary(key => key.InnovationId, val => val.Weight);
+        var parentTwoLookup = parentTwo._edges.ToDictionary(key => key.InnovationId, val => val.Weight);
+        
+        return await DistanceCalculator.Distance(parentOneLookup, parentTwoLookup, populationControl);
     }
 
     public T CloneGenome<T>() where T : class => new Neat(this) as T;

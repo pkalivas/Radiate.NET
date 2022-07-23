@@ -1,5 +1,6 @@
 ﻿using Radiate.Optimizers;
 using Radiate.Optimizers.Evolution;
+using Radiate.Optimizers.Evolution.Info;
 using Radiate.Optimizers.Evolution.Interfaces;
 using Radiate.Records;
 using Radiate.Tensors;
@@ -25,7 +26,7 @@ public class EvolveHelloWorld : IExample
 
         var worlds = Enumerable.Range(0, populationSize).Select(_ => new HelloWorld()).ToList();
 
-        var population = new Population<HelloWorld>(worlds)
+        var info = new PopulationInfo<HelloWorld>()
             .AddSettings(settings =>
             {
                 settings.DynamicDistance = true;
@@ -40,6 +41,7 @@ public class EvolveHelloWorld : IExample
             .AddFitnessFunction(member => member.Chars.Zip(target)
                     .Sum(points => points.First == points.Second ? 1.0f : 0.0f));
 
+        var population = new Population<HelloWorld>(info, worlds);
         var optimizer = new Optimizer(population);
         var model = await optimizer.Train<HelloWorld>(epoch => epoch.Index == evolutionEpochs || epoch.Fitness == 12);
         
@@ -93,7 +95,7 @@ public class EvolveHelloWorld : IExample
             return child as T;
         }
 
-        public Task<double> Distance<T, TE>(T other, TE environment)
+        public Task<double> Distance<T>(T other, PopulationControl _)
         {
             var secondParent = other as HelloWorld;
             var total = 0.0;

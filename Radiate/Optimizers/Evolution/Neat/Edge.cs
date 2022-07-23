@@ -1,7 +1,7 @@
 ﻿
 namespace Radiate.Optimizers.Evolution.Neat;
 
-public class Edge
+public class Edge : Allele
 {
     public EdgeId Id { get; set; }
     public Guid Innovation { get; set; }
@@ -22,6 +22,15 @@ public class Edge
         Active = active;
     }
 
+    public Edge(Edge edge) : base(edge.InnovationId)
+    {
+        Id = new EdgeId { Index = edge.Id.Index };
+        Innovation = edge.Innovation;
+        Src = new NeuronId { Index = edge.Src.Index };
+        Dst = new NeuronId { Index = edge.Dst.Index };
+        Weight = edge.Weight;
+        Active = edge.Active;
+    }
 
     public void Update(float delta, List<Neuron> nodes)
     {

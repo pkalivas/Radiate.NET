@@ -4,6 +4,7 @@ using Radiate.Data;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Evolution;
 using Radiate.Optimizers.Evolution.Forest;
+using Radiate.Optimizers.Evolution.Info;
 using Radiate.Tensors;
 using Radiate.Tensors.Enums;
 
@@ -22,7 +23,7 @@ public class EvolveForest : IExample
         var features = pair.TrainingInputs.SelectMany(batch => batch.Features);
         var targets = pair.TrainingInputs.SelectMany(batch => batch.Targets);
         
-        var population = new Population<SeralForest>()
+        var info = new PopulationInfo<SeralForest>()
             .AddSettings(settings =>
             {
                 settings.Size = 25;
@@ -60,8 +61,10 @@ public class EvolveForest : IExample
                 return 1f - (total / features.Count());
             });
 
+        var population = new Population<SeralForest>(info);
         var optimizer = new Optimizer(population, pair, new ITrainingCallback[]
         {
+            new GenerationCallback(),
             new ModelWriterCallback(),
         });
         

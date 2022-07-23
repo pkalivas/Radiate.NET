@@ -1,11 +1,17 @@
-﻿using System.Threading;
-
-namespace Radiate.Optimizers.Evolution;
+﻿namespace Radiate.Optimizers.Evolution;
 
 public class Allele
 {
-    protected int InnovationId { get; }
+    public int InnovationId { get; }
     protected Random Random { get; }
+
+    protected Allele(int innovationId)
+    {
+        InnovationId = innovationId;
+        Random = RandomGenerator.RandomGenerator.Seed is null
+            ? new Random()
+            : new Random(InnovationId);
+    }
 
     protected Allele()
     {

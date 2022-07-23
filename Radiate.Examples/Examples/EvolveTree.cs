@@ -4,6 +4,7 @@ using Radiate.Data;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Evolution;
 using Radiate.Optimizers.Evolution.Forest;
+using Radiate.Optimizers.Evolution.Info;
 using Radiate.Tensors;
 using Radiate.Tensors.Enums;
 
@@ -23,10 +24,10 @@ public class EvolveTree : IExample
         var features = pair.TrainingInputs.SelectMany(batch => batch.Features);
         var targets = pair.TrainingInputs.SelectMany(batch => batch.Targets);
         
-        var population = new Population<SeralTree>()
+        var info = new PopulationInfo<SeralTree>()
             .AddSettings(settings =>
             {
-                settings.Size = 25;
+                settings.Size = 100;
                 settings.DynamicDistance = true;
                 settings.SpeciesTarget = 5;
                 settings.SpeciesDistance = .5;
@@ -51,18 +52,16 @@ public class EvolveTree : IExample
             })
             .AddFitnessFunction(member =>
             {
-                var predictions = features
-                    .Select(input => member.Predict(input))
-                    .ToList();
+                var score = features.Zip(targets)
+                    .Sum(pair => member.Predict(pair.First).Classification == (int)pair.Second.Max() ? 1f : 0f);
                 
-                var score = predictions.Zip(targets)
-                    .Sum(pair => pair.First.Classification == (int)pair.Second.Max() ? 1f : 0f);
-                
-                return score / (float)predictions.Count;
+                return score / (float)features.Count();
             });
 
+        var population = new Population<SeralTree>(info);
         var optimizer = new Optimizer(population, pair, new ITrainingCallback[]
         {
+            new GenerationCallback(),
             new ConfusionMatrixCallback(),
             new ModelWriterCallback(),
         });

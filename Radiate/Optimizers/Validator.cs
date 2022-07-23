@@ -1,12 +1,5 @@
 ﻿using Radiate.Losses;
-using Radiate.Optimizers.Evolution;
-using Radiate.Optimizers.Evolution.Interfaces;
-using Radiate.Optimizers.Supervised;
-using Radiate.Optimizers.Supervised.Interfaces;
-using Radiate.Optimizers.Unsupervised;
-using Radiate.Optimizers.Unsupervised.Interfaces;
 using Radiate.Records;
-using Radiate.Tensors;
 
 namespace Radiate.Optimizers;
 
@@ -21,7 +14,7 @@ public class Validator
         _lossFunction = lossFunction;
     }
 
-    public Validation Validate(IOptimizerModel model, List<Batch> data)
+    public Validation Validate(IPredictionModel model, List<Batch> data)
     {
         var iterationLoss = new List<float>();
         var predictions = new List<Step>();
@@ -31,14 +24,7 @@ public class Validator
             foreach (var (feature, target) in inputs.Zip(answers))
             {
                 var startTime = DateTime.Now;
-                var prediction = model switch
-                {
-                    IEvolved evolved => evolved.Predict(feature),
-                    ISupervised supervised => supervised.Predict(feature),
-                    IUnsupervised unsupervised => unsupervised.Predict(feature),
-                    _ => throw new Exception("Cannot validate model")
-                };
-                
+                var prediction = model.Predict(feature);
                 var stepTime = DateTime.Now - startTime;
                 var (_, loss) = _lossFunction(prediction.Result, target);
             

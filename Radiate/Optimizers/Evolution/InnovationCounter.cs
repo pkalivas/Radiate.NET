@@ -2,11 +2,11 @@
 
 namespace Radiate.Optimizers.Evolution;
 
-public class InnovationCounter
+public static class InnovationCounter
 {
     public static int Count;
 
-    public InnovationCounter()
+    public static void Init()
     {
         Count = RandomGenerator.RandomGenerator.Seed ?? 0;
     }

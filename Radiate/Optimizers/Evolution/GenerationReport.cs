@@ -6,6 +6,8 @@ public class GenerationReport
     public int NumMembers { get; set; }
     public int NumNiche { get; set; }
     public float TopFitness { get; set; }
+    public int StagnationCount { get; set; }
+    public double Distance { get; set; }
     public List<NicheReport> NicheReports { get; set; }
 }
 

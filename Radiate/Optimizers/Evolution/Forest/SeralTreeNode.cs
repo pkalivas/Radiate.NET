@@ -6,12 +6,10 @@ using Radiate.Tensors;
 
 namespace Radiate.Optimizers.Evolution.Forest;
 
-public class SeralTreeNode
+public class SeralTreeNode : Allele
 {
-    private readonly Random _random = new();
-    
-    public readonly string Id;
-    
+    private readonly Guid _id = Guid.NewGuid();
+
     public SeralTreeNode Parent;
     public SeralTreeNode LeftChild;
     public SeralTreeNode RightChild;
@@ -20,17 +18,15 @@ public class SeralTreeNode
     private float _outputCategory;
     private float _splitValue;
     private Operator _operator;
-
+    
     private SeralNodeInfo _info = new();
 
     public SeralTreeNode(int inputSize, float[] outputCategories)
     {
-        _splitIndex = _random.Next(0, inputSize);
-        _outputCategory = outputCategories[_random.Next(0, outputCategories.Length)];
-        _splitValue = (_random.NextSingle() * 2) - 1;
-        _operator = (Operator)_random.Next(0, 3);
-        
-        Id = $"{_splitIndex}_{_outputCategory}_{_operator}";
+        _splitIndex = Random.Next(0, inputSize);
+        _outputCategory = outputCategories[Random.Next(0, outputCategories.Length)];
+        _splitValue = (Random.NextSingle() * 2) - 1;
+        _operator = (Operator)Random.Next(0, 3);
     }
 
     public SeralTreeNode(Guid nodeId, IReadOnlyDictionary<Guid, SeralTreeNodeWrap> wraps)
@@ -41,9 +37,7 @@ public class SeralTreeNode
         _splitValue = node.SplitValue;
         _outputCategory = node.OutputCategory;
         _operator = (Operator)node.Operator;
-
-        Id = $"{_splitIndex}_{_outputCategory}_{_operator}";
-
+        
         if (node.LeftChildId != Guid.Empty)
         {
             LeftChild = new SeralTreeNode(node.LeftChildId, wraps)
@@ -61,15 +55,15 @@ public class SeralTreeNode
         }
     }
 
-    public SeralTreeNode(SeralTreeNode node)
+    public SeralTreeNode(SeralTreeNode node) : base(node.InnovationId)
     {
         _splitIndex = node._splitIndex;
         _outputCategory = node._outputCategory;
         _splitValue = node._splitValue;
         _operator = node._operator;
-        
-        Id = $"{_splitIndex}_{_outputCategory}_{_operator}";
     }
+
+    public float Weight => _splitValue;
 
     public List<SeralTreeNodeWrap> Save(Guid parentId, Guid nodeId)
     {
@@ -156,30 +150,30 @@ public class SeralTreeNode
 
     public void Gut(int inputSize, float[] outputCategories)
     {
-        _splitIndex = _random.Next(0, inputSize);
-        _outputCategory = outputCategories[_random.Next(0, outputCategories.Length)];
-        _splitValue = _random.NextSingle();
-        _operator = (Operator)_random.Next(0, 3);
+        _splitIndex = Random.Next(0, inputSize);
+        _outputCategory = outputCategories[Random.Next(0, outputCategories.Length)];
+        _splitValue = Random.NextSingle();
+        _operator = (Operator)Random.Next(0, 3);
     }
 
     public void MutateSplitValue()
     {
-        _splitValue += ((float)_random.NextDouble() * 2) - 1;
+        _splitValue += ((float)Random.NextDouble() * 2) - 1;
     }
 
     public void MutateSplitIndex(int inputSize)
     {
-        _splitIndex = _random.Next(0, inputSize);
+        _splitIndex = Random.Next(0, inputSize);
     }
     
     public void MutateOutputCategory(float[] outputCategories)
     {
-        _outputCategory = outputCategories[_random.Next(0, outputCategories.Length)];
+        _outputCategory = outputCategories[Random.Next(0, outputCategories.Length)];
     }
 
     public void MutateOperator()
     {
-        _operator = (Operator)_random.Next(0, 3);
+        _operator = (Operator)Random.Next(0, 3);
     }
 
     public SeralTreeNode DeepCopy(SeralTreeNode parent)
@@ -216,9 +210,9 @@ public class SeralTreeNode
         return result;
     }
     
-    public bool IsLeftChild => Parent?.LeftChild != null && Parent.LeftChild.Id == Id;
+    public bool IsLeftChild => Parent?.LeftChild != null && Parent.LeftChild._id == _id;
     
-    public bool IsRightChild => Parent?.RightChild != null && Parent.RightChild.Id == Id;
+    public bool IsRightChild => Parent?.RightChild != null && Parent.RightChild._id == _id;
 
     public void Reset()
     {
@@ -280,7 +274,7 @@ public class SeralTreeNode
         }
 
         var tabs = string.Join('\t', Enumerable.Range(0, level + 1).Select(_ => ""));
-        Console.WriteLine($"{tabs}Node[{Id} :: P={Parent?.Id} :: L={LeftChild?.Id} :: R={RightChild?.Id}]\n");
+        Console.WriteLine($"{tabs}Node[{_id} :: P={Parent?._id} :: L={LeftChild?._id} :: R={RightChild?._id}]\n");
 
         if (RightChild is not null)
         {

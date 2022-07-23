@@ -20,19 +20,15 @@ public class Niche : Allele
         NicheId = Guid.NewGuid();
     }
 
-    public Niche Reset()
+    public void Reset()
     {
         var randomIdx = Random.Next(Members.Count);
         var newMascot = Members[randomIdx];
 
-        return new Niche
-        {
-            Mascot = newMascot.memberId,
-            Age = ++Age,
-            TotalAdjustedFitness = 0.0,
-            NicheId = NicheId,
-            Members = new List<(Guid memberId, double fitness)>()
-        };
+        Mascot = newMascot.memberId;
+        Age = Age + 1;
+        TotalAdjustedFitness = 0.0;
+        Members.Clear();
     }
 
     public Guid BestMember() => Members.MaxBy(mem => mem.fitness).memberId;

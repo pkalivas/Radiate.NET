@@ -1,5 +1,4 @@
-﻿using Radiate.Optimizers.Evolution;
-using Radiate.Optimizers.Supervised.Forest;
+﻿using Radiate.Optimizers.Supervised.Forest;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.SVM;
 using Radiate.Optimizers.Unsupervised.Clustering;

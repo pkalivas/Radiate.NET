@@ -4,8 +4,8 @@ using Radiate.Callbacks.Interfaces;
 using Radiate.Data;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Evolution;
+using Radiate.Optimizers.Evolution.Info;
 using Radiate.Optimizers.Evolution.Neat;
-using Radiate.Tensors;
 
 namespace Radiate.Examples.Examples;
 
@@ -13,22 +13,24 @@ public class EvolveNEAT : IExample
 {
     public async Task Run()
     {
-        RandomGenerator.RandomGenerator.Seed = null;
         const int maxEpochs = 500;
         
         var (inputs, answers) = await new SimpleMemory().GetDataSet();
 
-        var population = new Population<Neat>()
+        var info = new PopulationInfo<Neat>()
             .AddSettings(settings =>
             {
                 settings.Size = 100;
                 settings.DynamicDistance = true;
-                settings.SpeciesTarget = 5;
+                settings.SpeciesTarget = 10;
                 settings.SpeciesDistance = .5;
                 settings.InbreedRate = .001;
                 settings.CrossoverRate = .5;
                 settings.CleanPct = .9;
                 settings.StagnationLimit = 15;
+                settings.COne = 1;
+                settings.CTwo = 1;
+                settings.CThree = 3;
             })
             .AddEnvironment(new NeatEnvironment
             {
@@ -54,21 +56,18 @@ public class EvolveNEAT : IExample
                 foreach (var points in inputs.Zip(answers))
                 {
                     var output = member.Forward(points.First);
-                    total += (float) Math.Pow((output[0] - points.Second[0]), 2);
+                    total += (float)Math.Pow((output[0] - points.Second[0]), 2);
                 }
 
                 return 1f - (total / inputs.Count);
             });
 
+        var population = new Population<Neat>(info);
         var optimizer = new Optimizer(population, null, new List<ITrainingCallback>
         {
             new GenerationCallback()
         });
-        var pop = await optimizer.Train<Neat>(epoch =>
-        {
-            Console.Write($"\r[{epoch.Index}] {epoch.Fitness}");
-            return epoch.Index == maxEpochs;
-        });
+        var pop = await optimizer.Train<Neat>(epoch => epoch.Index == maxEpochs);
 
         
         Console.WriteLine();

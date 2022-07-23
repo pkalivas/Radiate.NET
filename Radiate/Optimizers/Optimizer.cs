@@ -2,16 +2,13 @@
 using Radiate.Extensions;
 using Radiate.IO.Wraps;
 using Radiate.Losses;
-using Radiate.Optimizers.Evolution;
 using Radiate.Optimizers.Evolution.Forest;
 using Radiate.Optimizers.Evolution.Interfaces;
 using Radiate.Optimizers.Evolution.Neat;
-using Radiate.Optimizers.Supervised;
 using Radiate.Optimizers.Supervised.Forest;
 using Radiate.Optimizers.Supervised.Interfaces;
 using Radiate.Optimizers.Supervised.Perceptrons;
 using Radiate.Optimizers.Supervised.SVM;
-using Radiate.Optimizers.Unsupervised;
 using Radiate.Optimizers.Unsupervised.Clustering;
 using Radiate.Optimizers.Unsupervised.Interfaces;
 using Radiate.Records;
@@ -34,6 +31,9 @@ public class Optimizer
     private readonly ILossFunction _lossFunction;
     private readonly TensorTrainSet _tensorTrainSet;
     private readonly TrainingSession _trainingSession;
+    
+    public Optimizer(IOptimizerModel optimizer, IEnumerable<ITrainingCallback> callbacks = null) 
+        : this(optimizer, null, callbacks) { }
     
     public Optimizer(IPopulation population, TensorTrainSet tensorTrainSet = null, IEnumerable<ITrainingCallback> callbacks = null)
     {
@@ -127,7 +127,13 @@ public class Optimizer
     private Validation Validate(List<Batch> batches)
     {
         var validator = new Validator(_lossFunction.Calculate);
-        return validator.Validate(Model, batches);
+
+        if (Model is IPredictionModel predictionModel)
+        {
+            return validator.Validate(predictionModel, batches);
+        }
+
+        throw new Exception("Cannot validate model not of type IPredictionModel.");
     }
 
     private static IOptimizerModel Load(OptimizerWrap wrap) => wrap.ModelWrap.ModelType switch
