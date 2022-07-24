@@ -5,8 +5,7 @@ namespace Radiate.Optimizers.Evolution;
 
 public class Population<T> : IPopulation where T : class, IGenome
 {
-    private readonly Generation _generation;
-    private readonly Solve<T> _fitnessFunction;
+    private readonly Generation<T> _generation;
 
     private Member _topMember;
     
@@ -19,32 +18,32 @@ public class Population<T> : IPopulation where T : class, IGenome
     public Population(PopulationInfo<T> info, IEnumerable<T> genomes)
     {
         InnovationCounter.Init();
-
-        var popSettings = info.PopulationSettings ?? new();
-        var environment = info.EvolutionEnvironment ?? new BaseEvolutionEnvironment();
         
-        _fitnessFunction = info.FitnessFunc;
-        _generation = CreateSeedGeneration(genomes, popSettings, environment);
+        _generation = CreateSeedGeneration(genomes, info);
     }
 
-    public async Task<Generation> Evolve() => await _generation.Step(_fitnessFunction);
+    public async Task<GenerationReport> Evolve()
+    {
+        _topMember = await _generation.Step();
+        return _generation.GetReport();
+    } 
 
     public float PassDown()
     {
-        _topMember = _generation.GetBestMember();
         _generation.CreateNextGeneration();
         return _topMember.Fitness;
     }
 
     IGenome IPopulation.Best() => _topMember.Model;
     
-    private static Generation CreateSeedGeneration(IEnumerable<IGenome> genomes, PopulationSettings popSettings, EvolutionEnvironment evolutionEnvironment)
+    private static Generation<T> CreateSeedGeneration(IEnumerable<IGenome> genomes, PopulationInfo<T> info)
     {
-        var population = genomes.Any() 
-            ? genomes 
-            : Enumerable.Range(0, 1)
-                .Select(_ => evolutionEnvironment.GenerateGenome<T>())
-                .ToList();
+        var population = genomes.Any()
+            ? genomes
+            : new[] { info.EvolutionEnvironment.GenerateGenome<T>() };
+            // : Enumerable.Range(0, info.populationSettings.Size!.Value)
+            //     .Select(_ => evolutionEnvironment.GenerateGenome<T>())
+            //     .ToList();
 
         var members = population
             .Select(member => (
@@ -57,6 +56,6 @@ public class Population<T> : IPopulation where T : class, IGenome
             ))
             .ToDictionary(key => key.Id, val => val.Member);
 
-        return new Generation(members, popSettings, evolutionEnvironment);
+        return new Generation<T>(members, info);
     }
 }

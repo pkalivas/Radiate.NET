@@ -1,3 +1,11 @@
-﻿namespace Radiate.Optimizers.Evolution.Forest.Info;
+﻿using Radiate.Activations;
 
-public record SeralForestInfo(int InputSize, float[] OutputCategories, int MaxHeight, int NumTrees = 0);
+namespace Radiate.Optimizers.Evolution.Forest.Info;
+
+public record SeralForestInfo(SeralTreeNodeType NodeType, 
+    IEnumerable<Activation> Activation, 
+    int InputSize, 
+    float[] OutputCategories, 
+    int StartHeight, 
+    bool UseRecurrent = false,
+    int NumTrees = 0);

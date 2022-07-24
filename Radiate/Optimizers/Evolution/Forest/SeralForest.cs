@@ -34,7 +34,7 @@ public class SeralForest : Allele, IGenome, IPredictionModel
     {
         var forest = wrap.SeralForestWrap;
 
-        _info = new SeralForestInfo(forest.InputSize, Array.Empty<float>(), forest.MaxHeight, forest.NumTrees);
+        _info = forest.Info;
         _trees = forest.Trees.Select(tree => new SeralTree(tree)).ToArray();
         _innovationWeightLookup = _trees
             .SelectMany(tree => tree.WeightLookup.Select(pair => (pair.Key, pair.Value)))
@@ -47,9 +47,7 @@ public class SeralForest : Allele, IGenome, IPredictionModel
         ModelType = ModelType.SeralForest,
         SeralForestWrap = new()
         {
-            InputSize = _info.InputSize,
-            MaxHeight = _info.MaxHeight,
-            NumTrees = _info.NumTrees,
+            Info = _info,
             Trees = _trees.Select(tree => tree.Save()).ToList()
         }
     };
@@ -81,10 +79,10 @@ public class SeralForest : Allele, IGenome, IPredictionModel
         return child as T;
     }
 
-    public async Task<double> Distance<T>(T other, PopulationControl populationControl)
+    public double Distance<T>(T other, DistanceControl distanceControl)
     {
         var parentTwo = other as SeralForest;
-        return await DistanceCalculator.Distance(_innovationWeightLookup, parentTwo._innovationWeightLookup, populationControl);
+        return DistanceCalculator.Distance(_innovationWeightLookup, parentTwo._innovationWeightLookup, distanceControl);
     }
 
     public T CloneGenome<T>() where T : class => new SeralForest(this) as T;

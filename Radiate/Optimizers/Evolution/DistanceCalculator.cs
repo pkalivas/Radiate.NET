@@ -4,9 +4,9 @@ namespace Radiate.Optimizers.Evolution;
 
 public static class DistanceCalculator
 {
-    public static async Task<double> Distance(IReadOnlyDictionary<int, float> parentOne, 
+    public static double Distance(IReadOnlyDictionary<int, float> parentOne, 
         IReadOnlyDictionary<int, float> parentTwo, 
-        PopulationControl populationControl)
+        DistanceControl distanceControl)
     {
         var (largestParent, smallestParent) = parentOne.Count > parentTwo.Count 
             ? (parentOne, parentTwo) 
@@ -18,17 +18,14 @@ public static class DistanceCalculator
             largestCount = 1.0;
         }
 
-        var (_, _, _, c1, c2, c3, _) = populationControl;
+        var (c1, c2, c3) = distanceControl;
         
         var excessGenes = parentOne.Count > parentTwo.Count
             ? parentOne.Count - parentTwo.Count
             : parentTwo.Count - parentOne.Count;
-
-        var oneTask = Task.Run(() => GetValues(largestParent, smallestParent));
-        var twoTask = Task.Run(() => GetValues(smallestParent, largestParent));
-
-        var (oneDiff, oneDisjoint) = await oneTask;
-        var (_, twoDisjoint) = await twoTask;
+        
+        var (oneDiff, oneDisjoint) = GetValues(largestParent, smallestParent);
+        var (_, twoDisjoint) = GetValues(smallestParent, largestParent);
         var totalDisjoint = oneDisjoint + twoDisjoint;
         
         var e = (c1 * excessGenes) / largestCount;

@@ -4,5 +4,5 @@ namespace Radiate.Callbacks.Interfaces;
 
 public interface IGenerationEvolvedCallback : ITrainingCallback
 {
-    void GenerationEvolved(int generationNum, Generation generation);
+    void GenerationEvolved(int generationNum, GenerationReport report);
 }

@@ -2,21 +2,38 @@
 using Radiate.Callbacks;
 using Radiate.Callbacks.Interfaces;
 using Radiate.Data;
+using Radiate.Gradients;
+using Radiate.Losses;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Evolution;
 using Radiate.Optimizers.Evolution.Info;
 using Radiate.Optimizers.Evolution.Neat;
+using Radiate.Optimizers.Supervised.Perceptrons;
+using Radiate.Optimizers.Supervised.Perceptrons.Info;
+using Radiate.Tensors;
+using Radiate.Tensors.Enums;
 
 namespace Radiate.Examples.Examples;
 
-public class EvolveNEAT : IExample
+public class TempuratureTimeSeries : IExample
 {
     public async Task Run()
     {
         const int maxEpochs = 500;
         
-        var (inputs, answers) = await new SimpleMemory().GetDataSet();
+        var (inputs, answers) = await new TempTimeSeries(500).GetDataSet();
 
+        inputs = inputs.Take(inputs.Count - 1).ToList();
+        answers = answers.Skip(1).ToList();
+        var pair = new TensorTrainSet(inputs, answers)
+            .TransformFeatures(Norm.Normalize)
+            .TransformTargets(Norm.Normalize)
+            .Split()
+            .Layer(5);
+            
+        var features = pair.TrainingInputs.SelectMany(batch => batch.Features);
+        var targets = pair.TrainingInputs.SelectMany(batch => batch.Targets);
+        
         var info = new PopulationInfo<Neat>()
             .AddSettings(settings =>
             {
@@ -33,8 +50,8 @@ public class EvolveNEAT : IExample
             })
             .AddEnvironment(new NeatEnvironment
             {
-                InputSize = 1,
-                OutputSize = 1,
+                InputSize = pair.InputShape.Height,
+                OutputSize = pair.OutputShape.Height,
                 RecurrentNeuronRate = .95f,
                 ReactivateRate = .2f,
                 WeightMutateRate = .8f,
@@ -52,34 +69,22 @@ public class EvolveNEAT : IExample
             .AddFitnessFunction(member =>
             {
                 var total = 0.0f;
-                foreach (var points in inputs.Zip(answers))
+                foreach (var points in features.Zip(targets))
                 {
-                    var output = member.Forward(points.First);
-                    total += (float)Math.Pow((output[0] - points.Second[0]), 2);
+                    var output = member.Predict(points.First);
+                    total += (float)Math.Pow((output.Confidence - points.Second[0]), 2);
                 }
 
                 return 1f - (total / inputs.Count);
             });
 
         var population = new Population<Neat>(info);
-        var optimizer = new Optimizer(population, new List<ITrainingCallback>
+        var optimizer = new Optimizer(population, pair, new List<ITrainingCallback>
         {
-            new GenerationCallback()
+            new GenerationCallback(),
+            new PredictionCsvWriterCallback()
         });
         
-        var neat = await optimizer.Train<Neat>(epoch => epoch.Index == maxEpochs);
-        
-        Console.WriteLine();
-        foreach (var (point, idx) in inputs.Select((val, idx) => (val, idx)))
-        {
-            var output = neat.Forward(point);
-            Console.WriteLine($"Input {point[0]} Expecting {answers[idx][0]} Guess {output[0]}");
-        }
-        
-        Console.WriteLine("\nTesting Memory...");
-        Console.WriteLine($"Input {1f} Expecting {0f} Guess {neat.Forward(new float[1] { 1 })[0]}");
-        Console.WriteLine($"Input {0f} Expecting {0f} Guess {neat.Forward(new float[1] { 0 })[0]}");
-        Console.WriteLine($"Input {0f} Expecting {0f} Guess {neat.Forward(new float[1] { 0 })[0]}");
-        Console.WriteLine($"Input {0f} Expecting {1f} Guess {neat.Forward(new float[1] { 0 })[0]}");
+        await optimizer.Train<Neat>(epoch => epoch.Index == maxEpochs);
     }
 }

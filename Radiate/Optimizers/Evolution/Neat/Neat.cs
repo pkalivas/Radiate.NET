@@ -430,10 +430,10 @@ public class Neat : Allele, IGenome, IPredictionModel
     }
 
 
-    public async Task<double> Distance<T>(T other, PopulationControl populationControl)
+    public double Distance<T>(T other, DistanceControl distanceControl)
     {
         var parentTwo = other as Neat;
-        return await DistanceCalculator.Distance(GetWeightLookup(), parentTwo.GetWeightLookup(), populationControl);
+        return DistanceCalculator.Distance(GetWeightLookup(), parentTwo.GetWeightLookup(), distanceControl);
     }
 
     public T CloneGenome<T>() where T : class => new Neat(this) as T;

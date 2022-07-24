@@ -1,8 +1,10 @@
-﻿namespace Radiate.Optimizers.Evolution;
+﻿using System.Collections.Concurrent;
+
+namespace Radiate.Optimizers.Evolution;
 
 public static class ParentSelector
 {
-    public static (Guid parentOne, Guid parentTwo) Select(double inbreedRate, List<Niche> species)
+    public static (Guid parentOne, Guid parentTwo) Select(double inbreedRate, ICollection<Niche> species)
     {
         var random = RandomGenerator.RandomGenerator.Next;
         if (random.NextDouble() < inbreedRate)
@@ -25,7 +27,7 @@ public static class ParentSelector
         }
     }
     
-    private static Niche GetBiasedRandomNiche(List<Niche> species, Random random)
+    private static Niche GetBiasedRandomNiche(ICollection<Niche> species, Random random)
     {
         var total = species
             .Where(spec => !spec.IsStagnant)
@@ -52,7 +54,7 @@ public static class ParentSelector
         var index = species.TotalAdjustedFitness * random.NextDouble();
         var runningTotal = 0.0;
 
-        foreach (var (id, fitness) in species.Members)
+        foreach (var (id, fitness) in species.AdjustedMembers)
         {
             runningTotal += fitness;
             if (runningTotal >= index)

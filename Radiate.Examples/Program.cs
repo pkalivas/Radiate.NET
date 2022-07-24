@@ -20,6 +20,7 @@ class Program
                       "[9] SupportVectorMachine\n" +
                       "[10] Evolve Tree\n" +
                       "[11] Evolve Forest\n" +
+                      "[12] Temp Time Series\n" +
                       ":: ";
 
         while (true)
@@ -91,6 +92,11 @@ class Program
         if (choice == 11)
         {
             await new EvolveForest().Run();
+        }
+
+        if (choice == 12)
+        {
+            await new TempuratureTimeSeries().Run();
         }
     }
 }

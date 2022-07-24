@@ -1,88 +1,145 @@
 ﻿using System.Collections.Concurrent;
-using Radiate.Optimizers.Evolution.Interfaces;
+using Radiate.Optimizers.Evolution.Info;
 using Radiate.Records;
 
 namespace Radiate.Optimizers.Evolution;
 
-public class Generation
+public class Generation<T> where T : class
 {
-    private Dictionary<Guid, Member> _members;
-    private Dictionary<Guid, Member> _mascotMembers;
-    private List<Niche> _species;
-    private PopulationControl _populationControl;
-    private StagnationControl _stagnationControl;
+    private readonly ConcurrentDictionary<Guid, Member> _members;
+    private readonly ConcurrentDictionary<Guid, Member> _mascotMembers;
+    private readonly ConcurrentDictionary<Guid, Niche> _species;
+    private readonly DistanceManager _distanceManager;
+    private readonly DistanceControl _distanceControl;
+    private readonly StagnationControl _stagnationControl;
     private readonly PassDownControl _passDownControl;
     private readonly EvolutionEnvironment _evolutionEnvironment;
-    
-    public Generation(Dictionary<Guid, Member> members, PopulationSettings popSettings, EvolutionEnvironment evolutionEnvironment)
+    private readonly FitnessFunction<T> _fitnessFunction;
+
+    public Generation(Dictionary<Guid, Member> members, PopulationInfo<T> info)
     {
-        _members = members;
-        _species = new List<Niche>();
-        _mascotMembers = new();
-        _populationControl = new(popSettings.DynamicDistance, popSettings.SpeciesDistance, popSettings.SpeciesTarget,
-            popSettings.COne, popSettings.CTwo, popSettings.CThree);
-        _stagnationControl = new(popSettings.CleanPct, popSettings.StagnationLimit);
-        _passDownControl = new(popSettings.InbreedRate, popSettings.CrossoverRate, popSettings.Size ?? members.Count);
-        _evolutionEnvironment = evolutionEnvironment;
+        var popSettings = info.PopulationSettings ?? new();
+        var environment = info.EvolutionEnvironment ?? new BaseEvolutionEnvironment();
+        
+        _members = new ConcurrentDictionary<Guid, Member>(members);
+        _mascotMembers = new ConcurrentDictionary<Guid, Member>();
+        _species = new ConcurrentDictionary<Guid, Niche>();
+        _distanceManager = new DistanceManager(popSettings.DynamicDistance, popSettings.SpeciesTarget, popSettings.SpeciesDistance);
+        _distanceControl = info.DistanceControl;
+        _stagnationControl = info.StagnationControl;
+        _passDownControl = info.PassDownControl with { Size = popSettings.Size ?? members.Count };
+        _evolutionEnvironment = environment;
+        _fitnessFunction = info.FitnessFunc;
     }
     
-    public async Task<Generation> Step<T>(Solve<T> problem) where T : class
+    public async Task<Member> Step()
     {
-        var newMembers = new ConcurrentBag<(Guid memberId, float memberFitness)>();
-        Parallel.ForEach(_members.Keys, member =>
+        var retainedSpecies = new ConcurrentBag<Guid>();
+        var newSpeciesMemberIds = new ConcurrentBag<Guid>();
+        
+        Parallel.ForEach(_members.Keys, memberId =>
         {
-            newMembers.Add((member, problem(_members[member].Model as T)));
+            _members[memberId].Fitness = _fitnessFunction(_members[memberId].Model as T);
         });
         
-        foreach (var (key, val) in newMembers)
+        Parallel.ForEach(_members, member =>
         {
-            if (_members.ContainsKey(key))
+            var (memberId, model) = member;
+            var found = false;
+            foreach (var (nicheId, species) in _species)
             {
-                _members[key].Fitness = val;
+                var mascot = _mascotMembers[species.Mascot].Model;
+                var distance = model.Model.Distance(mascot, _distanceControl);
+
+                if (distance < _distanceManager.Distance)
+                {
+                    if (!retainedSpecies.Contains(nicheId))
+                    {
+                        retainedSpecies.Add(nicheId);
+                    }
+                    
+                    species.AddMember(new NicheMember(memberId, model.Fitness));
+                    found = true;
+                    break;
+                }
             }
+
+            if (!found)
+            {
+                newSpeciesMemberIds.Add(memberId);
+            }
+        });
+
+        foreach (var newSpeciesMember in newSpeciesMemberIds)
+        {
+            var member = _members[newSpeciesMember];
+            var nicheId = Guid.NewGuid();
+            var newSpecies = new Niche(nicheId, new NicheMember(newSpeciesMember, member.Fitness), _stagnationControl);
+            retainedSpecies.Add(nicheId);
+            
+            _species[nicheId] = newSpecies;
+            _mascotMembers[newSpeciesMember] = member;
+        }
+        
+        var failedSpecies = _species.Keys.Where(nicheId => !retainedSpecies.Contains(nicheId));
+        foreach (var failedId in failedSpecies)
+        {
+            _mascotMembers.Remove(_species[failedId].Mascot, out _);
+            _species.Remove(failedId, out _);
         }
 
-        await Speciate();
+        foreach (var species in _species.Values)
+        {
+            species.CalcTotalAdjustedFitness();
+        }
 
-        return this;
+        return GetBestMember();
     }
     
     public void CreateNextGeneration()
     {
-        AdjustDistance();
-
         var (inbreedRate, crossoverRate, size) = _passDownControl;
-        var children = new ConcurrentDictionary<Guid, Member>();
-        
-        foreach (var (memberId, member) in SurvivorSelector.Select(_members, _species))
+        _distanceManager.Update(_species.Count);
+
+        var survivors = _species.Values
+            .Select(niche => niche.BestMember())
+            .ToHashSet();
+
+        var oldMemberIds = _members.Keys.Where(memberId => !survivors.Contains(memberId));
+
+        foreach (var survivor in survivors.Select(survivorId => _members[survivorId]))
         {
-            var model = member.Model;
-            model.ResetGenome();
-            children[memberId] = new Member { Fitness = 0, Model = model };
+            survivor.Model.ResetGenome();
+            survivor.Fitness = 0;
         }
 
-        var childNum = size - children.Count;
+        var childNum = size - survivors.Count;
         Parallel.For(0, childNum, _ =>
         {
-            var (parentOneId, parentTwoId) = ParentSelector.Select(inbreedRate, _species);
+            var (parentOneId, parentTwoId) = ParentSelector.Select(inbreedRate, _species.Values);
             var parentOne = _members[parentOneId];
             var parentTwo = _members[parentTwoId];
         
             var newGenomeTask = parentOne.Fitness > parentTwo.Fitness 
                 ? parentOne.Model.Crossover(parentTwo.Model, _evolutionEnvironment, crossoverRate) 
                 : parentTwo.Model.Crossover(parentOne.Model, _evolutionEnvironment, crossoverRate);
-
-            children[Guid.NewGuid()] = new Member { Fitness = 0, Model = newGenomeTask };
-        });
         
-        _species.ForEach(niche => niche.Reset());
-        _mascotMembers = _species
-            .Select(spec => (spec.Mascot, _members[spec.Mascot]))
-            .ToDictionary(key => key.Mascot, val => val.Item2);
-        _members = children.ToDictionary(key => key.Key, val => val.Value);
+            _members[Guid.NewGuid()] = new Member { Fitness = 0, Model = newGenomeTask };
+        });
+
+        foreach (var (_, species) in _species)
+        {
+            species.Reset();
+            _mascotMembers[species.Mascot] = _members[species.Mascot];
+        }
+
+        foreach (var memberId in oldMemberIds)
+        {
+            _members.Remove(memberId, out _);
+        }
     }
 
-    public Member GetBestMember() => 
+    private Member GetBestMember() => 
         _members.Values
             .Aggregate(_members.Values.First(), (best, current) => current.Fitness > best.Fitness ? current : best);
 
@@ -92,90 +149,10 @@ public class Generation
         NumNiche = _species.Count,
         TopFitness = GetBestMember().Fitness,
         StagnationCount = _stagnationControl.StagnationCount,
-        Distance = _populationControl.Distance,
-        NicheReports = _species
+        Distance = _distanceManager.Distance,
+        NicheReports = _species.Values
             .Select(spec => spec.GetReport())
             .OrderBy(val => val.Age)
             .ToList()
     };
-    
-    private async Task Speciate()
-    {
-        var retainedSpecies = new HashSet<Guid>();
-
-        foreach (var (id, member) in _members)
-        {
-            var found = false;
-            foreach (var species in _species)
-            {
-                var speciesMember = _mascotMembers[species.Mascot].Model;
-                var memberDistance = await member.Model.Distance(speciesMember, _populationControl);
-
-                if (memberDistance < _populationControl.Distance)
-                {
-                    species.AddMember(new(id, member.Fitness));
-                    retainedSpecies.Add(species.NicheId);
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found)
-            {
-                var newSpecies = new Niche(new(id, member.Fitness), _stagnationControl);
-                _species.Add(newSpecies);
-                retainedSpecies.Add(newSpecies.NicheId);
-                _mascotMembers[id] = member;
-            }
-        }
-
-        foreach (var species in _species.Where(species => !retainedSpecies.Contains(species.NicheId)))
-        {
-            _mascotMembers.Remove(species.Mascot);
-        }
-
-        _species = _species.Where(spec => retainedSpecies.Contains(spec.NicheId)).ToList();
-
-        foreach (var species in _species)
-        {
-            species.CalcTotalAdjustedFitness();
-        }
-    }
-    
-    private void AdjustDistance()
-    {
-        var (dynamicDistance, distance, target, _, _, _, precision) = _populationControl;
-        var newControl = _populationControl with { };
-
-        if (!dynamicDistance)
-        {
-            return;
-        }
-        
-        if (_species.Count < target)
-        {
-            var newDistance = distance - precision;
-            while (newDistance <= 0)
-            {
-                precision /= EvolutionConstants.DistanceMultiplier;
-                newDistance = distance - precision;
-            }
-
-            newControl = newControl with
-            {
-                Distance = Math.Round(newDistance, 5)
-            };
-        }
-        else if (_species.Count > target)
-        {
-            var newDistance = distance + precision;
-
-            newControl = newControl with
-            {
-                Distance = Math.Round(newDistance, 5)
-            };
-        }
-
-        _populationControl = newControl;
-    }
 }

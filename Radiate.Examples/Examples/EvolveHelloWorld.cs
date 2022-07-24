@@ -36,7 +36,6 @@ public class EvolveHelloWorld : IExample
                 settings.SpeciesDistance = .5;
                 settings.InbreedRate = .001;
                 settings.CrossoverRate = .5;
-                settings.CleanPct = .9;
                 settings.StagnationLimit = 15;
             })
             .AddEnvironment(new BaseEvolutionEnvironment())
@@ -100,7 +99,7 @@ public class EvolveHelloWorld : IExample
             return child as T;
         }
 
-        public Task<double> Distance<T>(T other, PopulationControl _)
+        public double Distance<T>(T other, DistanceControl _)
         {
             var secondParent = other as HelloWorld;
             var total = 0.0;
@@ -109,7 +108,7 @@ public class EvolveHelloWorld : IExample
                 total += pOne == pTwo ? 1 : 0;
             }
 
-            return Task.FromResult(Chars.Length / total);
+            return Chars.Length / total;
         }
 
         T IGenome.CloneGenome<T>()

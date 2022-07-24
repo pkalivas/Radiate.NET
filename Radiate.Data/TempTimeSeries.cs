@@ -8,7 +8,7 @@ public class TempTimeSeries : IDataSet
 {
     private readonly int _featureLimit;
 
-    public TempTimeSeries(int featureLimit)
+    public TempTimeSeries(int featureLimit = 0)
     {
         _featureLimit = featureLimit;
     }
@@ -18,8 +18,12 @@ public class TempTimeSeries : IDataSet
         var assembly = Assembly.GetExecutingAssembly();
         var contents = await new StreamReader(assembly.GetManifestResourceStream("Radiate.Data.DataSets.TempTimeSeries.TempTimeSeries.json")).ReadToEndAsync();
         var data = JsonConvert.DeserializeObject<List<TempOverTime>>(contents)
-            .Take(_featureLimit)
             .ToList();
+
+        if (_featureLimit > 0)
+        {
+            data = data.Take(_featureLimit).ToList();
+        }
 
         var result = data.Select(val => new[] { val.Temp }).ToList();
 

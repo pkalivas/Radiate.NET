@@ -6,37 +6,35 @@ using Radiate.Tensors;
 
 namespace Radiate.Optimizers.Evolution.Forest;
 
-public class SeralTreeNode : Allele
+public class SeralTreeNode
 {
     private readonly Guid _id = Guid.NewGuid();
+    private readonly ISeralTreeNode _node;
+
+    private SeralNodeInfo _info = new();
 
     public SeralTreeNode Parent;
     public SeralTreeNode LeftChild;
     public SeralTreeNode RightChild;
     
-    private int _splitIndex;
-    private float _outputCategory;
-    private float _splitValue;
-    private Operator _operator;
-    
-    private SeralNodeInfo _info = new();
-
-    public SeralTreeNode(int inputSize, float[] outputCategories)
+    public SeralTreeNode(ISeralTreeNode node)
     {
-        _splitIndex = Random.Next(0, inputSize);
-        _outputCategory = outputCategories[Random.Next(0, outputCategories.Length)];
-        _splitValue = (Random.NextSingle() * 2) - 1;
-        _operator = (Operator)Random.Next(0, 3);
+        _node = node;
     }
 
     public SeralTreeNode(Guid nodeId, IReadOnlyDictionary<Guid, SeralTreeNodeWrap> wraps)
     {
         var node = wraps[nodeId];
 
-        _splitIndex = node.SplitIndex;
-        _splitValue = node.SplitValue;
-        _outputCategory = node.OutputCategory;
-        _operator = (Operator)node.Operator;
+        if (node.OperatorWrap is not null)
+        {
+            _node = new OperatorTreeNode(node.OperatorWrap);
+        }
+
+        if (node.NeuronTreeNodeWrap is not null)
+        {
+            _node = new NeuronTreeNode(node.NeuronTreeNodeWrap);
+        }
         
         if (node.LeftChildId != Guid.Empty)
         {
@@ -55,15 +53,22 @@ public class SeralTreeNode : Allele
         }
     }
 
-    public SeralTreeNode(SeralTreeNode node) : base(node.InnovationId)
+    public SeralTreeNode(SeralTreeNode node)
     {
-        _splitIndex = node._splitIndex;
-        _outputCategory = node._outputCategory;
-        _splitValue = node._splitValue;
-        _operator = node._operator;
+        _node = node._node switch
+        {
+            OperatorTreeNode operatorTreeNode => new OperatorTreeNode(operatorTreeNode),
+            NeuronTreeNode neuronTreeNode => new NeuronTreeNode(neuronTreeNode)
+        };
     }
 
-    public float Weight => _splitValue;
+    public float Weight => _node.Weight();
+    
+    public int InnovationId => _node.InnovationNumber();
+    
+    public bool IsLeftChild => Parent?.LeftChild != null && Parent.LeftChild._id == _id;
+    
+    public bool IsRightChild => Parent?.RightChild != null && Parent.RightChild._id == _id;
 
     public List<SeralTreeNodeWrap> Save(Guid parentId, Guid nodeId)
     {
@@ -75,10 +80,8 @@ public class SeralTreeNode : Allele
             {
                 NodeId = nodeId,
                 ParentId = parentId,
-                SplitIndex = _splitIndex,
-                SplitValue = _splitValue,
-                OutputCategory = _outputCategory,
-                Operator = (int)_operator
+                OperatorWrap = _node is OperatorTreeNode operatorNode ? operatorNode.Save() : null,
+                NeuronTreeNodeWrap = _node is NeuronTreeNode neuronTreeNode ? neuronTreeNode.Save() : null
             });
 
             return nodes;
@@ -103,34 +106,24 @@ public class SeralTreeNode : Allele
             LeftChildId = LeftChild is null ? Guid.Empty : leftId,
             RightChildId = RightChild is null ? Guid.Empty : rightId,
             ParentId = parentId,
-            Operator = (int)_operator,
-            SplitIndex = _splitIndex,
-            SplitValue = _splitValue,
-            OutputCategory = _outputCategory
+            OperatorWrap = _node is OperatorTreeNode opNode ? opNode.Save() : null,
+            NeuronTreeNodeWrap = _node is NeuronTreeNode neuronNode ? neuronNode.Save() : null
         });
 
         return nodes;
     }
 
-    public Prediction Predict(Tensor input)
+    public void Mutate(ForestEnvironment environment)
     {
-        if (IsLeaf)
-        {
-            return new Prediction(new[] { _splitValue }.ToTensor(), (int)_outputCategory, _outputCategory);
-        }
-
-        return _operator switch
-        {
-            Operator.EqualTo => Propagate(input, ten => ten[_splitIndex] == _splitValue),
-            Operator.GreaterThan => Propagate(input, ten => ten[_splitIndex] > _splitValue),
-            Operator.LessThan => Propagate(input, ten => ten[_splitIndex] < _splitValue),
-            _ => throw new Exception("Operator not implemented")
-        };
+        _node.Mutate(environment);
     }
 
-    private Prediction Propagate(Tensor input, Func<Tensor, bool> func)
+    public Prediction Predict(Tensor input) => IsLeaf ? _node.Predict(input) : Propagate(input);
+
+    private Prediction Propagate(Tensor input)
     {
-        if (func(input) && LeftChild is not null)
+        var direction = _node.GetDirection(input);
+        if (direction is NodePropagationDirection.Left && LeftChild is not null)
         {
             return LeftChild.Predict(input);
         }
@@ -146,34 +139,6 @@ public class SeralTreeNode : Allele
         }
 
         throw new Exception("Failed to find leaf node.");
-    }
-
-    public void Gut(int inputSize, float[] outputCategories)
-    {
-        _splitIndex = Random.Next(0, inputSize);
-        _outputCategory = outputCategories[Random.Next(0, outputCategories.Length)];
-        _splitValue = Random.NextSingle();
-        _operator = (Operator)Random.Next(0, 3);
-    }
-
-    public void MutateSplitValue()
-    {
-        _splitValue += ((float)Random.NextDouble() * 2) - 1;
-    }
-
-    public void MutateSplitIndex(int inputSize)
-    {
-        _splitIndex = Random.Next(0, inputSize);
-    }
-    
-    public void MutateOutputCategory(float[] outputCategories)
-    {
-        _outputCategory = outputCategories[Random.Next(0, outputCategories.Length)];
-    }
-
-    public void MutateOperator()
-    {
-        _operator = (Operator)Random.Next(0, 3);
     }
 
     public SeralTreeNode DeepCopy(SeralTreeNode parent)
@@ -209,10 +174,6 @@ public class SeralTreeNode : Allele
 
         return result;
     }
-    
-    public bool IsLeftChild => Parent?.LeftChild != null && Parent.LeftChild._id == _id;
-    
-    public bool IsRightChild => Parent?.RightChild != null && Parent.RightChild._id == _id;
 
     public void Reset()
     {

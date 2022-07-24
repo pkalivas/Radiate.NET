@@ -5,15 +5,13 @@ namespace Radiate.Optimizers.Evolution;
 public class StagnationManager
 {
     private readonly int _stagnationLimit;
-    private double _cleanPercent;
     private double _previousFitness;
     private int _stagnationCount;
 
     public StagnationManager(StagnationControl control)
     {
-        var (cleanPercent, limit, count, previousFit) = control;
+        var (limit, count, previousFit) = control;
         
-        _cleanPercent = cleanPercent;
         _stagnationLimit = limit;
         _stagnationCount = count;
         _previousFitness = previousFit;

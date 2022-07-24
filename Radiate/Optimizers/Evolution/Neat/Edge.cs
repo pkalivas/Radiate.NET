@@ -12,7 +12,7 @@ public class Edge : Allele
 
     public Edge() { }
 
-    public Edge(EdgeId id, NeuronId src, NeuronId dst, float weight, bool active)
+    public Edge(EdgeId id, NeuronId src, NeuronId dst, float weight, bool active) : base(id.Index)
     {
         Id = id;
         Innovation = Guid.NewGuid();

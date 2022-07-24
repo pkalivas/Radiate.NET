@@ -1,4 +1,5 @@
-﻿using Radiate.Callbacks;
+﻿using Radiate.Activations;
+using Radiate.Callbacks;
 using Radiate.Callbacks.Interfaces;
 using Radiate.Data;
 using Radiate.Optimizers;
@@ -14,7 +15,6 @@ public class EvolveTree : IExample
 {
     public async Task Run()
     {
-        // RandomGenerator.RandomGenerator.Seed = 5;
         var (rawInputs, rawLabels) = await new BreastCancer().GetDataSet();
 
         var pair = new TensorTrainSet(rawInputs, rawLabels)
@@ -34,7 +34,6 @@ public class EvolveTree : IExample
                 settings.SpeciesDistance = .5;
                 settings.InbreedRate = .001;
                 settings.CrossoverRate = .5;
-                settings.CleanPct = .9;
                 settings.StagnationLimit = 15;
             })
             .AddEnvironment(new ForestEnvironment
@@ -42,14 +41,31 @@ public class EvolveTree : IExample
                 InputSize = pair.InputShape.Height,
                 OutputCategories = pair.OutputCategoriesList,
                 MaxHeight = 20,
+                StartHeight = 5,
                 NumTrees = 25,
                 NodeAddRate = .05f,
-                GutRate = .05f,
                 ShuffleRate = .05f,
-                SplitValueMutateRate = .08f,
-                SplitIndexMutateRate = .08f,
-                OutputCategoryMutateRate = 0.1f,
-                OperatorMutateRate = .05f
+                NodeType = SeralTreeNodeType.Operator,
+                OperatorNodeEnvironment = new OperatorNodeEnvironment
+                {
+                    SplitValueMutateRate  = .1f,
+                    SplitIndexMutateRate = .1f,
+                    OutputCategoryMutateRate = .1f,
+                    OperatorMutateRate = .05f
+                },
+                NeuronNodeEnvironment = new NeuronNodeEnvironment
+                {
+                    SplitIndexMutateRate = .1f,
+                    OutputCategoryMutateRate = .1f,
+                    WeightMovementRate = 1.5f,
+                    WeightMutateRate = .8f,
+                    EditWeights = .1f,
+                    Activations = new[]
+                    {
+                        Activation.Linear,
+                        Activation.Sigmoid
+                    }
+                }
             })
             .AddFitnessFunction(member =>
             {

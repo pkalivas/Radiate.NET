@@ -1,4 +1,5 @@
-﻿using Radiate.Callbacks;
+﻿using Radiate.Activations;
+using Radiate.Callbacks;
 using Radiate.Callbacks.Interfaces;
 using Radiate.Data;
 using Radiate.Optimizers;
@@ -23,34 +24,52 @@ public class EvolveForest : IExample
         var features = pair.TrainingInputs.SelectMany(batch => batch.Features);
         var targets = pair.TrainingInputs.SelectMany(batch => batch.Targets);
         
-        var info = new PopulationInfo<SeralForest>()
+        var info = new PopulationInfo<SeralTree>()
             .AddSettings(settings =>
             {
-                settings.Size = 25;
+                settings.Size = 250;
                 settings.DynamicDistance = true;
                 settings.SpeciesTarget = 5;
                 settings.SpeciesDistance = .5;
                 settings.InbreedRate = .001;
                 settings.CrossoverRate = .5;
-                settings.CleanPct = .9;
                 settings.StagnationLimit = 15;
                 settings.COne = 1.0;
                 settings.CTwo = 1.0;
-                // settings.CThree = .0;
+                settings.CThree = 3.0;
             })
             .AddEnvironment(new ForestEnvironment
             {
                 InputSize = pair.InputShape.Height,
                 OutputCategories = pair.OutputCategoriesList,
-                MaxHeight = 35,
-                NumTrees = 50,
+                MaxHeight = 30,
+                NumTrees = 25,
+                StartHeight = 30,
                 NodeAddRate = .05f,
-                GutRate = .05f,
                 ShuffleRate = .05f,
-                SplitValueMutateRate = .08f,
-                SplitIndexMutateRate = .08f,
-                OutputCategoryMutateRate = 0.1f,
-                OperatorMutateRate = .05f
+                NodeType = SeralTreeNodeType.Neuron,
+                OperatorNodeEnvironment = new OperatorNodeEnvironment
+                {
+                  SplitValueMutateRate  = .1f,
+                  SplitIndexMutateRate = .1f,
+                  OutputCategoryMutateRate = .1f,
+                  OperatorMutateRate = .05f
+                },
+                NeuronNodeEnvironment = new NeuronNodeEnvironment
+                {
+                    UseRecurrent = false,
+                    SplitIndexMutateRate = .05f,
+                    OutputCategoryMutateRate = .05f,
+                    WeightMovementRate = 1.1f,
+                    WeightMutateRate = .15f,
+                    EditWeights = .01f,
+                    Activations = new[]
+                    {
+                        Activation.Sigmoid,
+                        Activation.ExpSigmoid,
+                        Activation.ReLU
+                    }
+                }
             })
             .AddFitnessFunction(member =>
             {
@@ -64,7 +83,7 @@ public class EvolveForest : IExample
                 return 1f - (total / features.Count());
             });
 
-        var population = new Population<SeralForest>(info);
+        var population = new Population<SeralTree>(info);
         var optimizer = new Optimizer(population, pair, new ITrainingCallback[]
         {
             new GenerationCallback(),

@@ -1,9 +1,11 @@
-﻿namespace Radiate.Optimizers.Evolution.Info;
+﻿using Radiate.Records;
+
+namespace Radiate.Optimizers.Evolution.Info;
 
 public record PopulationInfo<T>(
     PopulationSettings PopulationSettings = null,
     EvolutionEnvironment EvolutionEnvironment = null,
-    Solve<T> FitnessFunc = null) where T : class
+    FitnessFunction<T> FitnessFunc = null) where T : class
 {
     public PopulationInfo<T> AddSettings(Action<PopulationSettings> settings)
     {
@@ -15,6 +17,14 @@ public record PopulationInfo<T>(
     public PopulationInfo<T> AddEnvironment(EvolutionEnvironment environment) => 
         this with { EvolutionEnvironment = environment };
 
-    public PopulationInfo<T> AddFitnessFunction(Solve<T> solver) =>
+    public PopulationInfo<T> AddFitnessFunction(FitnessFunction<T> solver) =>
         this with { FitnessFunc = solver };
+
+    public DistanceControl DistanceControl =>
+        new(PopulationSettings.COne, PopulationSettings.CThree, PopulationSettings.CThree);
+
+    public StagnationControl StagnationControl => new(PopulationSettings.StagnationLimit);
+
+    public PassDownControl PassDownControl =>
+        new(PopulationSettings.InbreedRate, PopulationSettings.CrossoverRate, 0);
 }

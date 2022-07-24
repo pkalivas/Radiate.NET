@@ -12,18 +12,19 @@ public class SeralTree : Allele, IGenome, IPredictionModel, IEnumerable<SeralTre
     private SeralTreeNode _rootNode;
     private int _height;
     private int _size;
+    private SeralForestInfo _info;
     private Dictionary<int, float> _innovationWeightLookup;
 
     public SeralTree(SeralForestInfo info)
     {
-        var (inputSize, outputs, maxHeight, _) = info;
-        var nodes = Enumerable.Range(0, (2 * maxHeight) - 1)
-            .Select(_ => new SeralTreeNode(inputSize, outputs))
-            .ToArray();
+        var (_, _, _, _, startHeight, _, _) = info;
 
-        _rootNode = MakeTree(null, nodes);
+        _info = info;
+        _rootNode = MakeTree(null, Enumerable.Range(0, (2 * startHeight) - 1)
+            .Select(index => new SeralTreeNode(CreateNode(index)))
+            .ToArray());
         _height = _rootNode.Height();
-        _size = nodes.Length;
+        _size = _rootNode.Size();
         _innovationWeightLookup = this.GroupBy(val => val.InnovationId)
             .ToDictionary(key => key.Key, val => val.Sum(node => node.Weight));
     }
@@ -36,6 +37,7 @@ public class SeralTree : Allele, IGenome, IPredictionModel, IEnumerable<SeralTre
         _rootNode = new SeralTreeNode(treeWrap.RootId, nodeLookup);
         _height = _rootNode.Height();
         _size = nodeLookup.Count;
+        _info = treeWrap.Info;
         _innovationWeightLookup = this.GroupBy(val => val.InnovationId)
             .ToDictionary(key => key.Key, val => val.Sum(node => node.Weight));
     }
@@ -45,6 +47,7 @@ public class SeralTree : Allele, IGenome, IPredictionModel, IEnumerable<SeralTre
         _rootNode = tree._rootNode.DeepCopy(null);
         _height = tree._height;
         _size = tree._size;
+        _info = tree._info;
         _innovationWeightLookup = tree._innovationWeightLookup.ToDictionary(key => key.Key, val => val.Value);
     }
 
@@ -59,14 +62,15 @@ public class SeralTree : Allele, IGenome, IPredictionModel, IEnumerable<SeralTre
             SeralTreeWrap = new SeralTreeWrap
             {
                 RootId = rootId,
+                Info = _info,
                 Nodes = _rootNode.Save(Guid.Empty, rootId)   
             }
         };
     }
 
-    private void AddRandom(ForestEnvironment treeEnv)
+    private void AddRandom()
     {
-        _rootNode = SeralTreeNode.AddNewNode(Random, _rootNode, new SeralTreeNode(treeEnv.InputSize, treeEnv.OutputCategories));
+        _rootNode = SeralTreeNode.AddNewNode(Random, _rootNode, new SeralTreeNode(CreateNode(_size)));
     }
 
     private void Balance()
@@ -80,56 +84,6 @@ public class SeralTree : Allele, IGenome, IPredictionModel, IEnumerable<SeralTre
         _rootNode = MakeTree(null, nodes);
     }
 
-    private void GutRandomNode(ForestEnvironment treeEnv)
-    {
-        var index = Random.Next(0, _size);
-        this.ToArray()[index].Gut(treeEnv.InputSize, treeEnv.OutputCategories);
-    }
-    
-    private void MutateSplitValue(ForestEnvironment treeEnv)
-    {
-        foreach (var node in this)
-        {
-            if (Random.NextDouble() < treeEnv.SplitValueMutateRate)
-            {
-                node.MutateSplitValue();
-            }
-        }
-    }
-
-    private void MutateSplitIndex(ForestEnvironment treeEnv)
-    {
-        foreach (var node in this)
-        {
-            if (Random.NextDouble() < treeEnv.SplitIndexMutateRate)
-            {
-                node.MutateSplitIndex(treeEnv.InputSize);
-            }
-        } 
-    }
-
-    private void MutateOutputCategory(ForestEnvironment treeEnv)
-    {
-        foreach (var node in this)
-        {
-            if (Random.NextDouble() < treeEnv.OutputCategoryMutateRate)
-            {
-                node.MutateOutputCategory(treeEnv.OutputCategories);
-            }
-        } 
-    }
-
-    private void MutateOperator(ForestEnvironment treeEnv)
-    {
-        foreach (var node in this)
-        {
-            if (Random.NextDouble() < treeEnv.OperatorMutateRate)
-            {
-                node.MutateOperator();
-            }
-        }
-    }
-
     private SeralTreeNode BiasedLevelNode()
     {
         var index = Random.Next(0, _size);
@@ -140,6 +94,12 @@ public class SeralTree : Allele, IGenome, IPredictionModel, IEnumerable<SeralTre
         var nodeIndex = Random.Next(0, filtered.Count());
         return filtered[nodeIndex];
     }
+    
+    private ISeralTreeNode CreateNode(int index) => _info.NodeType switch
+    {
+        SeralTreeNodeType.Neuron => new NeuronTreeNode(index, _info),
+        SeralTreeNodeType.Operator => new OperatorTreeNode(index, _info),
+    };
 
     private static SeralTreeNode MakeTree(SeralTreeNode parent, SeralTreeNode[] nodes)
     {
@@ -208,7 +168,7 @@ public class SeralTree : Allele, IGenome, IPredictionModel, IEnumerable<SeralTre
         {
             if (Random.NextDouble() < treeEnv.NodeAddRate)
             {
-                child.AddRandom(treeEnv);
+                child.AddRandom();
             }
 
             if (Random.NextDouble() < treeEnv.ShuffleRate)
@@ -216,29 +176,9 @@ public class SeralTree : Allele, IGenome, IPredictionModel, IEnumerable<SeralTre
                 child.Shuffle();
             }
 
-            if (Random.NextDouble() < treeEnv.GutRate)
+            foreach (var node in this)
             {
-                child.GutRandomNode(treeEnv);
-            }
-
-            if (Random.NextDouble() < treeEnv.SplitValueMutateRate)
-            {
-                child.MutateSplitValue(treeEnv);
-            }
-
-            if (Random.NextDouble() < treeEnv.SplitIndexMutateRate)
-            {
-                child.MutateSplitIndex(treeEnv);
-            }
-
-            if (Random.NextDouble() < treeEnv.OutputCategoryMutateRate)
-            {
-                child.MutateOutputCategory(treeEnv);
-            }
-
-            if (Random.NextDouble() < treeEnv.OperatorMutateRate)
-            {
-                child.MutateOperator(treeEnv);
+                node.Mutate(treeEnv);
             }
         }
         
@@ -250,10 +190,10 @@ public class SeralTree : Allele, IGenome, IPredictionModel, IEnumerable<SeralTre
         return child as T;
     }
 
-    public async Task<double> Distance<T>(T other, PopulationControl populationControl)
+    public double Distance<T>(T other, DistanceControl distanceControl)
     {
         var parentTwo = other as SeralTree;
-        return await DistanceCalculator.Distance(_innovationWeightLookup, parentTwo._innovationWeightLookup, populationControl);
+        return DistanceCalculator.Distance(_innovationWeightLookup, parentTwo._innovationWeightLookup, distanceControl);
     }
 
     public T CloneGenome<T>() where T : class => new SeralTree(this) as T;
