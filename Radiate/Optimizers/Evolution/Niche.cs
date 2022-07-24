@@ -1,21 +1,35 @@
 ﻿
+using Radiate.Records;
+
 namespace Radiate.Optimizers.Evolution;
 
 public class Niche : Allele
 {
+    private readonly StagnationManager _stagnationManager;
+
+    private int _age;
+
     public Guid Mascot;
-    public List<(Guid memberId, double fitness)> Members;
-    public int Age;
-    public double TotalAdjustedFitness;
     public Guid NicheId;
+    public double TotalAdjustedFitness;
     
-    public Niche(Guid mascot, double mascotFitness)
+    public List<NicheMember> Members { get; }
+
+    public Niche(NicheMember mascot, StagnationControl stagnationControl)
     {
-        Mascot = mascot;
-        Members = new List<(Guid memberId, double fitness)> {(mascot, mascotFitness)};
-        Age = 0;
+        Mascot = mascot.MemberId;
+        Members = new List<NicheMember> { mascot };
+        _age = 0;
         TotalAdjustedFitness = 0;
         NicheId = Guid.NewGuid();
+        _stagnationManager = new StagnationManager(stagnationControl);
+    }
+
+    public bool IsStagnant => _stagnationManager.IsStagnant;
+    
+    public void AddMember(NicheMember member)
+    {
+        Members.Add(member);
     }
 
     public void Reset()
@@ -23,13 +37,13 @@ public class Niche : Allele
         var randomIdx = Random.Next(Members.Count);
         var newMascot = Members[randomIdx];
 
-        Mascot = newMascot.memberId;
-        Age = Age + 1;
+        Mascot = newMascot.MemberId;
+        _age = _age + 1;
         TotalAdjustedFitness = 0.0;
         Members.Clear();
     }
 
-    public Guid BestMember() => Members.MaxBy(mem => mem.fitness).memberId;
+    public Guid BestMember() => Members.MaxBy(mem => mem.Fitness).MemberId;
 
     public void CalcTotalAdjustedFitness()
     {
@@ -38,14 +52,18 @@ public class Niche : Allele
         {
             var currentMember = Members[i];
 
-            currentMember.fitness = currentMember.fitness == 0
-                ? currentMember.fitness
-                : currentMember.fitness / Members.Count;
+            currentMember = currentMember with
+            {
+                Fitness = currentMember.Fitness == 0
+                    ? currentMember.Fitness
+                    : currentMember.Fitness / Members.Count
+            };
 
-            tempTotal += currentMember.fitness;
+            tempTotal += currentMember.Fitness;
         }
 
         TotalAdjustedFitness = tempTotal;
+        _stagnationManager.Update(TotalAdjustedFitness);
     }
 
     public NicheReport GetReport() => new()
@@ -53,7 +71,7 @@ public class Niche : Allele
         Innovation = InnovationId,
         Id = NicheId,
         Mascot = Mascot,
-        Age = Age,
+        Age = _age,
         AdjustedFitness = TotalAdjustedFitness,
         NumMembers = Members.Count
     };

@@ -47,7 +47,9 @@ public class SeralTree : Allele, IGenome, IPredictionModel, IEnumerable<SeralTre
         _size = tree._size;
         _innovationWeightLookup = tree._innovationWeightLookup.ToDictionary(key => key.Key, val => val.Value);
     }
-    
+
+    public Dictionary<int, float> WeightLookup => _innovationWeightLookup;
+
     public ModelWrap Save()
     {
         var rootId = Guid.NewGuid();

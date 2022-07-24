@@ -27,12 +27,14 @@ public static class ParentSelector
     
     private static Niche GetBiasedRandomNiche(List<Niche> species, Random random)
     {
-        var total = species.Aggregate(0.0, (all, current) => all + current.TotalAdjustedFitness);
+        var total = species
+            .Where(spec => !spec.IsStagnant)
+            .Aggregate(0.0, (all, current) => all + current.TotalAdjustedFitness);
         
         var runningTotal = 0.0;
         var index = random.NextDouble() * total;
         
-        foreach (var niche in species)
+        foreach (var niche in species.Where(spec => !spec.IsStagnant))
         {
             runningTotal += niche.TotalAdjustedFitness;
             if (runningTotal >= index)
@@ -59,6 +61,6 @@ public static class ParentSelector
             }
         }
 
-        return species.Members.First().memberId;
+        return species.Members.First().MemberId;
     }
 }

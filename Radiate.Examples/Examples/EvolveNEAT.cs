@@ -63,24 +63,24 @@ public class EvolveNEAT : IExample
             });
 
         var population = new Population<Neat>(info);
-        var optimizer = new Optimizer(population, null, new List<ITrainingCallback>
+        var optimizer = new Optimizer(population, new List<ITrainingCallback>
         {
             new GenerationCallback()
         });
-        var pop = await optimizer.Train<Neat>(epoch => epoch.Index == maxEpochs);
-
+        
+        var neat = await optimizer.Train<Neat>(epoch => epoch.Index == maxEpochs);
         
         Console.WriteLine();
         foreach (var (point, idx) in inputs.Select((val, idx) => (val, idx)))
         {
-            var output = pop.Forward(point);
+            var output = neat.Forward(point);
             Console.WriteLine($"Input {point[0]} Expecting {answers[idx][0]} Guess {output[0]}");
         }
         
         Console.WriteLine("\nTesting Memory...");
-        Console.WriteLine($"Input {1f} Expecting {0f} Guess {pop.Forward(new float[1] { 1 })[0]}");
-        Console.WriteLine($"Input {0f} Expecting {0f} Guess {pop.Forward(new float[1] { 0 })[0]}");
-        Console.WriteLine($"Input {0f} Expecting {0f} Guess {pop.Forward(new float[1] { 0 })[0]}");
-        Console.WriteLine($"Input {0f} Expecting {1f} Guess {pop.Forward(new float[1] { 0 })[0]}");
+        Console.WriteLine($"Input {1f} Expecting {0f} Guess {neat.Forward(new float[1] { 1 })[0]}");
+        Console.WriteLine($"Input {0f} Expecting {0f} Guess {neat.Forward(new float[1] { 0 })[0]}");
+        Console.WriteLine($"Input {0f} Expecting {0f} Guess {neat.Forward(new float[1] { 0 })[0]}");
+        Console.WriteLine($"Input {0f} Expecting {1f} Guess {neat.Forward(new float[1] { 0 })[0]}");
     }
 }

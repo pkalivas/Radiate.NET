@@ -11,6 +11,12 @@ public class TensorTrainSet
     private TensorTrainOptions Options { get; set; }
     private List<Batch> TrainBatchCache { get; set; } = new();
     private List<Batch> TestBatchCache { get; set; } = new();
+
+    public TensorTrainSet()
+    {
+        Options = new TensorTrainOptions();
+        TrainTest = new TrainTestSplit(new List<Tensor>(), new List<Tensor>());
+    }
     
     public TensorTrainSet(IEnumerable<float[]> features, IEnumerable<float[]> targets)
     {

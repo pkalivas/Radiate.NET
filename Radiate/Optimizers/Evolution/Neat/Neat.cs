@@ -16,6 +16,8 @@ public class Neat : Allele, IGenome, IPredictionModel
     private readonly Dictionary<Guid, EdgeId> _edgeInnovationLookup;
     private readonly Activation _activation;
     
+    private IReadOnlyDictionary<int, float> _weightLookup;
+
     public Neat(int inputSize, int outputSize, Activation activation)
     {
         _inputs = new NeuronId[inputSize];
@@ -212,6 +214,16 @@ public class Neat : Allele, IGenome, IPredictionModel
         }
     }
 
+    private IReadOnlyDictionary<int, float> GetWeightLookup()
+    {
+        if (_weightLookup is null)
+        {
+            _weightLookup = _edges.ToDictionary(key => key.InnovationId, val => val.Weight);
+        }
+
+        return _weightLookup;
+    }
+
     public float[] Forward(float[] data)
     {
         if (_inputs.Length != data.Length)
@@ -328,7 +340,7 @@ public class Neat : Allele, IGenome, IPredictionModel
         return outputs.ToArray();
     }
     
-    public ModelWrap Save() => new ModelWrap
+    public ModelWrap Save() => new()
     {
         ModelType = ModelType.Neat,
         NeatWrap = new()
@@ -421,11 +433,7 @@ public class Neat : Allele, IGenome, IPredictionModel
     public async Task<double> Distance<T>(T other, PopulationControl populationControl)
     {
         var parentTwo = other as Neat;
-        
-        var parentOneLookup = _edges.ToDictionary(key => key.InnovationId, val => val.Weight);
-        var parentTwoLookup = parentTwo._edges.ToDictionary(key => key.InnovationId, val => val.Weight);
-        
-        return await DistanceCalculator.Distance(parentOneLookup, parentTwoLookup, populationControl);
+        return await DistanceCalculator.Distance(GetWeightLookup(), parentTwo.GetWeightLookup(), populationControl);
     }
 
     public T CloneGenome<T>() where T : class => new Neat(this) as T;

@@ -11,27 +11,35 @@ public class SeralForest : Allele, IGenome, IPredictionModel
 {
     private readonly SeralTree[] _trees;
     private readonly SeralForestInfo _info;
-    
+    private Dictionary<int, float> _innovationWeightLookup;
+
     public SeralForest(SeralForestInfo info)
     {
         _info = info;
-        _trees = Enumerable.Range(0, info.NumTrees)
-            .Select(_ => new SeralTree(info))
-            .ToArray();
+        _trees = Enumerable.Range(0, info.NumTrees).Select(_ => new SeralTree(info)).ToArray();
+        _innovationWeightLookup = _trees
+            .SelectMany(tree => tree.WeightLookup.Select(pair => (pair.Key, pair.Value)))
+            .GroupBy(val => val.Key)
+            .ToDictionary(key => key.Key, val => val.Sum(weight => weight.Value));
     }
 
     public SeralForest(SeralForest forest) : base(forest.InnovationId)
     {
         _info = forest._info with { };
         _trees = forest._trees.Select(tree => tree.CloneGenome<SeralTree>()).ToArray();
+        _innovationWeightLookup = forest._innovationWeightLookup.ToDictionary(key => key.Key, val => val.Value);
     }
 
     public SeralForest(ModelWrap wrap)
     {
         var forest = wrap.SeralForestWrap;
 
-        _info = new SeralForestInfo(forest.InputSize, new float[0] {}, forest.MaxHeight, forest.NumTrees);
+        _info = new SeralForestInfo(forest.InputSize, Array.Empty<float>(), forest.MaxHeight, forest.NumTrees);
         _trees = forest.Trees.Select(tree => new SeralTree(tree)).ToArray();
+        _innovationWeightLookup = _trees
+            .SelectMany(tree => tree.WeightLookup.Select(pair => (pair.Key, pair.Value)))
+            .GroupBy(val => val.Key)
+            .ToDictionary(key => key.Key, val => val.Sum(weight => weight.Value));
     }
 
     public ModelWrap Save() => new()
@@ -65,19 +73,18 @@ public class SeralForest : Allele, IGenome, IPredictionModel
             }
         }
         
+        child._innovationWeightLookup = _trees
+            .SelectMany(tree => tree.WeightLookup.Select(pair => (pair.Key, pair.Value)))
+            .GroupBy(val => val.Key)
+            .ToDictionary(key => key.Key, val => val.Sum(weight => weight.Value));
+        
         return child as T;
     }
 
     public async Task<double> Distance<T>(T other, PopulationControl populationControl)
     {
         var parentTwo = other as SeralForest;
-        var result = 0.0;
-        foreach (var (one, two) in _trees.Zip(parentTwo._trees))
-        {
-            result += await one.Distance(two, populationControl);
-        }
-
-        return result;
+        return await DistanceCalculator.Distance(_innovationWeightLookup, parentTwo._innovationWeightLookup, populationControl);
     }
 
     public T CloneGenome<T>() where T : class => new SeralForest(this) as T;

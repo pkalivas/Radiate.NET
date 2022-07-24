@@ -31,19 +31,12 @@ public class Optimizer
     private readonly ILossFunction _lossFunction;
     private readonly TensorTrainSet _tensorTrainSet;
     private readonly TrainingSession _trainingSession;
-    
-    public Optimizer(IOptimizerModel optimizer, IEnumerable<ITrainingCallback> callbacks = null) 
-        : this(optimizer, null, callbacks) { }
-    
-    public Optimizer(IPopulation population, TensorTrainSet tensorTrainSet = null, IEnumerable<ITrainingCallback> callbacks = null)
-    {
-        _tensorTrainSet = tensorTrainSet?.Compile();
-        _lossFunction = new Difference();
-        _trainingSession = new EvolutionTrainingSession(population, callbacks);
-    }
 
     public Optimizer(OptimizerWrap wrap) 
         : this(Load(wrap), new TensorTrainSet(wrap.TensorOptions), wrap.LossFunction) { }
+    
+    public Optimizer(IOptimizerModel optimizer, IEnumerable<ITrainingCallback> callbacks = null) 
+        : this(optimizer, new(), callbacks) { }
     
     public Optimizer(IOptimizerModel optimizer, TensorTrainSet tensorTrainSet, IEnumerable<ITrainingCallback> callbacks)
         : this(optimizer, tensorTrainSet, Loss.Difference, callbacks) { }
@@ -52,13 +45,14 @@ public class Optimizer
     {
         Model = optimizer;
 
-        _tensorTrainSet = tensorTrainSet;
+        _tensorTrainSet = tensorTrainSet?.Compile();
         _lossFunction = LossFunctionResolver.Get(loss);
         _trainingSession = optimizer switch
         {
             IUnsupervised unsupervised => new UnsupervisedTrainingSession(unsupervised, callbacks),
             ISupervised supervised => new SupervisedTrainingSession(supervised, callbacks),
             IGenome genome => new EvolutionTrainingSession(genome, callbacks),
+            IPopulation population => new EvolutionTrainingSession(population, callbacks),
             _ => throw new Exception("Cannot create training session")
         };
     }

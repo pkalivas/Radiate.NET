@@ -50,20 +50,18 @@ public class Generation
     public void CreateNextGeneration()
     {
         AdjustDistance();
-        AdjustStagnation();
 
         var (inbreedRate, crossoverRate, size) = _passDownControl;
-        var newMembers = SurvivorSelector.Select(_members, _species)
-            .Select(pair =>
-            {
-                var model = pair.member.Model;
-                model.ResetGenome();
-                return pair with { member = new Member { Fitness = 0, Model = model } };
-            })
-            .ToDictionary(key => key.memberId, val => val.member);
+        var children = new ConcurrentDictionary<Guid, Member>();
         
-        var childNum = size - newMembers.Count;
-        var childTasks = new ConcurrentBag<IGenome>();
+        foreach (var (memberId, member) in SurvivorSelector.Select(_members, _species))
+        {
+            var model = member.Model;
+            model.ResetGenome();
+            children[memberId] = new Member { Fitness = 0, Model = model };
+        }
+
+        var childNum = size - children.Count;
         Parallel.For(0, childNum, _ =>
         {
             var (parentOneId, parentTwoId) = ParentSelector.Select(inbreedRate, _species);
@@ -73,46 +71,15 @@ public class Generation
             var newGenomeTask = parentOne.Fitness > parentTwo.Fitness 
                 ? parentOne.Model.Crossover(parentTwo.Model, _evolutionEnvironment, crossoverRate) 
                 : parentTwo.Model.Crossover(parentOne.Model, _evolutionEnvironment, crossoverRate);
-            
-            childTasks.Add(newGenomeTask);
-        });
 
-        foreach (var child in childTasks)
-        {
-            newMembers[Guid.NewGuid()] = new Member { Fitness = 0, Model = child };
-        }
+            children[Guid.NewGuid()] = new Member { Fitness = 0, Model = newGenomeTask };
+        });
         
         _species.ForEach(niche => niche.Reset());
         _mascotMembers = _species
             .Select(spec => (spec.Mascot, _members[spec.Mascot]))
             .ToDictionary(key => key.Mascot, val => val.Item2);
-        _members = newMembers;
-    }
-
-    private void CleanPopulation(double pct)
-    {
-        var toRemove = new List<Guid>();
-        foreach (var species in _species)
-        {
-            if (species.Members.Count == 1)
-            {
-                continue;
-            }
-
-            var toTake = (int) Math.Ceiling(species.Members.Count - species.Members.Count * pct);
-
-            species.Members = species.Members
-                .OrderByDescending(mem => mem.fitness)
-                .Take(toTake)
-                .ToList();
-            
-            toRemove.AddRange(species.Members.Skip(toTake).Select(mem => mem.memberId));
-        }
-
-        foreach (var memId in toRemove)
-        {
-            _members.Remove(memId);
-        }
+        _members = children.ToDictionary(key => key.Key, val => val.Value);
     }
 
     public Member GetBestMember() => 
@@ -146,7 +113,7 @@ public class Generation
 
                 if (memberDistance < _populationControl.Distance)
                 {
-                    species.Members.Add((id, member.Fitness));
+                    species.AddMember(new(id, member.Fitness));
                     retainedSpecies.Add(species.NicheId);
                     found = true;
                     break;
@@ -155,7 +122,7 @@ public class Generation
 
             if (!found)
             {
-                var newSpecies = new Niche(id, member.Fitness);
+                var newSpecies = new Niche(new(id, member.Fitness), _stagnationControl);
                 _species.Add(newSpecies);
                 retainedSpecies.Add(newSpecies.NicheId);
                 _mascotMembers[id] = member;
@@ -173,29 +140,6 @@ public class Generation
         {
             species.CalcTotalAdjustedFitness();
         }
-    }
-    
-    private void AdjustStagnation()
-    {
-        var (cleanPercent, stagnationLimit, stagnationCount, previousFitness) = _stagnationControl;
-        var newStagnationControl = _stagnationControl with { };
-        var topMember = GetBestMember();
-        
-        if (stagnationCount >= stagnationLimit)
-        {
-            CleanPopulation(cleanPercent);
-            newStagnationControl = _stagnationControl with { StagnationCount = 0 };
-        }
-        else if (Math.Abs(previousFitness - topMember.Fitness) < EvolutionConstants.Tolerance)
-        {
-            newStagnationControl = _stagnationControl with { StagnationCount = stagnationCount + 1 };
-        }
-        else
-        {
-            newStagnationControl = _stagnationControl with { StagnationCount = 0 };
-        }
-
-        _stagnationControl = newStagnationControl with { PreviousFitness = topMember.Fitness };
     }
     
     private void AdjustDistance()

@@ -9,7 +9,7 @@ public class Allele
     {
         InnovationId = innovationId;
         Random = RandomGenerator.RandomGenerator.Seed is null
-            ? new Random()
+            ? RandomGenerator.RandomGenerator.Next
             : new Random(InnovationId);
     }
 
@@ -19,7 +19,7 @@ public class Allele
 
         InnovationId = count;
         Random = RandomGenerator.RandomGenerator.Seed is null
-            ? new Random()
+            ? RandomGenerator.RandomGenerator.Next
             : new Random(count);
     }
 }

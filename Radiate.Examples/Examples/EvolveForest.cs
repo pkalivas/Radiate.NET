@@ -34,13 +34,16 @@ public class EvolveForest : IExample
                 settings.CrossoverRate = .5;
                 settings.CleanPct = .9;
                 settings.StagnationLimit = 15;
+                settings.COne = 1.0;
+                settings.CTwo = 1.0;
+                // settings.CThree = .0;
             })
             .AddEnvironment(new ForestEnvironment
             {
                 InputSize = pair.InputShape.Height,
                 OutputCategories = pair.OutputCategoriesList,
                 MaxHeight = 35,
-                NumTrees = 25,
+                NumTrees = 50,
                 NodeAddRate = .05f,
                 GutRate = .05f,
                 ShuffleRate = .05f,
@@ -68,7 +71,7 @@ public class EvolveForest : IExample
             new ModelWriterCallback(),
         });
         
-        await optimizer.Train<SeralForest>(epoch => epoch.Index == 100);
+        await optimizer.Train<SeralForest>(epoch => epoch.Index == 200);
         Console.WriteLine($"{optimizer.ValidationScores()}");
     }
 }
