@@ -12,7 +12,7 @@ public class Population<T> : IPopulation where T : class, IGenome
     
     public Population(PopulationInfo<T> info) : this(info, new List<T>()) { }
     
-    public Population(T genome) : this(new(), new []{ genome }) { }
+    public Population(T genome) : this(new(), new[] { genome }) { }
 
     public Population(PopulationInfo<T> info, T genome) : this(info, new[] { genome }) { }
     

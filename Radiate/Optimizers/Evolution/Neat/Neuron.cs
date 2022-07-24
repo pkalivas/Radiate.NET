@@ -53,7 +53,6 @@ public class Neuron
     public void UpdateIncoming(Edge edge, float weight)
     {
         Incoming.Find(link => link.Id.Equals(edge.Id)).Weight = weight;
-
     }
 
     public void RemoveIncoming(Edge edge)
