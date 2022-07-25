@@ -18,7 +18,7 @@ public class SeralForest : Allele, IGenome, IPredictionModel
         _info = info;
         _trees = Enumerable.Range(0, info.NumTrees).Select(_ => new SeralTree(info, nodeInfo)).ToArray();
         _innovationWeightLookup = _trees
-            .SelectMany(tree => tree.WeightLookup.Select(pair => (pair.Key, pair.Value)))
+            .SelectMany(tree => tree.InnovationLookup.Select(pair => (pair.Key, pair.Value)))
             .GroupBy(val => val.Key)
             .ToDictionary(key => key.Key, val => val.Sum(weight => weight.Value));
     }
@@ -37,7 +37,7 @@ public class SeralForest : Allele, IGenome, IPredictionModel
         _info = forest.Info;
         _trees = forest.Trees.Select(tree => new SeralTree(tree)).ToArray();
         _innovationWeightLookup = _trees
-            .SelectMany(tree => tree.WeightLookup.Select(pair => (pair.Key, pair.Value)))
+            .SelectMany(tree => tree.InnovationLookup.Select(pair => (pair.Key, pair.Value)))
             .GroupBy(val => val.Key)
             .ToDictionary(key => key.Key, val => val.Sum(weight => weight.Value));
     }
@@ -72,7 +72,7 @@ public class SeralForest : Allele, IGenome, IPredictionModel
         }
         
         child._innovationWeightLookup = _trees
-            .SelectMany(tree => tree.WeightLookup.Select(pair => (pair.Key, pair.Value)))
+            .SelectMany(tree => tree.InnovationLookup.Select(pair => (pair.Key, pair.Value)))
             .GroupBy(val => val.Key)
             .ToDictionary(key => key.Key, val => val.Sum(weight => weight.Value));
         

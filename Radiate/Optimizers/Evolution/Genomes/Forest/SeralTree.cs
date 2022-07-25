@@ -42,6 +42,7 @@ public class SeralTree : Allele, IGenome, IPredictionModel, IEnumerable<SeralTre
         _height = _rootNode.Height();
         _size = nodeLookup.Count;
         _info = treeWrap.Info;
+        _previousOutput = treeWrap.PreviousOutput;
         _nodeInfo = treeWrap.NodeType switch
         {
             SeralTreeNodeType.Neuron => treeWrap.NeuronNodeInfo,
@@ -61,7 +62,7 @@ public class SeralTree : Allele, IGenome, IPredictionModel, IEnumerable<SeralTre
         _innovationWeightLookup = tree._innovationWeightLookup.ToDictionary(key => key.Key, val => val.Value);
     }
 
-    public Dictionary<int, float> WeightLookup => _innovationWeightLookup;
+    public Dictionary<int, float> InnovationLookup => _innovationWeightLookup;
 
     public ModelWrap Save()
     {
@@ -74,10 +75,12 @@ public class SeralTree : Allele, IGenome, IPredictionModel, IEnumerable<SeralTre
                 RootId = rootId,
                 Info = _info,
                 Nodes = _rootNode.Save(Guid.Empty, rootId),
+                PreviousOutput = _previousOutput,
                 NodeType = _nodeInfo switch
                 {
                     NeuronNodeInfo => SeralTreeNodeType.Neuron,
-                    OperatorNodeInfo => SeralTreeNodeType.Operator
+                    OperatorNodeInfo => SeralTreeNodeType.Operator,
+                    _ => throw new Exception($"Node type not implemented.")
                 },
                 NeuronNodeInfo = _nodeInfo as NeuronNodeInfo ?? null,
                 OperatorNodeInfo = _nodeInfo as OperatorNodeInfo ?? null

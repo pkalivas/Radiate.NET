@@ -1,5 +1,6 @@
 ﻿using Radiate.Optimizers.Evolution.Genomes.Forest;
 using Radiate.Optimizers.Evolution.Genomes.Forest.Info;
+using Radiate.Records;
 
 namespace Radiate.IO.Wraps;
 
@@ -13,6 +14,7 @@ public class SeralTreeWrap
 {
     public Guid RootId { get; init; }
     public SeralForestInfo Info { get; init; }
+    public Prediction? PreviousOutput { get; init; }
     public SeralTreeNodeType NodeType { get; init; }
     public NeuronNodeInfo NeuronNodeInfo { get; init; }
     public OperatorNodeInfo OperatorNodeInfo { get; init; }

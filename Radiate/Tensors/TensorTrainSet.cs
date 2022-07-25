@@ -200,6 +200,11 @@ public class TensorTrainSet
     
     private List<Batch> TrainingBatches()
     {
+        if (TrainTest is null)
+        {
+            return new List<Batch>();
+        }
+        
         var (trainTest, options) = TensorSetTransforms.Apply(TrainTest with { }, Options, Enums.TrainTest.Train);
         var batchSize = options.BatchSize;
         var trainBatches = new List<Batch>();
@@ -227,6 +232,11 @@ public class TensorTrainSet
 
     private List<Batch> TestingBatches()
     {
+        if (TrainTest is null)
+        {
+            return new List<Batch>();
+        }
+        
         var (trainTest, options) = TensorSetTransforms.Apply(TrainTest with { }, Options, Enums.TrainTest.Test);
         var testBatches = new List<Batch>();
         for (var i = 0; i < trainTest.Features.Count; i++)
