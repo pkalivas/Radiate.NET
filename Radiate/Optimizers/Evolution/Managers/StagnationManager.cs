@@ -1,6 +1,6 @@
 ﻿using Radiate.Records;
 
-namespace Radiate.Optimizers.Evolution;
+namespace Radiate.Optimizers.Evolution.Managers;
 
 public class StagnationManager
 {

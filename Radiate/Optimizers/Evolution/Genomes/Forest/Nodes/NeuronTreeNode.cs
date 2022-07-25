@@ -10,10 +10,10 @@ namespace Radiate.Optimizers.Evolution.Genomes.Forest.Nodes;
 public class NeuronTreeNode : Allele, ISeralTreeNode
 {
     private readonly int[] _featureIndexes;
+    private readonly float[] _weights;
     private readonly IActivationFunction _leafActivation;
     private IActivationFunction _activation;
     private float _outputCategory;
-    private float[] _weights;
     private float _bias;
 
     public NeuronTreeNode(int index, int inputSize, float[] outputCategories, NeuronNodeInfo info) : base(index)

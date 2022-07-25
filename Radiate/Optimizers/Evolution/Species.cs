@@ -1,5 +1,6 @@
 ﻿
 using System.Collections.Concurrent;
+using Radiate.Optimizers.Evolution.Managers;
 using Radiate.Records;
 
 namespace Radiate.Optimizers.Evolution;

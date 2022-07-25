@@ -18,9 +18,7 @@ public class SpeciesManager
     }
 
     public ICollection<Species> Species => _species.Values;
-
-    public double Distance => _compatibilityManager.Distance;
-
+    
     public List<Guid> UpdateSpeciesMascots(ConcurrentDictionary<Guid, GenomeFitnessPair> genomes)
     {
         _distanceManager.Clear();
