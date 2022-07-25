@@ -2,10 +2,10 @@
 
 namespace Radiate.Optimizers.Evolution.Forest.Info;
 
-public record SeralForestInfo(SeralTreeNodeType NodeType, 
-    IEnumerable<Activation> Activation, 
-    int InputSize, 
-    float[] OutputCategories, 
-    int StartHeight, 
-    bool UseRecurrent = false,
-    int NumTrees = 0);
+public interface INodeInfo { }
+
+public record SeralForestInfo(int InputSize, float[] OutputCategories, int StartHeight, bool UseRecurrent, int NumTrees = 0);
+
+public record NeuronNodeInfo(Activation LeafNodeActivation, IEnumerable<Activation> Activations, int FeatureIndexCount) : INodeInfo;
+
+public record OperatorNodeInfo() : INodeInfo;

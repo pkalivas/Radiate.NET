@@ -5,8 +5,7 @@ namespace Radiate.Optimizers.Evolution.Forest;
 
 public interface ISeralTreeNode
 {
-    public Prediction Predict(Tensor input);
-    public NodePropagationDirection GetDirection(Tensor input);
+    public (int direction, Prediction prediction) Propagate(bool isLeaf, Tensor input, Prediction previousOutput);
     public void Mutate(ForestEnvironment environment);
     public int InnovationNumber();
     public float Weight();

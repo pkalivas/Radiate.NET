@@ -14,6 +14,9 @@ public class SeralTreeWrap
 {
     public Guid RootId { get; init; }
     public SeralForestInfo Info { get; init; }
+    public SeralTreeNodeType NodeType { get; init; }
+    public NeuronNodeInfo NeuronNodeInfo { get; init; }
+    public OperatorNodeInfo OperatorNodeInfo { get; init; }
     public List<SeralTreeNodeWrap> Nodes { get; init; }
 }
 
@@ -37,10 +40,10 @@ public class OperatorTreeNodeWrap
 
 public class NeuronTreeNodeWrap
 {
-    public int SplitIndex { get; init; }
+    public int[] FeatureIndexes { get; init; }
     public float OutputCategory { get; init; }
-    public float Weight { get; init; }
+    public float[] Weights { get; init; }
     public float Bias { get; init; }
-    public bool Recurrent { get; init; }
     public int Activation { get; init; }
+    public int LeafActivation { get; init; }
 }

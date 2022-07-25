@@ -69,7 +69,9 @@ public class SeralTreeNode
     public bool IsLeftChild => Parent?.LeftChild != null && Parent.LeftChild._id == _id;
     
     public bool IsRightChild => Parent?.RightChild != null && Parent.RightChild._id == _id;
-
+    
+    public bool IsLeaf => LeftChild == null && RightChild == null;
+    
     public List<SeralTreeNodeWrap> Save(Guid parentId, Guid nodeId)
     {
         var nodes = new List<SeralTreeNodeWrap>();
@@ -118,27 +120,15 @@ public class SeralTreeNode
         _node.Mutate(environment);
     }
 
-    public Prediction Predict(Tensor input) => IsLeaf ? _node.Predict(input) : Propagate(input);
-
-    private Prediction Propagate(Tensor input)
+    public (SeralTreeNode child, Prediction prediction) Propagate(Tensor input, Prediction previousOutput)
     {
-        var direction = _node.GetDirection(input);
-        if (direction is NodePropagationDirection.Left && LeftChild is not null)
+        var (direction, prediction) = _node.Propagate(IsLeaf, input, previousOutput);
+        if (direction < 0 && LeftChild is not null)
         {
-            return LeftChild.Predict(input);
+            return (LeftChild, prediction);
         }
 
-        if (RightChild is not null)
-        {
-            return RightChild.Predict(input);
-        }
-
-        if (LeftChild is not null)
-        {
-            return LeftChild.Predict(input);
-        }
-
-        throw new Exception("Failed to find leaf node.");
+        return (RightChild ?? LeftChild, prediction);
     }
 
     public SeralTreeNode DeepCopy(SeralTreeNode parent)
@@ -242,6 +232,4 @@ public class SeralTreeNode
             RightChild.Print(level + 1);
         }
     }
-
-    private bool IsLeaf => LeftChild == null && RightChild == null;
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Radiate.Extensions;
 using Radiate.IO.Wraps;
 using Radiate.Optimizers.Evolution.Forest.Info;
 using Radiate.Optimizers.Evolution.Interfaces;
@@ -12,19 +13,21 @@ public class SeralTree : Allele, IGenome, IPredictionModel, IEnumerable<SeralTre
     private SeralTreeNode _rootNode;
     private int _height;
     private int _size;
+    private Prediction _previousOutput;
     private SeralForestInfo _info;
+    private INodeInfo _nodeInfo;
     private Dictionary<int, float> _innovationWeightLookup;
 
-    public SeralTree(SeralForestInfo info)
+    public SeralTree(SeralForestInfo info, INodeInfo nodeInfo)
     {
-        var (_, _, _, _, startHeight, _, _) = info;
-
         _info = info;
-        _rootNode = MakeTree(null, Enumerable.Range(0, (2 * startHeight) - 1)
+        _nodeInfo = nodeInfo;
+        _rootNode = MakeTree(null, Enumerable.Range(0, (2 * info.StartHeight) - 1)
             .Select(index => new SeralTreeNode(CreateNode(index)))
             .ToArray());
         _height = _rootNode.Height();
         _size = _rootNode.Size();
+        _previousOutput = new Prediction(Array.Empty<float>().ToTensor(), 0);
         _innovationWeightLookup = this.GroupBy(val => val.InnovationId)
             .ToDictionary(key => key.Key, val => val.Sum(node => node.Weight));
     }
@@ -38,6 +41,11 @@ public class SeralTree : Allele, IGenome, IPredictionModel, IEnumerable<SeralTre
         _height = _rootNode.Height();
         _size = nodeLookup.Count;
         _info = treeWrap.Info;
+        _nodeInfo = treeWrap.NodeType switch
+        {
+            SeralTreeNodeType.Neuron => treeWrap.NeuronNodeInfo,
+            SeralTreeNodeType.Operator => treeWrap.OperatorNodeInfo
+        };
         _innovationWeightLookup = this.GroupBy(val => val.InnovationId)
             .ToDictionary(key => key.Key, val => val.Sum(node => node.Weight));
     }
@@ -48,6 +56,7 @@ public class SeralTree : Allele, IGenome, IPredictionModel, IEnumerable<SeralTre
         _height = tree._height;
         _size = tree._size;
         _info = tree._info;
+        _nodeInfo = tree._nodeInfo;
         _innovationWeightLookup = tree._innovationWeightLookup.ToDictionary(key => key.Key, val => val.Value);
     }
 
@@ -63,7 +72,14 @@ public class SeralTree : Allele, IGenome, IPredictionModel, IEnumerable<SeralTre
             {
                 RootId = rootId,
                 Info = _info,
-                Nodes = _rootNode.Save(Guid.Empty, rootId)   
+                Nodes = _rootNode.Save(Guid.Empty, rootId),
+                NodeType = _nodeInfo switch
+                {
+                    NeuronNodeInfo => SeralTreeNodeType.Neuron,
+                    OperatorNodeInfo => SeralTreeNodeType.Operator
+                },
+                NeuronNodeInfo = _nodeInfo as NeuronNodeInfo ?? null,
+                OperatorNodeInfo = _nodeInfo as OperatorNodeInfo ?? null
             }
         };
     }
@@ -95,10 +111,10 @@ public class SeralTree : Allele, IGenome, IPredictionModel, IEnumerable<SeralTre
         return filtered[nodeIndex];
     }
     
-    private ISeralTreeNode CreateNode(int index) => _info.NodeType switch
+    private ISeralTreeNode CreateNode(int index) => _nodeInfo switch
     {
-        SeralTreeNodeType.Neuron => new NeuronTreeNode(index, _info),
-        SeralTreeNodeType.Operator => new OperatorTreeNode(index, _info),
+        NeuronNodeInfo neuronInfo => new NeuronTreeNode(index, _info.InputSize, _info.OutputCategories, neuronInfo),
+        OperatorNodeInfo operatorInfo => new OperatorTreeNode(index, _info.InputSize, _info.OutputCategories, operatorInfo),
     };
 
     private static SeralTreeNode MakeTree(SeralTreeNode parent, SeralTreeNode[] nodes)
@@ -179,9 +195,9 @@ public class SeralTree : Allele, IGenome, IPredictionModel, IEnumerable<SeralTre
             foreach (var node in this)
             {
                 node.Mutate(treeEnv);
-            }
+            }   
         }
-        
+
         child.ResetGenome();
 
         child._innovationWeightLookup = child.GroupBy(val => val.InnovationId)
@@ -190,7 +206,7 @@ public class SeralTree : Allele, IGenome, IPredictionModel, IEnumerable<SeralTre
         return child as T;
     }
 
-    public double Distance<T>(T other, DistanceControl distanceControl)
+    public double Distance<T>(T other, DistanceTunings distanceControl)
     {
         var parentTwo = other as SeralTree;
         return DistanceCalculator.Distance(_innovationWeightLookup, parentTwo._innovationWeightLookup, distanceControl);
@@ -208,9 +224,31 @@ public class SeralTree : Allele, IGenome, IPredictionModel, IEnumerable<SeralTre
 
         _height = _rootNode.Height();
         _size = nodes.Length;
+        _previousOutput = null;
     }
 
-    public Prediction Predict(Tensor input) => _rootNode.Predict(input);
+    public Prediction Predict(Tensor input)
+    {
+        var currentNode = _rootNode;
+        var currentOutput = _previousOutput;
+
+        while (true)
+        {
+            var outputInput = _info.UseRecurrent ? currentOutput : null;
+            var (childNode, childOutput) = currentNode.Propagate(input, outputInput);
+
+            if (currentNode.IsLeaf)
+            {
+                _previousOutput = childOutput;
+                break;
+            }
+
+            currentNode = childNode;
+            currentOutput = childOutput;
+        }
+
+        return _previousOutput;
+    }
 
     public IEnumerator<SeralTreeNode> GetEnumerator()
     {

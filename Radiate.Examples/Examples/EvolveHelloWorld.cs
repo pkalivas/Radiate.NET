@@ -38,7 +38,6 @@ public class EvolveHelloWorld : IExample
                 settings.CrossoverRate = .5;
                 settings.StagnationLimit = 15;
             })
-            .AddEnvironment(new BaseEvolutionEnvironment())
             .AddFitnessFunction(member => member.Chars.Zip(target)
                     .Sum(points => points.First == points.Second ? 1.0f : 0.0f));
 
@@ -99,7 +98,7 @@ public class EvolveHelloWorld : IExample
             return child as T;
         }
 
-        public double Distance<T>(T other, DistanceControl _)
+        public double Distance<T>(T other, DistanceTunings _)
         {
             var secondParent = other as HelloWorld;
             var total = 0.0;

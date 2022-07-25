@@ -6,7 +6,7 @@ public static class DistanceCalculator
 {
     public static double Distance(IReadOnlyDictionary<int, float> parentOne, 
         IReadOnlyDictionary<int, float> parentTwo, 
-        DistanceControl distanceControl)
+        DistanceTunings distanceControl)
     {
         var (largestParent, smallestParent) = parentOne.Count > parentTwo.Count 
             ? (parentOne, parentTwo) 
@@ -45,7 +45,7 @@ public static class DistanceCalculator
         {
             if (two.ContainsKey(innov))
             {
-                diff += weight;
+                diff += weight - two[innov];
                 shared += 1.0;
             }
             else

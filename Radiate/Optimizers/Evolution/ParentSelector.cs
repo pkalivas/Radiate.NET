@@ -51,6 +51,11 @@ public static class ParentSelector
 
     private static Guid GetBiasedRandomMember(Niche species, Random random)
     {
+        if (random.NextDouble() < .5)
+        {
+            return species.BestMember();
+        }
+        
         var index = species.TotalAdjustedFitness * random.NextDouble();
         var runningTotal = 0.0;
 
@@ -62,7 +67,7 @@ public static class ParentSelector
                 return id;
             }
         }
-
+        
         return species.Members.First().MemberId;
     }
 }

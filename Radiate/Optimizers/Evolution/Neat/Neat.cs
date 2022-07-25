@@ -430,7 +430,7 @@ public class Neat : Allele, IGenome, IPredictionModel
     }
 
 
-    public double Distance<T>(T other, DistanceControl distanceControl)
+    public double Distance<T>(T other, DistanceTunings distanceControl)
     {
         var parentTwo = other as Neat;
         return DistanceCalculator.Distance(GetWeightLookup(), parentTwo.GetWeightLookup(), distanceControl);

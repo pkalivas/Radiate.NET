@@ -14,13 +14,18 @@ public record PopulationInfo<T>(
         return this with { PopulationSettings = currentSettings };
     }
 
-    public PopulationInfo<T> AddEnvironment(EvolutionEnvironment environment) => 
-        this with { EvolutionEnvironment = environment };
+    public PopulationInfo<T> AddEnvironment(Func<EvolutionEnvironment> environmentFunc) => 
+        this with { EvolutionEnvironment = environmentFunc() };
 
     public PopulationInfo<T> AddFitnessFunction(FitnessFunction<T> solver) =>
         this with { FitnessFunc = solver };
 
-    public DistanceControl DistanceControl =>
+    public EvolutionEnvironment Environment => EvolutionEnvironment ?? new BaseEvolutionEnvironment();
+
+    public FitnessFunction<T> FitnessFunction =>
+        FitnessFunc ?? throw new Exception($"Population needs fitness function.");
+
+    public DistanceTunings DistanceTunings =>
         new(PopulationSettings.COne, PopulationSettings.CThree, PopulationSettings.CThree);
 
     public StagnationControl StagnationControl => new(PopulationSettings.StagnationLimit);

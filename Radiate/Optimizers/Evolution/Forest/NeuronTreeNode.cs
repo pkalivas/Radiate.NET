@@ -9,90 +9,85 @@ namespace Radiate.Optimizers.Evolution.Forest;
 
 public class NeuronTreeNode : Allele, ISeralTreeNode
 {
-    private int _splitIndex;
-    private float _outputCategory;
-    private float _weight;
-    private float _bias;
-    private float _previousOutput;
-    private bool _recurrent;
+    private readonly int[] _featureIndexes;
+    private readonly IActivationFunction _leafActivation;
     private IActivationFunction _activation;
+    private float _outputCategory;
+    private float[] _weights;
+    private float _bias;
 
-    public NeuronTreeNode(int index, SeralForestInfo info) : base(index)
+    public NeuronTreeNode(int index, int inputSize, float[] outputCategories, NeuronNodeInfo info) : base(index)
     {
-        var (_, activations, inputSize, outputCategories, _, useRecurrent, _) = info;
-        _splitIndex = Random.Next(0, inputSize);
+        var (leafActivation, activations, indexCount) = info;
+        var activation = activations.ElementAt(Random.Next(0, activations.Count()));
+
+        _weights = new float[indexCount];
+        _featureIndexes = new int[indexCount];
         _outputCategory = outputCategories[Random.Next(0, outputCategories.Length)];
-        _weight = (Random.NextSingle() * 2) - 1;
         _bias = Random.NextSingle();
-        _previousOutput = 0f;
-        _recurrent = useRecurrent;
-        _activation = ActivationFunctionFactory.Get(activations.ElementAt(Random.Next(0, activations.Count())));
+        _activation = ActivationFunctionFactory.Get(activation);
+        _leafActivation = ActivationFunctionFactory.Get(leafActivation);
+        
+        for (var i = 0; i < indexCount; i++)
+        {
+            _weights[i] = Random.NextSingle() * 2f - 1f;
+            _featureIndexes[i] = Random.Next(0, inputSize);
+        }
     }
 
     public NeuronTreeNode(NeuronTreeNode node) : base(node.InnovationId)
     {
-        _splitIndex = node._splitIndex;
+        _featureIndexes = node._featureIndexes.Select(val => val).ToArray();
         _outputCategory = node._outputCategory;
-        _weight = node._weight;
+        _weights = node._weights.Select(val => val).ToArray();
         _bias = node._bias;
-        _recurrent = node._recurrent;
-        _previousOutput = 0f;
         _activation = ActivationFunctionFactory.Get(node._activation.ActivationType());
+        _leafActivation = ActivationFunctionFactory.Get(node._leafActivation.ActivationType());
     }
 
     public NeuronTreeNode(NeuronTreeNodeWrap wrap)
     {
-        _splitIndex = wrap.SplitIndex;
+        _featureIndexes = wrap.FeatureIndexes;
         _outputCategory = wrap.OutputCategory;
-        _weight = wrap.Weight;
+        _weights = wrap.Weights;
         _bias = wrap.Bias;
-        _recurrent = wrap.Recurrent;
-        _previousOutput = 0f;
         _activation = ActivationFunctionFactory.Get((Activation)wrap.Activation);
+        _leafActivation = ActivationFunctionFactory.Get((Activation)wrap.LeafActivation);
     }
 
     public NeuronTreeNodeWrap Save() => new()
     {
-        SplitIndex = _splitIndex,
+        FeatureIndexes = _featureIndexes,
         OutputCategory = _outputCategory,
-        Weight = _weight,
+        Weights = _weights,
         Bias = _bias,
-        Recurrent = _recurrent,
-        Activation = (int)_activation.ActivationType()
+        Activation = (int)_activation.ActivationType(),
+        LeafActivation = (int)_leafActivation.ActivationType()
     };
-
-    public Prediction Predict(Tensor input)
+    
+    public (int direction, Prediction prediction) Propagate(bool isLeaf, Tensor input, Prediction previousOutput)
     {
-        var value = input[_splitIndex] * _weight + _bias;
-        var output = _activation.Activate(value + _previousOutput);
+        var totalSum = _featureIndexes.Select((feature, index) => input[feature] * _weights[index]).Sum();
+        var value = totalSum + _bias + (previousOutput?.Confidence ?? 0);
+        var output = isLeaf ? _leafActivation.Activate(value) : _activation.Activate(value);
+        var direction = ((int)_outputCategory) % 2 == 0f ? -1 : 1;
+        var prediction = new Prediction(new[] { output }.ToTensor(), (int)_outputCategory, output);
 
-        if (_recurrent)
-        {
-            _previousOutput = output;
-        }
-        
-        return new Prediction(new[] { output }.ToTensor(), (int)_outputCategory, output);
-    }
-
-    public NodePropagationDirection GetDirection(Tensor input)
-    {
-        var value = input[_splitIndex] * _weight + _bias;
-        var output = _activation.Activate(value + _previousOutput);
-
-        if (_recurrent)
-        {
-            _previousOutput = output;
-        }
-        
-        return _previousOutput > 0.5 ? NodePropagationDirection.Left : NodePropagationDirection.Right;
+        return (direction, prediction);
     }
 
     public void Mutate(ForestEnvironment environment)
     {
         var neuronSettings = environment.NeuronNodeEnvironment;
-        if (Random.NextDouble() < neuronSettings.SplitIndexMutateRate)
+        if (Random.NextDouble() < neuronSettings.FeatureIndexMutateRate)
         {
-            _splitIndex = Random.Next(0, environment.InputSize);
+            for (var i = 0; i < _featureIndexes.Length; i++)
+            {
+                if (Random.NextSingle() < neuronSettings.FeatureIndexMutateRate)
+                {
+                    _featureIndexes[i] = Random.Next(0, environment.InputSize);
+                }
+            }
         }
         
         if (Random.NextDouble() < neuronSettings.OutputCategoryMutateRate)
@@ -103,11 +98,15 @@ public class NeuronTreeNode : Allele, ISeralTreeNode
         if (Random.NextDouble() < neuronSettings.WeightMutateRate)
         {
             var range = neuronSettings.WeightMovementRate;
-            var shouldEditWeight = Random.NextDouble() < neuronSettings.EditWeights;
-            _weight = shouldEditWeight ? Random.NextSingle() : _weight * (Random.NextSingle() * range - range);
+
+            for (var i = 0; i < _weights.Length; i++)
+            {
+                var shouldEditWeight = Random.NextDouble() < neuronSettings.EditWeights;
+                _weights[i] = shouldEditWeight ? Random.NextSingle() : _weights[i] + (Random.NextSingle() * (range * 2f) - range);   
+            }
 
             var shouldEditBias = Random.NextDouble() < neuronSettings.EditWeights;
-            _bias = shouldEditBias ? Random.NextSingle() : _bias * (Random.NextSingle() * range - range);
+            _bias = shouldEditBias ? Random.NextSingle() : _bias + ((Random.NextSingle() * (range * 2f)) - range);
         }
 
         if (Random.NextDouble() < neuronSettings.ActivationMutateRate)
@@ -118,5 +117,5 @@ public class NeuronTreeNode : Allele, ISeralTreeNode
 
     public int InnovationNumber() => InnovationId;
 
-    public float Weight() => _weight + _bias;
+    public float Weight() => _weights.Sum() + _bias;
 }

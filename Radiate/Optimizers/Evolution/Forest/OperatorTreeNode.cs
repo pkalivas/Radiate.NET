@@ -13,9 +13,8 @@ public class OperatorTreeNode : Allele, ISeralTreeNode
     private float _splitValue;
     private Operator _operator;
 
-    public OperatorTreeNode(int index, SeralForestInfo info) : base(index)
+    public OperatorTreeNode(int index, int inputSize, float[] outputCategories, OperatorNodeInfo _) : base(index)
     {
-        var (_, _, inputSize, outputCategories, _, _, _) = info;
         _splitIndex = Random.Next(0, inputSize);
         _outputCategory = outputCategories[Random.Next(0, outputCategories.Length)];
         _splitValue = (Random.NextSingle() * 2) - 1;
@@ -46,21 +45,20 @@ public class OperatorTreeNode : Allele, ISeralTreeNode
         Operator = (int)_operator
     };
     
-    public Prediction Predict(Tensor input) => new(new[] { _splitValue }.ToTensor(), (int)_outputCategory, _outputCategory);
-
-    public NodePropagationDirection GetDirection(Tensor input)
+    public (int direction, Prediction prediction) Propagate(bool isLeaf, Tensor input, Prediction previousOutput)
     {
-        var result = _operator switch
+        var prediction = new Prediction(new[] { _splitValue }.ToTensor(), (int)_outputCategory, _outputCategory);
+        var direction = _operator switch
         {
-            Operator.EqualTo => input[_splitIndex] == _splitValue,
-            Operator.GreaterThan => input[_splitIndex] > _splitValue,
-            Operator.LessThan => input[_splitIndex] < _splitValue,
+            Operator.EqualTo => GetDirection(input[_splitIndex] == _splitValue),
+            Operator.GreaterThan => GetDirection(input[_splitIndex] > _splitValue),
+            Operator.LessThan => GetDirection(input[_splitIndex] < _splitValue),
             _ => throw new Exception("Operator not implemented")
         };
-
-        return result ? NodePropagationDirection.Left : NodePropagationDirection.Right;
+        
+        return (direction, prediction);
     }
-
+    
     public void Mutate(ForestEnvironment environment)
     {
         var operatorEnvironment = environment.OperatorNodeEnvironment;
@@ -88,4 +86,6 @@ public class OperatorTreeNode : Allele, ISeralTreeNode
     public int InnovationNumber() => InnovationId;
 
     public float Weight() => _splitValue;
+    
+    private static int GetDirection(bool direction) => direction ? -1 : 1;
 }

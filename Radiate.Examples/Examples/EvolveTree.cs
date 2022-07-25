@@ -36,36 +36,13 @@ public class EvolveTree : IExample
                 settings.CrossoverRate = .5;
                 settings.StagnationLimit = 15;
             })
-            .AddEnvironment(new ForestEnvironment
+            .AddEnvironment(() =>
             {
-                InputSize = pair.InputShape.Height,
-                OutputCategories = pair.OutputCategoriesList,
-                MaxHeight = 20,
-                StartHeight = 5,
-                NumTrees = 25,
-                NodeAddRate = .05f,
-                ShuffleRate = .05f,
-                NodeType = SeralTreeNodeType.Operator,
-                OperatorNodeEnvironment = new OperatorNodeEnvironment
-                {
-                    SplitValueMutateRate  = .1f,
-                    SplitIndexMutateRate = .1f,
-                    OutputCategoryMutateRate = .1f,
-                    OperatorMutateRate = .05f
-                },
-                NeuronNodeEnvironment = new NeuronNodeEnvironment
-                {
-                    SplitIndexMutateRate = .1f,
-                    OutputCategoryMutateRate = .1f,
-                    WeightMovementRate = 1.5f,
-                    WeightMutateRate = .8f,
-                    EditWeights = .1f,
-                    Activations = new[]
-                    {
-                        Activation.Linear,
-                        Activation.Sigmoid
-                    }
-                }
+                var environment = DefaultEnvironments.OperatorNodeForest;
+                environment.InputSize = pair.InputShape.Height;
+                environment.OutputCategories = pair.OutputCategoriesList;
+
+                return environment;
             })
             .AddFitnessFunction(member =>
             {

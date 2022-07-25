@@ -3,4 +3,4 @@ using Radiate.Tensors;
 
 namespace Radiate.Records;
 
-public record Prediction(Tensor Result, int Classification, float Confidence = 0f);
+public record Prediction(Tensor Result, int Classification = 0, float Confidence = 0f);

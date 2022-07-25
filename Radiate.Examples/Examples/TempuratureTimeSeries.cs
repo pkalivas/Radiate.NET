@@ -48,23 +48,13 @@ public class TempuratureTimeSeries : IExample
                 settings.CTwo = 1;
                 settings.CThree = 3;
             })
-            .AddEnvironment(new NeatEnvironment
+            .AddEnvironment(() =>
             {
-                InputSize = pair.InputShape.Height,
-                OutputSize = pair.OutputShape.Height,
-                RecurrentNeuronRate = .95f,
-                ReactivateRate = .2f,
-                WeightMutateRate = .8f,
-                NewEdgeRate = .14f,
-                NewNodeRate = .14f,
-                EditWeights = .1f,
-                WeightPerturb = 1.5f,
-                OutputLayerActivation = Activation.ExpSigmoid,
-                ActivationFunctions = new List<Activation>
-                {
-                    Activation.ExpSigmoid,
-                    Activation.ReLU
-                }
+                var environment = DefaultEnvironments.RecurrentNeatEnvironment;
+                environment.InputSize = 1;
+                environment.OutputSize = 1;
+
+                return environment;
             })
             .AddFitnessFunction(member =>
             {

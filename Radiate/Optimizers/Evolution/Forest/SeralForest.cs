@@ -13,10 +13,10 @@ public class SeralForest : Allele, IGenome, IPredictionModel
     private readonly SeralForestInfo _info;
     private Dictionary<int, float> _innovationWeightLookup;
 
-    public SeralForest(SeralForestInfo info)
+    public SeralForest(SeralForestInfo info, INodeInfo nodeInfo)
     {
         _info = info;
-        _trees = Enumerable.Range(0, info.NumTrees).Select(_ => new SeralTree(info)).ToArray();
+        _trees = Enumerable.Range(0, info.NumTrees).Select(_ => new SeralTree(info, nodeInfo)).ToArray();
         _innovationWeightLookup = _trees
             .SelectMany(tree => tree.WeightLookup.Select(pair => (pair.Key, pair.Value)))
             .GroupBy(val => val.Key)
@@ -79,7 +79,7 @@ public class SeralForest : Allele, IGenome, IPredictionModel
         return child as T;
     }
 
-    public double Distance<T>(T other, DistanceControl distanceControl)
+    public double Distance<T>(T other, DistanceTunings distanceControl)
     {
         var parentTwo = other as SeralForest;
         return DistanceCalculator.Distance(_innovationWeightLookup, parentTwo._innovationWeightLookup, distanceControl);

@@ -10,7 +10,7 @@ public class Generation<T> where T : class
     private readonly ConcurrentDictionary<Guid, Member> _mascotMembers;
     private readonly ConcurrentDictionary<Guid, Niche> _species;
     private readonly DistanceManager _distanceManager;
-    private readonly DistanceControl _distanceControl;
+    private readonly DistanceTunings _distanceTunings;
     private readonly StagnationControl _stagnationControl;
     private readonly PassDownControl _passDownControl;
     private readonly EvolutionEnvironment _evolutionEnvironment;
@@ -25,11 +25,11 @@ public class Generation<T> where T : class
         _mascotMembers = new ConcurrentDictionary<Guid, Member>();
         _species = new ConcurrentDictionary<Guid, Niche>();
         _distanceManager = new DistanceManager(popSettings.DynamicDistance, popSettings.SpeciesTarget, popSettings.SpeciesDistance);
-        _distanceControl = info.DistanceControl;
+        _distanceTunings = info.DistanceTunings;
         _stagnationControl = info.StagnationControl;
         _passDownControl = info.PassDownControl with { Size = popSettings.Size ?? members.Count };
-        _evolutionEnvironment = environment;
-        _fitnessFunction = info.FitnessFunc;
+        _evolutionEnvironment = info.Environment;
+        _fitnessFunction = info.FitnessFunction;
     }
     
     public async Task<Member> Step()
@@ -49,7 +49,7 @@ public class Generation<T> where T : class
             foreach (var (nicheId, species) in _species)
             {
                 var mascot = _mascotMembers[species.Mascot].Model;
-                var distance = model.Model.Distance(mascot, _distanceControl);
+                var distance = model.Model.Distance(mascot, _distanceTunings);
 
                 if (distance < _distanceManager.Distance)
                 {
