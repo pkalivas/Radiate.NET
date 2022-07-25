@@ -28,7 +28,7 @@ public record PopulationInfo<T>(
         FitnessFunc ?? (_ => 0f);
 
     public DistanceControl DistanceControl =>
-        new(Population.COne, Population.CThree, Population.CThree);
+        new(Population.COne, Population.CTwo, Population.CThree);
 
     public StagnationControl StagnationControl => new(Population.StagnationLimit);
 
