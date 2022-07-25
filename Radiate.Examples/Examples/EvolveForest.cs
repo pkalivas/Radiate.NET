@@ -1,10 +1,9 @@
-﻿using Radiate.Activations;
-using Radiate.Callbacks;
+﻿using Radiate.Callbacks;
 using Radiate.Callbacks.Interfaces;
 using Radiate.Data;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Evolution;
-using Radiate.Optimizers.Evolution.Forest;
+using Radiate.Optimizers.Evolution.Genomes.Forest;
 using Radiate.Optimizers.Evolution.Info;
 using Radiate.Tensors;
 using Radiate.Tensors.Enums;
@@ -28,7 +27,7 @@ public class EvolveForest : IExample
             .AddSettings(settings =>
             {
                 settings.Size = 250;
-                settings.DynamicDistance = false;
+                settings.DynamicDistance = true;
                 settings.SpeciesTarget = 10;
                 settings.SpeciesDistance = 5;
                 settings.InbreedRate = .005;
@@ -36,7 +35,7 @@ public class EvolveForest : IExample
                 settings.StagnationLimit = 15;
                 settings.COne = 1.0;
                 settings.CTwo = 1;
-                settings.CThree = 2f;
+                settings.CThree = .3f;
             })
             .AddEnvironment(() =>
             {
@@ -44,7 +43,6 @@ public class EvolveForest : IExample
                 environment.MaxHeight = 7;
                 environment.InputSize = pair.InputShape.Height;
                 environment.OutputCategories = pair.OutputCategoriesList;
-                environment.NeuronNodeEnvironment.FeatureIndexCount = (int)(pair.InputShape.Height * .25f);
 
                 return environment;
             })

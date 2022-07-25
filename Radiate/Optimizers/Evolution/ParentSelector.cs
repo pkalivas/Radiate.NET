@@ -1,10 +1,8 @@
-﻿using System.Collections.Concurrent;
-
-namespace Radiate.Optimizers.Evolution;
+﻿namespace Radiate.Optimizers.Evolution;
 
 public static class ParentSelector
 {
-    public static (Guid parentOne, Guid parentTwo) Select(double inbreedRate, ICollection<Niche> species)
+    public static (Guid parentOne, Guid parentTwo) Select(double inbreedRate, ICollection<Species> species)
     {
         var random = RandomGenerator.RandomGenerator.Next;
         if (random.NextDouble() < inbreedRate)
@@ -27,18 +25,17 @@ public static class ParentSelector
         }
     }
     
-    private static Niche GetBiasedRandomNiche(ICollection<Niche> species, Random random)
+    private static Species GetBiasedRandomNiche(ICollection<Species> species, Random random)
     {
         var total = species
-            .Where(spec => !spec.IsStagnant)
-            .Aggregate(0.0, (all, current) => all + current.TotalAdjustedFitness);
+            .Aggregate(0.0, (all, current) => all + current.Fitness);
         
         var runningTotal = 0.0;
         var index = random.NextDouble() * total;
         
-        foreach (var niche in species.Where(spec => !spec.IsStagnant))
+        foreach (var niche in species)
         {
-            runningTotal += niche.TotalAdjustedFitness;
+            runningTotal += niche.Fitness;
             if (runningTotal >= index)
             {
                 return niche;
@@ -49,17 +46,18 @@ public static class ParentSelector
     }
 
 
-    private static Guid GetBiasedRandomMember(Niche species, Random random)
+    private static Guid GetBiasedRandomMember(Species species, Random random)
     {
         if (random.NextDouble() < .5)
         {
             return species.BestMember();
         }
-        
-        var index = species.TotalAdjustedFitness * random.NextDouble();
+
+        var speciesMembers = species.Members;
+        var index = species.Fitness * random.NextDouble();
         var runningTotal = 0.0;
 
-        foreach (var (id, fitness) in species.AdjustedMembers)
+        foreach (var (id, fitness) in speciesMembers)
         {
             runningTotal += fitness;
             if (runningTotal >= index)
@@ -68,6 +66,6 @@ public static class ParentSelector
             }
         }
         
-        return species.Members.First().MemberId;
+        return speciesMembers.First().GenomeId;
     }
 }

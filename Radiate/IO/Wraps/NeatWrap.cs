@@ -1,5 +1,5 @@
 ﻿using Radiate.Activations;
-using Radiate.Optimizers.Evolution.Neat;
+using Radiate.Optimizers.Evolution.Genomes.Neat;
 
 namespace Radiate.IO.Wraps;
 

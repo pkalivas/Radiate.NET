@@ -1,10 +1,9 @@
-﻿using Radiate.Activations;
-using Radiate.Callbacks;
+﻿using Radiate.Callbacks;
 using Radiate.Callbacks.Interfaces;
 using Radiate.Data;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Evolution;
-using Radiate.Optimizers.Evolution.Forest;
+using Radiate.Optimizers.Evolution.Genomes.Forest;
 using Radiate.Optimizers.Evolution.Info;
 using Radiate.Tensors;
 using Radiate.Tensors.Enums;
@@ -31,10 +30,11 @@ public class EvolveTree : IExample
                 settings.Size = 100;
                 settings.DynamicDistance = true;
                 settings.SpeciesTarget = 5;
-                settings.SpeciesDistance = .5;
+                settings.SpeciesDistance = 3;
                 settings.InbreedRate = .001;
-                settings.CrossoverRate = .5;
+                settings.CrossoverRate = .75;
                 settings.StagnationLimit = 15;
+                settings.CThree = 2f;
             })
             .AddEnvironment(() =>
             {

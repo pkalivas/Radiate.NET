@@ -1,6 +1,5 @@
-﻿
-using Radiate.Optimizers.Evolution.Forest;
-using Radiate.Optimizers.Evolution.Forest.Info;
+﻿using Radiate.Optimizers.Evolution.Genomes.Forest;
+using Radiate.Optimizers.Evolution.Genomes.Forest.Info;
 
 namespace Radiate.IO.Wraps;
 

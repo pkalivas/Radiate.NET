@@ -1,13 +1,11 @@
-﻿using Radiate.Activations;
-using Radiate.Callbacks;
+﻿using Radiate.Callbacks;
 using Radiate.Callbacks.Interfaces;
 using Radiate.Data;
 using Radiate.Extensions;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Evolution;
-using Radiate.Optimizers.Evolution.Forest;
+using Radiate.Optimizers.Evolution.Genomes.Neat;
 using Radiate.Optimizers.Evolution.Info;
-using Radiate.Optimizers.Evolution.Neat;
 using Radiate.Tensors;
 
 namespace Radiate.Examples.Examples;

@@ -20,16 +20,20 @@ public record PopulationInfo<T>(
     public PopulationInfo<T> AddFitnessFunction(FitnessFunction<T> solver) =>
         this with { FitnessFunc = solver };
 
+    public PopulationSettings Population => PopulationSettings ?? new PopulationSettings();
+
     public EvolutionEnvironment Environment => EvolutionEnvironment ?? new BaseEvolutionEnvironment();
 
     public FitnessFunction<T> FitnessFunction =>
         FitnessFunc ?? throw new Exception($"Population needs fitness function.");
 
-    public DistanceTunings DistanceTunings =>
-        new(PopulationSettings.COne, PopulationSettings.CThree, PopulationSettings.CThree);
+    public DistanceControl DistanceControl =>
+        new(Population.COne, Population.CThree, Population.CThree);
 
-    public StagnationControl StagnationControl => new(PopulationSettings.StagnationLimit);
+    public StagnationControl StagnationControl => new(Population.StagnationLimit);
 
-    public PassDownControl PassDownControl =>
-        new(PopulationSettings.InbreedRate, PopulationSettings.CrossoverRate, 0);
+    public PassDownControl PassDownControl => new(Population.InbreedRate, Population.CrossoverRate, 0);
+
+    public CompatibilityControl CompatibilityControl => new(Population.DynamicDistance, Population.SpeciesTarget,
+        Population.SpeciesDistance);
 }

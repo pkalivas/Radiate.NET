@@ -1,6 +1,6 @@
 ﻿using Radiate.Activations;
-using Radiate.Optimizers.Evolution.Forest;
-using Radiate.Optimizers.Evolution.Neat;
+using Radiate.Optimizers.Evolution.Genomes.Forest;
+using Radiate.Optimizers.Evolution.Genomes.Neat;
 
 namespace Radiate.Examples;
 
@@ -15,7 +15,7 @@ public static class DefaultEnvironments
         ShuffleRate = .05f,
         UseRecurrent = true,
         NodeType = SeralTreeNodeType.Neuron,
-        NeuronNodeEnvironment = new NeuronNodeEnvironment
+        NeuronNodeSettings = new NeuronNodeSettings
         {
             FeatureIndexMutateRate = .1f,
             OutputCategoryMutateRate = .1f,
@@ -39,7 +39,7 @@ public static class DefaultEnvironments
         ShuffleRate = .05f,
         NodeType = SeralTreeNodeType.Neuron,
         UseRecurrent = false,
-        NeuronNodeEnvironment = new NeuronNodeEnvironment
+        NeuronNodeSettings = new NeuronNodeSettings
         {
             FeatureIndexMutateRate = .05f,
             OutputCategoryMutateRate = .1f,
@@ -58,13 +58,13 @@ public static class DefaultEnvironments
     
     public static ForestEnvironment OperatorNodeForest => new()
     {
-        MaxHeight = 20,
+        MaxHeight = 7,
         StartHeight = 5,
         NumTrees = 25,
         NodeAddRate = .05f,
         ShuffleRate = .05f,
         NodeType = SeralTreeNodeType.Operator,
-        OperatorNodeEnvironment = new OperatorNodeEnvironment
+        OperatorNodeSettings = new OperatorNodeSettings
         {
             SplitValueMutateRate = .1f,
             SplitIndexMutateRate = .1f,

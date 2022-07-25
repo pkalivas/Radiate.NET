@@ -8,7 +8,7 @@ public interface IGenome : IOptimizerModel
         where T: class, IGenome
         where TE: EvolutionEnvironment;
 
-    public double Distance<T>(T other, DistanceTunings distanceTunings);
+    public double Distance<T>(T other, DistanceControl distanceTunings);
 
     public T CloneGenome<T>() where T : class;
 

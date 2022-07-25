@@ -2,9 +2,9 @@
 using Radiate.Extensions;
 using Radiate.IO.Wraps;
 using Radiate.Losses;
-using Radiate.Optimizers.Evolution.Forest;
+using Radiate.Optimizers.Evolution.Genomes.Forest;
+using Radiate.Optimizers.Evolution.Genomes.Neat;
 using Radiate.Optimizers.Evolution.Interfaces;
-using Radiate.Optimizers.Evolution.Neat;
 using Radiate.Optimizers.Supervised.Forest;
 using Radiate.Optimizers.Supervised.Interfaces;
 using Radiate.Optimizers.Supervised.Perceptrons;
@@ -80,7 +80,7 @@ public class Optimizer
             return predictionModel.Predict(processedInput);
         }
         
-        throw new Exception("Model is not of type IPredictionModel.");
+        throw new Exception("Genome is not of type IPredictionModel.");
     }
 
     public Prediction ProcessedPredict(float[] input)
@@ -90,7 +90,7 @@ public class Optimizer
             return predictionModel.Predict(input.ToTensor());
         }
 
-        throw new Exception("Model is not of type IPredictionModel.");
+        throw new Exception("Genome is not of type IPredictionModel.");
     }
 
     public Validation ValidationScores() => Validate(_tensorTrainSet.TestingInputs);

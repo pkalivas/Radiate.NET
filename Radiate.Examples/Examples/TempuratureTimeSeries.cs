@@ -1,15 +1,10 @@
-﻿using Radiate.Activations;
-using Radiate.Callbacks;
+﻿using Radiate.Callbacks;
 using Radiate.Callbacks.Interfaces;
 using Radiate.Data;
-using Radiate.Gradients;
-using Radiate.Losses;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Evolution;
+using Radiate.Optimizers.Evolution.Genomes.Neat;
 using Radiate.Optimizers.Evolution.Info;
-using Radiate.Optimizers.Evolution.Neat;
-using Radiate.Optimizers.Supervised.Perceptrons;
-using Radiate.Optimizers.Supervised.Perceptrons.Info;
 using Radiate.Tensors;
 using Radiate.Tensors.Enums;
 
@@ -46,27 +41,17 @@ public class TempuratureTimeSeries : IExample
                 settings.StagnationLimit = 15;
                 settings.COne = 1;
                 settings.CTwo = 1;
-                settings.CThree = 3;
+                settings.CThree = .003;
             })
             .AddEnvironment(() =>
             {
                 var environment = DefaultEnvironments.RecurrentNeatEnvironment;
-                environment.InputSize = 1;
+                environment.InputSize = pair.InputShape.Height;
                 environment.OutputSize = 1;
 
                 return environment;
             })
-            .AddFitnessFunction(member =>
-            {
-                var total = 0.0f;
-                foreach (var points in features.Zip(targets))
-                {
-                    var output = member.Predict(points.First);
-                    total += (float)Math.Pow((output.Confidence - points.Second[0]), 2);
-                }
-
-                return 1f - (total / inputs.Count);
-            });
+            .AddFitnessFunction(member => DefaultFitnessFunctions.MeanSquaredError(member, features, targets));
 
         var population = new Population<Neat>(info);
         var optimizer = new Optimizer(population, pair, new List<ITrainingCallback>

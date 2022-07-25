@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Radiate.Callbacks.Interfaces;
+﻿using Radiate.Callbacks.Interfaces;
 using Radiate.Optimizers;
 using Radiate.Tensors;
 using Radiate.Tensors.Enums;

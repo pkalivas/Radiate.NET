@@ -98,7 +98,7 @@ public class EvolveHelloWorld : IExample
             return child as T;
         }
 
-        public double Distance<T>(T other, DistanceTunings _)
+        public double Distance<T>(T other, DistanceControl _)
         {
             var secondParent = other as HelloWorld;
             var total = 0.0;

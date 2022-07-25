@@ -6,7 +6,7 @@ public static class DistanceCalculator
 {
     public static double Distance(IReadOnlyDictionary<int, float> parentOne, 
         IReadOnlyDictionary<int, float> parentTwo, 
-        DistanceTunings distanceControl)
+        DistanceControl distanceControl)
     {
         var (largestParent, smallestParent) = parentOne.Count > parentTwo.Count 
             ? (parentOne, parentTwo) 

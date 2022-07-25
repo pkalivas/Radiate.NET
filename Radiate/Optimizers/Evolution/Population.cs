@@ -1,5 +1,6 @@
 ﻿using Radiate.Optimizers.Evolution.Info;
 using Radiate.Optimizers.Evolution.Interfaces;
+using Radiate.Records;
 
 namespace Radiate.Optimizers.Evolution;
 
@@ -7,7 +8,7 @@ public class Population<T> : IPopulation where T : class, IGenome
 {
     private readonly Generation<T> _generation;
 
-    private Member _topMember;
+    private Gene _topMember;
     
     public Population(PopulationInfo<T> info) : this(info, new List<T>()) { }
     
@@ -24,7 +25,13 @@ public class Population<T> : IPopulation where T : class, IGenome
 
     public async Task<GenerationReport> Evolve()
     {
-        _topMember = await _generation.Step();
+        var generationBest = _generation.Step();
+
+        if (_topMember is null || generationBest.Fitness > _topMember.Fitness)
+        {
+            _topMember = generationBest;
+        }
+        
         return _generation.GetReport();
     } 
 
@@ -34,25 +41,18 @@ public class Population<T> : IPopulation where T : class, IGenome
         return _topMember.Fitness;
     }
 
-    IGenome IPopulation.Best() => _topMember.Model;
+    IGenome IPopulation.Best() => _topMember.Genome;
     
     private static Generation<T> CreateSeedGeneration(IEnumerable<IGenome> genomes, PopulationInfo<T> info)
     {
         var population = genomes.Any()
             ? genomes
             : new[] { info.EvolutionEnvironment.GenerateGenome<T>() };
-            // : Enumerable.Range(0, info.populationSettings.Size!.Value)
-            //     .Select(_ => evolutionEnvironment.GenerateGenome<T>())
-            //     .ToList();
 
         var members = population
             .Select(member => (
                 Id: Guid.NewGuid(),
-                Member: new Member
-                {
-                    Fitness = 0,
-                    Model = member
-                }
+                Member: new GenomeFitnessPair(member) { Fitness = 0 }
             ))
             .ToDictionary(key => key.Id, val => val.Member);
 

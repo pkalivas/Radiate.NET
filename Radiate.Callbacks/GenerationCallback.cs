@@ -25,26 +25,28 @@ public class GenerationCallback : IGenerationEvolvedCallback
         }
 
         var top = $"{"Generation",-15} {index}\n" +
-                  $"{"Member Count",-15} {report.NumMembers}\n" +
-                  $"{"Niche Count",-15} {report.NumNiche}\n" +
+                  $"{"GenomeFitnessPair Count",-15} {report.NumMembers}\n" +
+                  $"{"Species Count",-15} {report.SpeciesReport.NicheReports.Count}\n" +
                   $"{"Fitness",-15} {report.TopFitness}\n" +
-                  $"{"Stagnation",-15} {report.StagnationCount}\n" +
-                  $"{"Distance",-15} {report.Distance}\n";
+                  $"{"Distance",-15} {report.SpeciesReport.Distance}\n";
 
-        var niches = $"{"Innovation",-10} {"Age",-6} {"Fitness",-10} {"Members",-10}\n";
+        var niches = $"{"Innovation",-10} {"Age",-6} {"Stagnation",-10} {"Members",-10} {"Fitness",-10} {"Min Fit",-10} {"Max Fit",-10}\n";
         var separator = string.Join("-", Enumerable.Range(0, niches.Length).Select(_ => ""));
         niches += separator + "\n";
-        foreach (var niche in report.NicheReports)
+        foreach (var niche in report.SpeciesReport.NicheReports)
         {
             niches += $" {niche.Innovation,-10}" +
                       $" {niche.Age,-6}" +
+                      $" {niche.Stagnation,-6}" +
+                      $" {niche.NumMembers,-10}" +
                       $" {Math.Round(niche.AdjustedFitness, 7),-10}" +
-                      $" {niche.NumMembers,-10}\n";
+                      $" {Math.Round(niche.MinFitness, 7),-10}" +
+                      $" {Math.Round(niche.MaxFitness, 7),-10}\n";
         }
 
         var toWrite = top + niches;
         
-        Console.Write($"{toWrite}\n");
+        Console.Write($"\r{toWrite}\n");
         // Console.SetCursorPosition(_col, _row);
     }
 }
