@@ -2,7 +2,7 @@
 using Radiate.Optimizers.Evolution.Genomes.Forest;
 using Radiate.Optimizers.Evolution.Genomes.Neat;
 
-namespace Radiate.Examples;
+namespace Radiate.Examples.DefaultSettings;
 
 public static class DefaultEnvironments
 {

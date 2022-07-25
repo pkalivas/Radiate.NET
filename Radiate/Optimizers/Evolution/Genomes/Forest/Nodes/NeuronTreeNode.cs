@@ -112,7 +112,8 @@ public class NeuronTreeNode : Allele, ISeralTreeNode
 
         if (Random.NextDouble() < neuronSettings.ActivationMutateRate)
         {
-            _activation = ActivationFunctionFactory.Get(neuronSettings.Activations.ElementAt(Random.Next(0, neuronSettings.Activations.Count())));
+            var newActivation = neuronSettings.Activations.ElementAt(Random.Next(0, neuronSettings.Activations.Count()));
+            _activation = ActivationFunctionFactory.Get(newActivation);
         }
     }
 

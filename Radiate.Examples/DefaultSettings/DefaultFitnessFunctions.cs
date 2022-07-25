@@ -2,7 +2,7 @@
 using Radiate.Optimizers.Evolution.Interfaces;
 using Radiate.Tensors;
 
-namespace Radiate.Examples;
+namespace Radiate.Examples.DefaultSettings;
 
 public static class DefaultFitnessFunctions
 {

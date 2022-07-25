@@ -1,6 +1,7 @@
 ﻿using Radiate.Callbacks;
 using Radiate.Callbacks.Interfaces;
 using Radiate.Data;
+using Radiate.Examples.DefaultSettings;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Evolution;
 using Radiate.Optimizers.Evolution.Genomes.Neat;
