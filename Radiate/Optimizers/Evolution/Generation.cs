@@ -9,7 +9,6 @@ public class Generation<T> where T : class
 {
     private readonly ConcurrentDictionary<Guid, GenomeFitnessPair> _genomes;
     private readonly SpeciesManager _speciesManager;
-    private readonly StagnationControl _stagnationControl;
     private readonly PassDownControl _passDownControl;
     private readonly EvolutionEnvironment _evolutionEnvironment;
     private readonly FitnessFunction<T> _fitnessFunction;
@@ -19,8 +18,7 @@ public class Generation<T> where T : class
         var popSettings = info.PopulationSettings ?? new();
         
         _genomes = new ConcurrentDictionary<Guid, GenomeFitnessPair>(members);
-        _speciesManager = new SpeciesManager(info.DistanceControl, info.CompatibilityControl);
-        _stagnationControl = info.StagnationControl;
+        _speciesManager = new SpeciesManager(info.DistanceControl, info.CompatibilityControl, info.StagnationControl);
         _passDownControl = info.PassDownControl with { Size = popSettings.Size ?? members.Count };
         _evolutionEnvironment = info.Environment;
         _fitnessFunction = info.FitnessFunction;
@@ -47,7 +45,7 @@ public class Generation<T> where T : class
             else
             {
                 var gene = new Gene(genomeId, genome.Fitness, genome.Genome);
-                _speciesManager.CreateNewSpecies(gene, _stagnationControl);
+                _speciesManager.CreateNewSpecies(gene);
             }
         }
 

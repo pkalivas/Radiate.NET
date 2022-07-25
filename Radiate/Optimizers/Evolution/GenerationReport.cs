@@ -10,6 +10,7 @@ public class GenerationReport
 public class SpeciesReport
 {
     public double Distance { get; init; }
+    public Dictionary<Guid, int> SpeciesStagnation { get; init; }
     public List<NicheReport> NicheReports { get; init; }
 }
 
@@ -22,6 +23,5 @@ public class NicheReport
     public double AdjustedFitness { get; set; }
     public double MaxFitness { get; init; }
     public double MinFitness { get; init; }
-    public int Stagnation { get; init; }
     public int NumMembers { get; set; }
 }

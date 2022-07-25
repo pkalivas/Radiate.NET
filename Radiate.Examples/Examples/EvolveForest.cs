@@ -1,6 +1,7 @@
 ﻿using Radiate.Callbacks;
 using Radiate.Callbacks.Interfaces;
 using Radiate.Data;
+using Radiate.Losses;
 using Radiate.Optimizers;
 using Radiate.Optimizers.Evolution;
 using Radiate.Optimizers.Evolution.Genomes.Forest;
@@ -20,8 +21,7 @@ public class EvolveForest : IExample
             .TransformFeatures(Norm.Standardize)
             .Split();
 
-        var features = pair.TrainingInputs.SelectMany(batch => batch.Features);
-        var targets = pair.TrainingInputs.SelectMany(batch => batch.Targets);
+        var inputs = pair.InputsToTensorRow();
         
         var info = new PopulationInfo<SeralTree>()
             .AddSettings(settings =>
@@ -46,7 +46,7 @@ public class EvolveForest : IExample
 
                 return environment;
             })
-            .AddFitnessFunction(member => DefaultFitnessFunctions.MeanSquaredError(member, features, targets));
+            .AddFitnessFunction(member => DefaultFitnessFunctions.MeanSquaredError(member, inputs));
 
         var population = new Population<SeralTree>(info);
         var optimizer = new Optimizer(population, pair, new ITrainingCallback[]

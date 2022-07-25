@@ -35,6 +35,9 @@ public class Optimizer
     public Optimizer(OptimizerWrap wrap) 
         : this(Load(wrap), new TensorTrainSet(wrap.TensorOptions), wrap.LossFunction) { }
     
+    public Optimizer(OptimizerWrap wrap, TensorTrainSet trainSet)
+        : this(Load(wrap), trainSet, wrap.LossFunction) { }
+    
     public Optimizer(IOptimizerModel optimizer, IEnumerable<ITrainingCallback> callbacks = null) 
         : this(optimizer, new(), callbacks) { }
     

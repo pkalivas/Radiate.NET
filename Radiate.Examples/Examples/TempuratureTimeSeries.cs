@@ -25,9 +25,8 @@ public class TempuratureTimeSeries : IExample
             .TransformTargets(Norm.Normalize)
             .Split()
             .Layer(5);
-            
-        var features = pair.TrainingInputs.SelectMany(batch => batch.Features);
-        var targets = pair.TrainingInputs.SelectMany(batch => batch.Targets);
+
+        var tensorInputs = pair.InputsToTensorRow();
         
         var info = new PopulationInfo<Neat>()
             .AddSettings(settings =>
@@ -51,7 +50,7 @@ public class TempuratureTimeSeries : IExample
 
                 return environment;
             })
-            .AddFitnessFunction(member => DefaultFitnessFunctions.MeanSquaredError(member, features, targets));
+            .AddFitnessFunction(member => DefaultFitnessFunctions.MeanSquaredError(member, tensorInputs));
 
         var population = new Population<Neat>(info);
         var optimizer = new Optimizer(population, pair, new List<ITrainingCallback>

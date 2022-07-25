@@ -1,44 +1,38 @@
-﻿using Radiate.Records;
+﻿using System.Collections.Concurrent;
+using Radiate.Records;
 
 namespace Radiate.Optimizers.Evolution.Managers;
 
 public class StagnationManager
 {
     private readonly int _stagnationLimit;
-    private double _maxFitness;
-    private int _stagnationCount;
+    private readonly ConcurrentDictionary<Guid, (int count, double maxFitness)> _speciesStagnationState;
 
     public StagnationManager(StagnationControl control)
     {
-        var (limit, count, maxFitness) = control;
+        var (limit, _, _) = control;
         
         _stagnationLimit = limit;
-        _stagnationCount = count;
-        _maxFitness = maxFitness;
+        _speciesStagnationState = new ConcurrentDictionary<Guid, (int, double)>();
     }
+    
+    public bool IsStagnant(Guid speciesId) => _speciesStagnationState[speciesId].count == _stagnationLimit;
+    public int Stagnation(Guid speciesId) => _speciesStagnationState[speciesId].count;
 
-    public StagnationManager(StagnationManager manager)
+    public void Update(Guid speciesId, double fitness)
     {
-        _stagnationLimit = manager._stagnationLimit;
-        _stagnationCount = manager._stagnationCount;
-        _maxFitness = manager._maxFitness;
-    }
-
-    public bool IsStagnant => _stagnationCount == _stagnationLimit;
-    public int Stagnation => _stagnationCount;
-
-    public void Update(double fitness)
-    {
-        if (fitness <= _maxFitness)
+        var (stagnationCount, maxFitness) = _speciesStagnationState.ContainsKey(speciesId)
+            ? _speciesStagnationState[speciesId]
+            : (0, double.MinValue);
+        
+        
+        if (fitness <= maxFitness)
         {
-            _stagnationCount++;
+            _speciesStagnationState[speciesId] = (++stagnationCount, maxFitness);
         }
         else
         {
-            _maxFitness = fitness;
-            _stagnationCount = 0;
+            _speciesStagnationState[speciesId] = (0, fitness);
         }
     }
-    
-    
 }

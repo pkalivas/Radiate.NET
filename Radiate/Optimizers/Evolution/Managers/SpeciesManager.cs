@@ -9,12 +9,14 @@ public class SpeciesManager
     private readonly ConcurrentDictionary<Guid, Species> _species;
     private readonly DistanceManager _distanceManager;
     private readonly CompatibilityManager _compatibilityManager;
+    private readonly StagnationManager _stagnationManager;
 
-    public SpeciesManager(DistanceControl distanceControl, CompatibilityControl compatibilityControl)
+    public SpeciesManager(DistanceControl distanceControl, CompatibilityControl compatibilityControl, StagnationControl stagnationControl)
     {
         _species = new ConcurrentDictionary<Guid, Species>();
         _distanceManager = new DistanceManager(distanceControl);
         _compatibilityManager = new CompatibilityManager(compatibilityControl);
+        _stagnationManager = new StagnationManager(stagnationControl);
     }
 
     public ICollection<Species> Species => _species.Values;
@@ -29,6 +31,7 @@ public class SpeciesManager
             var currentSpecies = _species[speciesId];
             var (mascotId, _, mascot) = currentSpecies.Mascot;
             var candidates = new ConcurrentBag<(Guid genomeId, double distance)>();
+
             Parallel.ForEach(unspeciated, genomeId =>
             {
                 var genome = genomes[genomeId];
@@ -73,7 +76,7 @@ public class SpeciesManager
     public HashSet<Guid> GetSurvivors()
     {
         var stagnantSpecies = _species
-            .Where(spec => spec.Value.IsStagnant)
+            .Where(spec => _stagnationManager.IsStagnant(spec.Key))
             .Select(spec => spec.Key);
 
         if (_species.Count - stagnantSpecies.Count() > 0)
@@ -93,16 +96,17 @@ public class SpeciesManager
 
     public void AdjustFitness()
     {
-        foreach (var species in _species.Values)
+        foreach (var (speciesId, species) in _species)
         {
-            species.AdjustFitness();
+            var maxFitness = species.AdjustFitness();
+            _stagnationManager.Update(speciesId, maxFitness);
         }
     }
 
-    public void CreateNewSpecies(Gene newGene, StagnationControl stagnationControl)
+    public void CreateNewSpecies(Gene newGene)
     {
         var newSpeciesId = Guid.NewGuid();
-        _species[newSpeciesId] = new Species(newSpeciesId, newGene, stagnationControl);
+        _species[newSpeciesId] = new Species(newSpeciesId, newGene);
     }
     
     public void AddMember(Guid speciesId, SpeciesMember newMember)
@@ -113,6 +117,8 @@ public class SpeciesManager
     public SpeciesReport GetReport() => new()
     {
         Distance = _compatibilityManager.Distance,
+        SpeciesStagnation = _species.Keys
+            .ToDictionary(key => key, val => _stagnationManager.Stagnation(val)),
         NicheReports = _species.Values
             .Select(val => val.GetReport())
             .OrderBy(val => val.Age)

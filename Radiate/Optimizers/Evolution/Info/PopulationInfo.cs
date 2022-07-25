@@ -25,7 +25,7 @@ public record PopulationInfo<T>(
     public EvolutionEnvironment Environment => EvolutionEnvironment ?? new BaseEvolutionEnvironment();
 
     public FitnessFunction<T> FitnessFunction =>
-        FitnessFunc ?? throw new Exception($"Population needs fitness function.");
+        FitnessFunc ?? (_ => 0f);
 
     public DistanceControl DistanceControl =>
         new(Population.COne, Population.CThree, Population.CThree);

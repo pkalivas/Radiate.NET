@@ -19,8 +19,7 @@ public class EvolveNEAT : IExample
         var (inputs, answers) = await new SimpleMemory().GetDataSet();
 
         var pair = new TensorTrainSet(inputs, answers);
-        var features = pair.TrainingInputs.SelectMany(batch => batch.Features);
-        var targets = pair.TrainingInputs.SelectMany(batch => batch.Targets);
+        var tensorInputs = pair.InputsToTensorRow();
 
         var info = new PopulationInfo<Neat>()
             .AddSettings(settings =>
@@ -44,27 +43,15 @@ public class EvolveNEAT : IExample
 
                 return environment;
             })
-            .AddFitnessFunction(member => DefaultFitnessFunctions.MeanSquaredError(member, features, targets));
+            .AddFitnessFunction(member => DefaultFitnessFunctions.MeanSquaredError(member, tensorInputs));
 
         var population = new Population<Neat>(info);
-        var optimizer = new Optimizer(population, new List<ITrainingCallback>
+        var optimizer = new Optimizer(population, pair, new List<ITrainingCallback>
         {
-            new GenerationCallback()
+            new GenerationCallback(),
+            new FreeStyleCallback()
         });
         
-        var model = await optimizer.Train<Neat>(epoch => epoch.Index == maxEpochs);
-        
-        Console.WriteLine();
-        foreach (var (point, answer) in features.Zip(targets))
-        {
-            var output = model.Predict(point);
-            Console.WriteLine($"Input {point.Max()} Expecting {answer.Max()} Guess {output.Confidence}");
-        }
-        
-        Console.WriteLine("\nTesting Memory...");
-        Console.WriteLine($"Input {1f} Expecting {0f} Guess {model.Predict(new float[1] { 1 }.ToTensor())}");
-        Console.WriteLine($"Input {0f} Expecting {0f} Guess {model.Predict(new float[1] { 0 }.ToTensor())}");
-        Console.WriteLine($"Input {0f} Expecting {0f} Guess {model.Predict(new float[1] { 0 }.ToTensor())}");
-        Console.WriteLine($"Input {0f} Expecting {1f} Guess {model.Predict(new float[1] { 0 }.ToTensor())}");
+        await optimizer.Train<Neat>(epoch => epoch.Index == maxEpochs);
     }
 }

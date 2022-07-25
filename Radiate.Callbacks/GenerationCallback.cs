@@ -15,7 +15,7 @@ public class GenerationCallback : IGenerationEvolvedCallback
     //     _maxEpoch = maxEpoch;
     // }
     
-    public void GenerationEvolved(int index, GenerationReport report)
+    public void GenerationEvolved(object sender, GenerationEvolved generationEvolved)
     {
         if (!_init)
         {
@@ -23,6 +23,9 @@ public class GenerationCallback : IGenerationEvolvedCallback
             _col = Console.CursorLeft;
             _init = true;
         }
+
+        var report = generationEvolved.Report;
+        var index = generationEvolved.GenerationNum;
 
         var top = $"{"Generation",-15} {index}\n" +
                   $"{"GenomeFitnessPair Count",-15} {report.NumMembers}\n" +
@@ -37,7 +40,7 @@ public class GenerationCallback : IGenerationEvolvedCallback
         {
             niches += $" {niche.Innovation,-10}" +
                       $" {niche.Age,-6}" +
-                      $" {niche.Stagnation,-6}" +
+                      $" {report.SpeciesReport.SpeciesStagnation[niche.SpeciesId],-6}" +
                       $" {niche.NumMembers,-10}" +
                       $" {Math.Round(niche.AdjustedFitness, 7),-10}" +
                       $" {Math.Round(niche.MinFitness, 7),-10}" +
