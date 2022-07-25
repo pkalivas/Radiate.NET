@@ -132,6 +132,12 @@ public class TensorTrainSet
         return this;
     }
 
+    public TensorTrainSet LookForward(int lookForward)
+    {
+        Options = Options with { LookForward = lookForward };
+        return this;
+    }
+
     public TensorTrainSet Layer(int layer)
     {
         Options = Options with { Layer = layer };

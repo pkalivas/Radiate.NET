@@ -13,6 +13,7 @@ public static class TensorSetTransforms
         new LayerTransform(),
         new ReshapeTransform(),
         new PaddingTransform(),
+        new LookForwardTransform(),
         new SplitTransform(),
     };
 

@@ -19,11 +19,10 @@ public class TempuratureTimeSeries : IExample
         
         var (inputs, answers) = await new TempTimeSeries(500).GetDataSet();
 
-        inputs = inputs.Take(inputs.Count - 1).ToList();
-        answers = answers.Skip(1).ToList();
         var pair = new TensorTrainSet(inputs, answers)
             .TransformFeatures(Norm.Normalize)
             .TransformTargets(Norm.Normalize)
+            .LookForward(1)
             .Split()
             .Layer(5);
 

@@ -8,6 +8,7 @@ public record TensorTrainOptions(
     Shape FeatureShape = null,
     float SplitPct = 0f,
     int Layer = 0,
+    int LookForward = 0,
     bool Shuffle = false,
     Norm FeatureNorm = Norm.None,
     Norm TargetNorm = Norm.None,
