@@ -14,11 +14,6 @@ public abstract class TrainingSession
     protected TrainingSession(IEnumerable<ITrainingCallback> callbacks)
     {
         _callbacks = callbacks ?? new List<ITrainingCallback>();
-
-        foreach (var callBack in GetCallbacks<IGenerationEvolvedCallback>())
-        {
-            GenerationEvolved += callBack.GenerationEvolved;
-        }
     }
 
     public abstract Task<IOptimizerModel> Train(TensorTrainSet trainingData, Func<Epoch, Task<bool>> trainFunc,
@@ -33,15 +28,4 @@ public abstract class TrainingSession
             await callback.CompleteTraining(optimizer, tensorTrainSet);
         }
     }
-
-    protected void DispatchEvent<T, TK>(TK data)
-    {
-        if (data is GenerationEvolved generationEvolved)
-        {
-            GenerationEvolved?.Invoke(this, generationEvolved);
-        }
-    }
-    
-    public event EventHandler<GenerationEvolved> GenerationEvolved;
-
 }

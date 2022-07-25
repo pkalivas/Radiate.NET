@@ -58,16 +58,10 @@ public class EvolutionTrainingSession : TrainingSession
         var startTime = DateTime.UtcNow;
         var generationReport = await _population.Evolve();
         
-        DispatchEvent<IGenerationEvolvedCallback, GenerationEvolved>(new GenerationEvolved
+        foreach (var callback in GetCallbacks<IGenerationEvolvedCallback>())
         {
-            GenerationNum = index,
-            Report = generationReport
-        });
-        // Test(new GenerationEvolved { GenerationNum = index, Report = generationReport });
-        // foreach (var callback in GetCallbacks<IGenerationEvolvedCallback>())
-        // {
-        //     callback.GenerationEvolved(index, generationReport);
-        // }
+            callback.GenerationEvolved(index, generationReport);
+        }
         
         var fitness = _population.PassDown();
         var epoch = new Epoch(index)
